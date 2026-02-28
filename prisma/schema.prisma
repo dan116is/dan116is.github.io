@@ -1,0 +1,843 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// USER & AUTHENTICATION
+// ============================================================
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  username          String    @unique
+  passwordHash      String
+  dateOfBirth       DateTime
+  isVerified        Boolean   @default(false)
+  kycStatus         KYCStatus @default(PENDING)
+  kycDocumentUrl    String?
+  faceScanUrl       String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastLoginAt       DateTime?
+  isBanned          Boolean   @default(false)
+  banReason         String?
+  role              UserRole  @default(PLAYER)
+  totalPlaytime     Int       @default(0) // minutes
+  vipLevel          VIPLevel  @default(STANDARD)
+
+  wallet            Wallet?
+  character         Character?
+  sessions          Session[]
+  gameHistory       GameHistory[]
+  bets              Bet[]
+  properties        Property[]
+  vehicles          Vehicle[]
+  inventory         InventoryItem[]
+  sentMessages      Message[]        @relation("SentMessages")
+  receivedMessages  Message[]        @relation("ReceivedMessages")
+  clubMemberships   ClubMember[]
+  ownedClubs        Club[]
+  subscriptions     Subscription[]
+  transactions      Transaction[]
+  sportsBets        SportsBet[]
+  marketListings    MarketListing[]
+  marketPurchases   MarketPurchase[]
+  notifications     Notification[]
+  achievements      UserAchievement[]
+  financialBets     FinancialBet[]
+  eventParticipants EventParticipant[]
+
+  @@index([email])
+  @@index([username])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+enum UserRole {
+  PLAYER
+  VIP
+  DEALER
+  MODERATOR
+  ADMIN
+}
+
+enum KYCStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum VIPLevel {
+  STANDARD
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+}
+
+// ============================================================
+// CHARACTER / AVATAR
+// ============================================================
+
+model Character {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  name        String
+  gender      String
+  skinTone    String
+  hairStyle   String
+  hairColor   String
+  eyeColor    String
+  bodyType    String
+  height      Float    @default(1.75)
+  posX        Float    @default(0)
+  posY        Float    @default(0)
+  posZ        Float    @default(0)
+  rotY        Float    @default(0)
+  currentArea String   @default("city_center")
+  isOnline    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("characters")
+}
+
+// ============================================================
+// WALLET & CURRENCY
+// ============================================================
+
+model Wallet {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  balance       Float    @default(0)     // Virtual coins (VC)
+  realBalance   Float    @default(0)     // Real money equivalent (USD)
+  lockedBalance Float    @default(0)     // Funds locked in active bets
+  totalDeposited Float   @default(0)
+  totalWithdrawn Float   @default(0)
+  totalWon       Float   @default(0)
+  totalLost      Float   @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("wallets")
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  walletId    String
+  type        TransactionType
+  amount      Float
+  fee         Float           @default(0)
+  netAmount   Float
+  currency    String          @default("VC")
+  status      TxStatus        @default(PENDING)
+  reference   String?
+  description String?
+  metadata    Json?
+  createdAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id])
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  BET_PLACE
+  BET_WIN
+  BET_LOSS
+  GAME_WIN
+  GAME_LOSS
+  PURCHASE
+  SALE
+  FEE
+  BONUS
+  SUBSCRIPTION
+  TRANSFER_IN
+  TRANSFER_OUT
+  REFUND
+}
+
+enum TxStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+// ============================================================
+// CASINO GAMES
+// ============================================================
+
+model GameSession {
+  id          String     @id @default(cuid())
+  gameType    GameType
+  tableId     String?
+  dealerId    String?
+  houseEdge   Float      // e.g. 0.027 for 2.7%
+  minBet      Float
+  maxBet      Float
+  status      GameStatus @default(OPEN)
+  startedAt   DateTime   @default(now())
+  endedAt     DateTime?
+  totalWagered Float     @default(0)
+  totalPaidOut Float     @default(0)
+  houseProfit  Float     @default(0)
+
+  histories GameHistory[]
+
+  @@index([gameType, status])
+  @@map("game_sessions")
+}
+
+model GameHistory {
+  id            String    @id @default(cuid())
+  userId        String
+  gameSessionId String
+  gameType      GameType
+  betAmount     Float
+  outcome       GameOutcome
+  payout        Float
+  profit        Float     // negative if loss
+  gameData      Json      // stores hand cards, roulette number, etc.
+  houseEdge     Float
+  createdAt     DateTime  @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  gameSession GameSession @relation(fields: [gameSessionId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([gameType])
+  @@map("game_history")
+}
+
+model Bet {
+  id          String     @id @default(cuid())
+  userId      String
+  gameType    GameType
+  betType     String     // "red", "even", "number_7", "player", "banker" etc.
+  amount      Float
+  odds        Float
+  result      BetResult?
+  payout      Float?
+  status      BetStatus  @default(PENDING)
+  gameData    Json?
+  createdAt   DateTime   @default(now())
+  resolvedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+  @@map("bets")
+}
+
+enum GameType {
+  ROULETTE
+  BLACKJACK
+  POKER
+  SLOTS
+  BACCARAT
+  CRAPS
+  SPORTS_BET
+  FINANCIAL_BET
+}
+
+enum GameStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+}
+
+enum GameOutcome {
+  WIN
+  LOSS
+  PUSH
+  BLACKJACK
+  BUST
+}
+
+enum BetResult {
+  WIN
+  LOSS
+  PUSH
+}
+
+enum BetStatus {
+  PENDING
+  ACTIVE
+  RESOLVED
+  CANCELLED
+}
+
+// ============================================================
+// SPORTS BETTING
+// ============================================================
+
+model SportEvent {
+  id           String      @id @default(cuid())
+  sport        SportType
+  homeTeam     String
+  awayTeam     String
+  league       String?
+  startTime    DateTime
+  status       EventStatus @default(UPCOMING)
+  homeScore    Int?
+  awayScore    Int?
+  result       String?
+  odds         Json        // { home: 1.8, draw: 3.5, away: 4.2 }
+  totalBetPool Float       @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  bets SportsBet[]
+
+  @@index([sport, status, startTime])
+  @@map("sport_events")
+}
+
+model SportsBet {
+  id           String    @id @default(cuid())
+  userId       String
+  eventId      String
+  selection    String    // "home", "draw", "away", "over_2.5" etc.
+  odds         Float
+  amount       Float
+  potentialWin Float
+  status       BetStatus @default(PENDING)
+  result       BetResult?
+  payout       Float?
+  createdAt    DateTime  @default(now())
+  resolvedAt   DateTime?
+
+  user  User       @relation(fields: [userId], references: [id])
+  event SportEvent @relation(fields: [eventId], references: [id])
+
+  @@index([userId, status])
+  @@map("sports_bets")
+}
+
+enum SportType {
+  FOOTBALL
+  BASKETBALL
+  GOLF
+  TENNIS
+  FORMULA1
+  BOXING
+  MMA
+  BASEBALL
+  HOCKEY
+}
+
+enum EventStatus {
+  UPCOMING
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================================
+// FINANCIAL PREDICTIONS
+// ============================================================
+
+model FinancialMarket {
+  id          String      @id @default(cuid())
+  symbol      String      // BTC, EUR/USD, S&P500 etc.
+  name        String
+  currentPrice Float
+  priceHistory Json       // array of {time, price}
+  isActive    Boolean     @default(true)
+  updatedAt   DateTime    @updatedAt
+
+  bets FinancialBet[]
+
+  @@map("financial_markets")
+}
+
+model FinancialBet {
+  id           String    @id @default(cuid())
+  userId       String
+  marketId     String
+  direction    String    // "up" or "down"
+  duration     Int       // seconds: 60, 300, 900, 3600
+  entryPrice   Float
+  exitPrice    Float?
+  amount       Float
+  odds         Float     @default(1.9) // typical binary odds minus house edge
+  status       BetStatus @default(PENDING)
+  result       BetResult?
+  payout       Float?
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+  resolvedAt   DateTime?
+
+  user   User            @relation(fields: [userId], references: [id])
+  market FinancialMarket @relation(fields: [marketId], references: [id])
+
+  @@index([userId, status])
+  @@map("financial_bets")
+}
+
+// ============================================================
+// REAL ESTATE
+// ============================================================
+
+model RealEstate {
+  id           String           @id @default(cuid())
+  name         String
+  type         PropertyType
+  location     String
+  area         String           // "beachfront", "city_center", "vip_district"
+  size         Float            // sq meters
+  basePrice    Float
+  currentPrice Float
+  markup       Float            @default(0.15) // 15% platform markup
+  isAvailable  Boolean          @default(true)
+  features     Json             // array of features
+  imageUrl     String?
+  model3dUrl   String?
+  capacity     Int              @default(1) // for events
+  createdAt    DateTime         @default(now())
+
+  ownerships Property[]
+
+  @@map("real_estate")
+}
+
+model Property {
+  id           String    @id @default(cuid())
+  userId       String
+  realEstateId String
+  purchasePrice Float
+  purchasedAt  DateTime  @default(now())
+  isForSale    Boolean   @default(false)
+  salePrice    Float?
+  canHostEvents Boolean  @default(false)
+
+  user       User       @relation(fields: [userId], references: [id])
+  realEstate RealEstate @relation(fields: [realEstateId], references: [id])
+
+  @@map("properties")
+}
+
+enum PropertyType {
+  APARTMENT
+  PENTHOUSE
+  VILLA
+  MANSION
+  COMMERCIAL
+  NIGHTCLUB
+  CASINO_SUITE
+}
+
+// ============================================================
+// VEHICLES
+// ============================================================
+
+model VehicleModel {
+  id          String      @id @default(cuid())
+  name        String
+  brand       String
+  type        VehicleType
+  speed       Int         // max speed stat
+  style       Int         // style/prestige stat
+  basePrice   Float
+  currentPrice Float
+  markup      Float       @default(0.12)
+  isAvailable Boolean     @default(true)
+  imageUrl    String?
+  model3dUrl  String?
+  color       String?
+  createdAt   DateTime    @default(now())
+
+  ownerships Vehicle[]
+
+  @@map("vehicle_models")
+}
+
+model Vehicle {
+  id            String    @id @default(cuid())
+  userId        String
+  vehicleModelId String
+  color         String
+  customization Json?
+  purchasePrice Float
+  purchasedAt   DateTime  @default(now())
+
+  user         User         @relation(fields: [userId], references: [id])
+  vehicleModel VehicleModel @relation(fields: [vehicleModelId], references: [id])
+
+  @@map("vehicles")
+}
+
+enum VehicleType {
+  SPORTS_CAR
+  LUXURY_SEDAN
+  MOTORCYCLE
+  YACHT
+  HELICOPTER
+  SUV
+  SUPERCAR
+}
+
+// ============================================================
+// INVENTORY / ITEMS / FASHION
+// ============================================================
+
+model Item {
+  id          String   @id @default(cuid())
+  name        String
+  category    ItemCategory
+  rarity      ItemRarity
+  price       Float
+  markup      Float    @default(0.10)
+  description String?
+  imageUrl    String?
+  isLimited   Boolean  @default(false)
+  totalSupply Int?
+  soldCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  inventoryItems InventoryItem[]
+  marketListings MarketListing[]
+
+  @@map("items")
+}
+
+model InventoryItem {
+  id         String   @id @default(cuid())
+  userId     String
+  itemId     String
+  equipped   Boolean  @default(false)
+  acquiredAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
+
+  @@map("inventory_items")
+}
+
+enum ItemCategory {
+  CLOTHING
+  ACCESSORY
+  FOOTWEAR
+  HAT
+  HAIR
+  FACE
+  EMOTE
+  EFFECT
+}
+
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+  EXCLUSIVE
+}
+
+// ============================================================
+// MARKETPLACE
+// ============================================================
+
+model MarketListing {
+  id          String        @id @default(cuid())
+  sellerId    String
+  itemId      String
+  price       Float
+  platformFee Float         @default(0.05) // 5% commission
+  status      ListingStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  soldAt      DateTime?
+
+  seller    User             @relation(fields: [sellerId], references: [id])
+  item      Item             @relation(fields: [itemId], references: [id])
+  purchases MarketPurchase[]
+
+  @@index([status, itemId])
+  @@map("market_listings")
+}
+
+model MarketPurchase {
+  id          String   @id @default(cuid())
+  buyerId     String
+  listingId   String
+  price       Float
+  platformFee Float
+  createdAt   DateTime @default(now())
+
+  buyer   User          @relation(fields: [buyerId], references: [id])
+  listing MarketListing @relation(fields: [listingId], references: [id])
+
+  @@map("market_purchases")
+}
+
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  CANCELLED
+}
+
+// ============================================================
+// SOCIAL & CLUBS
+// ============================================================
+
+model Club {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  ownerId     String
+  isPrivate   Boolean   @default(false)
+  logoUrl     String?
+  createdAt   DateTime  @default(now())
+
+  owner   User        @relation(fields: [ownerId], references: [id])
+  members ClubMember[]
+  events  ClubEvent[]
+
+  @@map("clubs")
+}
+
+model ClubMember {
+  id       String    @id @default(cuid())
+  clubId   String
+  userId   String
+  role     ClubRole  @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  club Club @relation(fields: [clubId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([clubId, userId])
+  @@map("club_members")
+}
+
+model ClubEvent {
+  id          String      @id @default(cuid())
+  clubId      String
+  name        String
+  description String?
+  type        EventType
+  entryFee    Float       @default(0)
+  platformCut Float       @default(0.10)
+  maxPlayers  Int?
+  status      EventStatus @default(UPCOMING)
+  startTime   DateTime
+  endTime     DateTime?
+  createdAt   DateTime    @default(now())
+
+  club         Club              @relation(fields: [clubId], references: [id])
+  participants EventParticipant[]
+
+  @@map("club_events")
+}
+
+model EventParticipant {
+  id      String @id @default(cuid())
+  eventId String
+  userId  String
+  paidFee Float
+
+  event ClubEvent @relation(fields: [eventId], references: [id])
+  user  User      @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+  @@map("event_participants")
+}
+
+enum ClubRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum EventType {
+  POKER_TOURNAMENT
+  SPORTS_TOURNAMENT
+  PARTY
+  VIP_GATHERING
+  RACING
+}
+
+// ============================================================
+// MESSAGING
+// ============================================================
+
+model Message {
+  id         String      @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  isRead     Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@index([senderId, receiverId])
+  @@map("messages")
+}
+
+// ============================================================
+// SUBSCRIPTIONS
+// ============================================================
+
+model SubscriptionPlan {
+  id           String   @id @default(cuid())
+  name         String
+  level        VIPLevel
+  priceMonthly Float
+  benefits     Json     // array of benefit strings
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id          String             @id @default(cuid())
+  userId      String
+  planId      String
+  status      SubscriptionStatus @default(ACTIVE)
+  startedAt   DateTime           @default(now())
+  expiresAt   DateTime
+  renewedAt   DateTime?
+  cancelledAt DateTime?
+
+  user User             @relation(fields: [userId], references: [id])
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PAUSED
+}
+
+// ============================================================
+// ACHIEVEMENTS & LEADERBOARD
+// ============================================================
+
+model Achievement {
+  id          String          @id @default(cuid())
+  name        String
+  description String
+  category    String
+  points      Int
+  iconUrl     String?
+  condition   Json            // criteria to unlock
+
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  BET_RESULT
+  TRANSACTION
+  ACHIEVEMENT
+  SOCIAL
+  SYSTEM
+  PROMOTION
+  EVENT
+}
+
+// ============================================================
+// ANALYTICS (Platform Revenue Tracking)
+// ============================================================
+
+model PlatformRevenue {
+  id         String      @id @default(cuid())
+  date       DateTime    @default(now())
+  source     RevenueSource
+  amount     Float
+  userId     String?
+  reference  String?
+  metadata   Json?
+
+  @@index([date, source])
+  @@map("platform_revenue")
+}
+
+enum RevenueSource {
+  HOUSE_EDGE
+  TOURNAMENT_FEE
+  MARKETPLACE_FEE
+  TRANSACTION_FEE
+  SUBSCRIPTION
+  REAL_ESTATE_MARKUP
+  VEHICLE_MARKUP
+  ITEM_MARKUP
+  EVENT_FEE
+  DEPOSIT_FEE
+  WITHDRAWAL_FEE
+}
