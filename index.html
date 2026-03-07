@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Luxury City</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="header">
+      <div class="header-left">
+        <h1 class="city-title">✦ VIRTUAL LUXURY CITY ✦</h1>
+        <span class="city-name" id="cityName">New Luxuria</span>
+      </div>
+      <div class="header-stats">
+        <div class="stat-badge">
+          <span class="stat-icon">💰</span>
+          <span class="stat-label">Treasury</span>
+          <span class="stat-value" id="statMoney">$1,000,000</span>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-icon">👥</span>
+          <span class="stat-label">Population</span>
+          <span class="stat-value" id="statPop">0</span>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-label">Prestige</span>
+          <span class="stat-value" id="statPrestige">0</span>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-icon">😊</span>
+          <span class="stat-label">Happiness</span>
+          <span class="stat-value" id="statHappiness">100%</span>
+        </div>
+        <div class="stat-badge income">
+          <span class="stat-icon">📈</span>
+          <span class="stat-label">Income/sec</span>
+          <span class="stat-value" id="statIncome">$0</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-speed" id="btnSpeed" title="Game Speed">▶ x1</button>
+        <button class="btn-gold" id="btnRename" title="Rename City">✏ Rename</button>
+      </div>
+    </header>
+
+    <!-- Main layout -->
+    <div id="main">
+      <!-- Left toolbar -->
+      <aside id="toolbar">
+        <div class="tool-section">
+          <h3 class="tool-heading">🔧 Tools</h3>
+          <button class="tool-btn active" data-tool="build" title="Build">🏗 Build</button>
+          <button class="tool-btn" data-tool="demolish" title="Demolish">💥 Demolish</button>
+          <button class="tool-btn" data-tool="info" title="Info">ℹ Info</button>
+        </div>
+        <div class="tool-section">
+          <h3 class="tool-heading">🏢 Buildings</h3>
+          <div id="buildingList"></div>
+        </div>
+        <div class="tool-section" id="selectedInfo" style="display:none">
+          <h3 class="tool-heading">📋 Selection</h3>
+          <div id="selectedDetails"></div>
+        </div>
+      </aside>
+
+      <!-- City canvas -->
+      <div id="cityView">
+        <canvas id="cityCanvas"></canvas>
+        <div id="tooltip" class="tooltip hidden"></div>
+        <div id="buildingPreview" class="building-preview hidden"></div>
+      </div>
+
+      <!-- Right panel -->
+      <aside id="rightPanel">
+        <div class="panel-section">
+          <h3 class="panel-heading">📊 City Report</h3>
+          <div id="cityReport"></div>
+        </div>
+        <div class="panel-section">
+          <h3 class="panel-heading">📰 News Feed</h3>
+          <div id="newsFeed"></div>
+        </div>
+        <div class="panel-section">
+          <h3 class="panel-heading">🏆 Achievements</h3>
+          <div id="achievements"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Notification toast -->
+    <div id="toastContainer"></div>
+
+    <!-- Modal overlay -->
+    <div id="modal" class="hidden">
+      <div class="modal-box">
+        <button class="modal-close" id="modalClose">✕</button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="buildings.js"></script>
+  <script src="city.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
