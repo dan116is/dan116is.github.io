@@ -90,10 +90,11 @@ async def execute_workflow(workflow_id: UUID, body: WorkflowExecuteRequest, db: 
     await db.commit()
     await db.refresh(execution)
 
-    # Notify WebSocket subscribers
-    await ws_manager.broadcast_to_tenant(
-        str(wf.tenant_id),
-        {"event": "execution_started", "execution_id": str(execution.id), "workflow_id": str(workflow_id)},
+    # Run execution engine in background
+    import asyncio
+    from api.services.execution_engine import ExecutionEngine
+    asyncio.get_event_loop().create_task(
+        ExecutionEngine().run(execution.id, simulate=True)
     )
 
     return _execution_out(execution)

@@ -5,8 +5,9 @@ import AgentsTab from "../components/agents/AgentsTab";
 import WorkflowsTab from "../components/workflows/WorkflowsTab";
 import AlertsTab from "../components/alerts/AlertsTab";
 import CostsTab from "../components/costs/CostsTab";
+import ActivityFeed from "../components/ActivityFeed";
 
-const TABS = ["Agents", "Workflows", "Alerts", "Costs"] as const;
+const TABS = ["Agents", "Workflows", "Alerts", "Costs", "Activity"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function ClientView() {
@@ -89,6 +90,7 @@ export default function ClientView() {
         {activeTab === "Workflows" && <WorkflowsTab tenantId={tenant.id} />}
         {activeTab === "Alerts" && <AlertsTab tenantId={tenant.id} />}
         {activeTab === "Costs" && <CostsTab tenantId={tenant.id} />}
+        {activeTab === "Activity" && <ActivityFeed tenantId={tenant.id} />}
       </main>
     </div>
   );

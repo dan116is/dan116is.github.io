@@ -1,12 +1,15 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.middleware.tenant import TenantMiddleware
-from api.routes import auth, tenants, agents, workflows, alerts, costs, ingest, users
+from api.routes import auth, tenants, agents, workflows, alerts, costs, ingest, users, audit
 from api.websocket.manager import ws_router
 from api.db import engine, Base
+from api.services.alert_evaluator import AlertEvaluator
+from api.services.heartbeat_monitor import HeartbeatMonitor
 
 
 @asynccontextmanager
@@ -14,6 +17,12 @@ async def lifespan(app: FastAPI):
     # startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Start background services
+    loop = asyncio.get_event_loop()
+    loop.create_task(AlertEvaluator().run())
+    loop.create_task(HeartbeatMonitor().run())
+
     yield
     # shutdown
     await engine.dispose()
@@ -45,6 +54,7 @@ app.include_router(workflows.router, prefix="/api", tags=["workflows"])
 app.include_router(alerts.router, prefix="/api", tags=["alerts"])
 app.include_router(costs.router, prefix="/api", tags=["costs"])
 app.include_router(ingest.router, prefix="/api/ingest", tags=["ingest"])
+app.include_router(audit.router, prefix="/api", tags=["audit"])
 
 # WebSocket routes
 app.include_router(ws_router, prefix="/api/ws", tags=["websocket"])

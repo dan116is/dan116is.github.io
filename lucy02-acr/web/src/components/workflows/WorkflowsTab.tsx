@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { api, type Workflow, type ExecutionDetail } from "../../lib/api";
 import WorkflowDiagram from "./WorkflowDiagram";
 import ExecutionList from "./ExecutionList";
+import { useLiveExecution } from "../../hooks/useLiveExecution";
 
 export default function WorkflowsTab({ tenantId }: { tenantId: string }) {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [selected, setSelected] = useState<Workflow | null>(null);
-  const [execution, setExecution] = useState<ExecutionDetail | null>(null);
+  const [activeExecutionId, setActiveExecutionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  const { execution } = useLiveExecution(activeExecutionId);
 
   useEffect(() => {
     api.workflows.list(tenantId).then((data) => {
@@ -22,16 +24,14 @@ export default function WorkflowsTab({ tenantId }: { tenantId: string }) {
     setRunning(true);
     try {
       const exec = await api.workflows.execute(selected.id);
-      const detail = await api.workflows.getExecution(exec.id);
-      setExecution(detail);
+      setActiveExecutionId(exec.id);
     } finally {
       setRunning(false);
     }
   };
 
-  const handleSelectExecution = async (execId: string) => {
-    const detail = await api.workflows.getExecution(execId);
-    setExecution(detail);
+  const handleSelectExecution = (execId: string) => {
+    setActiveExecutionId(execId);
   };
 
   if (loading) {

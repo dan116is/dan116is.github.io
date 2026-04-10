@@ -4,6 +4,7 @@ import { useAuth } from "./stores/auth";
 import Login from "./pages/Login";
 import GlobalDashboard from "./pages/GlobalDashboard";
 import ClientView from "./pages/ClientView";
+import Portal from "./pages/Portal";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<RequireAuth><GlobalDashboard /></RequireAuth>} />
         <Route path="/clients/:slug" element={<RequireAuth><ClientView /></RequireAuth>} />
+        <Route path="/portal/:slug" element={<RequireAuth><Portal /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
