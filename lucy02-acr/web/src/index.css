@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #08080F;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* React Flow overrides */
+.react-flow__background {
+  background: transparent;
+}
+
+.react-flow__controls-button {
+  background: rgba(255,255,255,0.04) !important;
+  border: none !important;
+  color: #9CA3AF !important;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(255,255,255,0.08) !important;
+}
