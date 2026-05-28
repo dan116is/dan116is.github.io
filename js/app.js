@@ -39,7 +39,7 @@ const App = (() => {
 
   function setupNav() {
     document.querySelectorAll('.nav-btn').forEach((btn) => {
-      btn.addEventListener('click', () => setView(btn.dataset.view));
+      btn.addEventListener('click', () => { haptic(8); setView(btn.dataset.view); });
     });
     window.addEventListener('hashchange', () => {
       const v = parseHashView();
@@ -72,7 +72,40 @@ const App = (() => {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = 'toast ' + kind;
-    setTimeout(() => t.classList.add('hidden'), 2500);
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => t.classList.add('hidden'), 2500);
+  }
+
+  function haptic(ms = 12) {
+    if (navigator.vibrate) navigator.vibrate(ms);
+  }
+
+  // Themed confirm sheet, returns a Promise<boolean>.
+  function confirmDialog({ title = 'אישור', message = '', okText = 'אישור', icon = '⚠️', danger = true } = {}) {
+    return new Promise((resolve) => {
+      const el = document.getElementById('confirm');
+      document.getElementById('confirm-icon').textContent = icon;
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-msg').textContent = message;
+      const okBtn = document.getElementById('confirm-ok');
+      const cancelBtn = document.getElementById('confirm-cancel');
+      okBtn.textContent = okText;
+      okBtn.className = danger ? 'danger-btn' : 'primary-btn';
+      el.classList.remove('hidden');
+
+      function cleanup(result) {
+        el.classList.add('hidden');
+        okBtn.removeEventListener('click', onOk);
+        cancelBtn.removeEventListener('click', onCancel);
+        el.querySelector('.confirm-backdrop').removeEventListener('click', onCancel);
+        resolve(result);
+      }
+      function onOk() { haptic(); cleanup(true); }
+      function onCancel() { cleanup(false); }
+      okBtn.addEventListener('click', onOk);
+      cancelBtn.addEventListener('click', onCancel);
+      el.querySelector('.confirm-backdrop').addEventListener('click', onCancel);
+    });
   }
 
   function setupHandlers() {
@@ -101,8 +134,9 @@ const App = (() => {
     document.getElementById('shop-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addShoppingFromInput();
     });
-    document.getElementById('clear-bought-btn').addEventListener('click', () => {
-      if (!confirm('למחוק את כל מה שנקנה?')) return;
+    document.getElementById('clear-bought-btn').addEventListener('click', async () => {
+      const ok = await confirmDialog({ title: 'ניקוי רשימה', message: 'למחוק את כל הפריטים שנקנו?', okText: 'נקה', icon: '🧹' });
+      if (!ok) return;
       Shopping.clearBought();
       renderAll();
       toast('נוקה', 'success');
@@ -155,12 +189,13 @@ const App = (() => {
     document.getElementById('import-btn').addEventListener('click', () => {
       document.getElementById('import-file').click();
     });
-    document.getElementById('import-file').addEventListener('change', (e) => {
+    document.getElementById('import-file').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      if (!confirm('הייבוא ידרוס את כל הנתונים הקיימים. להמשיך?')) return;
-      Settings.importBackup(file, (ok) => {
-        if (ok) {
+      const ok = await confirmDialog({ title: 'ייבוא גיבוי', message: 'הייבוא ידרוס את כל הנתונים הקיימים. להמשיך?', okText: 'ייבא', icon: '⬆️' });
+      if (!ok) { e.target.value = ''; return; }
+      Settings.importBackup(file, (success) => {
+        if (success) {
           renderAll();
           toast('הגיבוי יובא בהצלחה', 'success');
         } else {
@@ -169,14 +204,18 @@ const App = (() => {
       });
       e.target.value = '';
     });
-    document.getElementById('reset-btn').addEventListener('click', () => {
-      const txt = prompt('זה ימחק את כל הנתונים. הקלד "מחק" כדי לאשר.');
-      if (txt === 'מחק') {
-        DB.reset();
-        Settings.seedDefaultFamily();
-        renderAll();
-        toast('הכל נמחק', 'success');
-      }
+    document.getElementById('reset-btn').addEventListener('click', async () => {
+      const ok = await confirmDialog({
+        title: 'מחיקת כל הנתונים',
+        message: 'פעולה זו תמחק לצמיתות את כל התרופות, הקניות, המשימות וההוצאות. מומלץ לעשות גיבוי קודם. למחוק הכל?',
+        okText: 'מחק הכל',
+        icon: '🗑️'
+      });
+      if (!ok) return;
+      DB.reset();
+      Settings.seedDefaultFamily();
+      renderAll();
+      toast('הכל נמחק', 'success');
     });
   }
 
@@ -211,10 +250,11 @@ const App = (() => {
     });
   }
 
-  function onMedListClick(e) {
+  async function onMedListClick(e) {
     const t = e.target.closest('button');
     if (!t) return;
     if (t.dataset.medTake) {
+      haptic();
       Medications.takeDose(t.dataset.medTake);
       renderAll();
       toast('סומן כנלקח', 'success');
@@ -222,7 +262,9 @@ const App = (() => {
       const med = DB.findById(DB.KEYS.meds, t.dataset.medEdit);
       if (med) showMedForm(med);
     } else if (t.dataset.medDel) {
-      if (!confirm('למחוק את התרופה?')) return;
+      const med = DB.findById(DB.KEYS.meds, t.dataset.medDel);
+      const ok = await confirmDialog({ title: 'מחיקת תרופה', message: `למחוק את "${med ? med.name : ''}"?`, okText: 'מחק', icon: '💊' });
+      if (!ok) return;
       Medications.remove(t.dataset.medDel);
       renderAll();
       toast('נמחק', 'success');
@@ -245,6 +287,7 @@ const App = (() => {
     const t = e.target.closest('button');
     if (!t) return;
     if (t.dataset.shopToggle) {
+      haptic();
       Shopping.toggle(t.dataset.shopToggle);
       renderAll();
     } else if (t.dataset.shopDel) {
@@ -269,17 +312,20 @@ const App = (() => {
     });
   }
 
-  function onTaskListClick(e) {
+  async function onTaskListClick(e) {
     const t = e.target.closest('button');
     if (!t) return;
     if (t.dataset.taskToggle) {
+      haptic();
       Tasks.toggle(t.dataset.taskToggle);
       renderAll();
     } else if (t.dataset.taskEdit) {
       const task = DB.findById(DB.KEYS.tasks, t.dataset.taskEdit);
       if (task) showTaskForm(task);
     } else if (t.dataset.taskDel) {
-      if (!confirm('למחוק את המשימה?')) return;
+      const task = DB.findById(DB.KEYS.tasks, t.dataset.taskDel);
+      const ok = await confirmDialog({ title: 'מחיקת משימה', message: `למחוק את "${task ? task.title : ''}"?`, okText: 'מחק', icon: '📋' });
+      if (!ok) return;
       Tasks.remove(t.dataset.taskDel);
       renderAll();
       toast('נמחק', 'success');
@@ -303,14 +349,15 @@ const App = (() => {
     });
   }
 
-  function onExpenseListClick(e) {
+  async function onExpenseListClick(e) {
     const t = e.target.closest('button');
     if (!t) return;
     if (t.dataset.expEdit) {
       const exp = DB.findById(DB.KEYS.expenses, t.dataset.expEdit);
       if (exp) showExpenseForm(exp);
     } else if (t.dataset.expDel) {
-      if (!confirm('למחוק את ההוצאה?')) return;
+      const ok = await confirmDialog({ title: 'מחיקת הוצאה', message: 'למחוק את ההוצאה הזו?', okText: 'מחק', icon: '💰' });
+      if (!ok) return;
       Budget.remove(t.dataset.expDel);
       renderAll();
       toast('נמחק', 'success');
@@ -347,6 +394,7 @@ const App = (() => {
   // ----- Dashboard -----
   function renderDashboard() {
     const today = new Date();
+    document.getElementById('greeting').textContent = greetingText(today);
     document.getElementById('today-date').textContent =
       today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -363,6 +411,15 @@ const App = (() => {
     document.getElementById('stat-budget').textContent = Budget.format(Budget.totalForMonth(Budget.monthKey()));
 
     renderDashboardAlerts();
+  }
+
+  function greetingText(d) {
+    const h = d.getHours();
+    if (h < 6) return 'לילה טוב 🌙';
+    if (h < 12) return 'בוקר טוב ☀️';
+    if (h < 18) return 'צהריים טובים 🌤️';
+    if (h < 22) return 'ערב טוב 🌆';
+    return 'לילה טוב 🌙';
   }
 
   function renderDashboardAlerts() {
