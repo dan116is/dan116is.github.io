@@ -29,7 +29,7 @@ const Settings = (() => {
 
   function seedDefaultFamily() {
     if (family().length > 0) return;
-    const defaults = ['הילה', 'גפן', 'אורי'];
+    const defaults = ['דניאל', 'הילה', 'גפן', 'אורי'];
     for (const name of defaults) addMember(name);
   }
 

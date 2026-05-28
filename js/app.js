@@ -15,8 +15,12 @@ const App = (() => {
     registerServiceWorker();
     setView(parseHashView() || 'dashboard');
     renderAll();
+    if (window.Weather) Weather.start();
     Notifier.start();
     setInterval(renderAll, 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && window.Weather) Weather.paint();
+    });
   }
 
   function parseHashView() {
@@ -115,6 +119,13 @@ const App = (() => {
     });
     document.querySelectorAll('.quick-btn').forEach((btn) => {
       btn.addEventListener('click', () => handleQuickAction(btn.dataset.action));
+    });
+
+    // Dashboard live widgets (delegated)
+    document.getElementById('view-dashboard').addEventListener('click', onDashClick);
+    document.getElementById('dash-shop-add').addEventListener('click', addDashShopping);
+    document.getElementById('dash-shop-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addDashShopping();
     });
 
     // Medications view
@@ -230,6 +241,41 @@ const App = (() => {
     } else if (action === 'add-med') {
       showMedForm();
     }
+  }
+
+  // ----- Dashboard live widgets -----
+  function onDashClick(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.id === 'weather-refresh') {
+      haptic();
+      if (window.Weather) Weather.refresh(true);
+    } else if (btn.dataset.taskToggle) {
+      haptic();
+      Tasks.toggle(btn.dataset.taskToggle);
+      renderAll();
+    } else if (btn.dataset.shopToggle) {
+      haptic();
+      Shopping.toggle(btn.dataset.shopToggle);
+      renderAll();
+    } else if (btn.dataset.medTake) {
+      haptic();
+      Medications.takeDose(btn.dataset.medTake);
+      renderAll();
+      toast('סומן כנלקח', 'success');
+    } else if (btn.classList.contains('link-btn') && btn.dataset.view) {
+      setView(btn.dataset.view);
+    }
+  }
+
+  function addDashShopping() {
+    const input = document.getElementById('dash-shop-input');
+    const v = input.value.trim();
+    if (!v) return;
+    Shopping.add(v, 'מזון');
+    input.value = '';
+    haptic();
+    renderAll();
   }
 
   // ----- Medications handlers -----
@@ -392,9 +438,17 @@ const App = (() => {
   }
 
   // ----- Dashboard -----
+  function esc(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function ownerName() {
+    return (DB.getSettings().ownerName || 'דניאל');
+  }
+
   function renderDashboard() {
     const today = new Date();
-    document.getElementById('greeting').textContent = greetingText(today);
+    document.getElementById('greeting').textContent = `${greetingText(today)}, ${ownerName()}`;
     document.getElementById('today-date').textContent =
       today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -410,7 +464,11 @@ const App = (() => {
 
     document.getElementById('stat-budget').textContent = Budget.format(Budget.totalForMonth(Budget.monthKey()));
 
-    renderDashboardAlerts();
+    if (window.Weather) Weather.paint();
+    renderDashTasks();
+    renderDashShopping();
+    renderDashMeds();
+    renderDashBudget();
   }
 
   function greetingText(d) {
@@ -422,65 +480,83 @@ const App = (() => {
     return 'לילה טוב 🌙';
   }
 
-  function renderDashboardAlerts() {
-    const alerts = [];
-    for (const med of Medications.list()) {
-      const s = Medications.statusOf(med);
-      if (s.level === 'danger' || s.level === 'warning') {
-        alerts.push({
-          level: s.level,
-          title: '💊 ' + med.name,
-          sub: s.text
-        });
-      }
-    }
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const overdueTasks = Tasks.list().filter((t) => !t.done && t.dueDate && t.dueDate < todayKey);
-    const todayTasks = Tasks.list().filter((t) => !t.done && t.dueDate === todayKey);
-    if (overdueTasks.length > 0) {
-      alerts.push({
-        level: 'danger',
-        title: `📋 ${overdueTasks.length} משימות באיחור`,
-        sub: overdueTasks.slice(0, 2).map((t) => t.title).join(', ')
-      });
-    }
-    if (todayTasks.length > 0) {
-      alerts.push({
-        level: 'warning',
-        title: `📋 ${todayTasks.length} משימות להיום`,
-        sub: todayTasks.slice(0, 2).map((t) => t.title).join(', ')
-      });
-    }
-
-    const mKey = Budget.monthKey();
-    const limit = Budget.getBudget(mKey);
-    const total = Budget.totalForMonth(mKey);
-    if (limit > 0 && total > limit) {
-      alerts.push({
-        level: 'danger',
-        title: '💰 חרגת מהתקציב',
-        sub: `הוצאת ${Budget.format(total)} מתוך ${Budget.format(limit)}`
-      });
-    } else if (limit > 0 && total > limit * 0.8) {
-      alerts.push({
-        level: 'warning',
-        title: '💰 קרוב לסוף התקציב',
-        sub: `הוצאת ${Budget.format(total)} מתוך ${Budget.format(limit)}`
-      });
-    }
-
-    const container = document.getElementById('dashboard-alerts');
-    if (alerts.length === 0) {
-      container.innerHTML = '';
+  function renderDashTasks() {
+    const el = document.getElementById('dash-tasks');
+    const today = new Date().toISOString().slice(0, 10);
+    const items = Tasks.list()
+      .filter((t) => !t.done && (!t.dueDate || t.dueDate <= today))
+      .sort((a, b) => (a.dueDate || '9999-12-31') < (b.dueDate || '9999-12-31') ? -1 : 1)
+      .slice(0, 5);
+    if (!items.length) {
+      el.innerHTML = `<div class="dash-empty">אין משימות להיום 🎉</div>`;
       return;
     }
-    container.innerHTML = `<h3 class="section-h">דברים שדורשים תשומת לב</h3>` +
-      alerts.slice(0, 6).map((a) => `
-        <div class="alert-item ${a.level}">
-          <div class="alert-item-title">${a.title}</div>
-          <div class="alert-item-sub">${a.sub}</div>
-        </div>
-      `).join('');
+    el.innerHTML = items.map((t) => {
+      const overdue = t.dueDate && t.dueDate < today;
+      const tag = overdue ? '<span class="tag danger">באיחור</span>'
+        : t.dueDate === today ? '<span class="tag warning">היום</span>' : '';
+      const who = t.forWhom ? `<span class="tag">${esc(t.forWhom)}</span>` : '';
+      return `<div class="dash-item ${overdue ? 'danger' : ''}">
+        <button class="item-check" data-task-toggle="${t.id}" aria-label="סמן"></button>
+        <span class="dash-item-title">${esc(t.title)}</span>
+        ${tag}${who}
+      </div>`;
+    }).join('');
+  }
+
+  function renderDashShopping() {
+    const el = document.getElementById('dash-shopping');
+    const items = Shopping.list().filter((i) => !i.bought);
+    if (!items.length) {
+      el.innerHTML = `<div class="dash-empty">הרשימה ריקה ✨</div>`;
+      return;
+    }
+    const shown = items.slice(0, 6);
+    const more = items.length - shown.length;
+    el.innerHTML = shown.map((it) => `
+      <div class="dash-item">
+        <button class="item-check" data-shop-toggle="${it.id}" aria-label="סמן"></button>
+        <span class="dash-item-title">${esc(it.name)} ${it.qty ? `<span class="muted">· ${esc(it.qty)}</span>` : ''}</span>
+        <span class="tag">${esc(it.category || 'אחר')}</span>
+      </div>`).join('') +
+      (more > 0 ? `<div class="dash-empty">ועוד ${more} פריטים…</div>` : '');
+  }
+
+  function renderDashMeds() {
+    const widget = document.getElementById('dash-meds-widget');
+    const el = document.getElementById('dash-meds');
+    const meds = Medications.list()
+      .map((m) => ({ m, s: Medications.statusOf(m) }))
+      .filter((x) => x.s.level === 'warning' || x.s.level === 'danger');
+    if (!meds.length) {
+      widget.hidden = true;
+      return;
+    }
+    widget.hidden = false;
+    el.innerHTML = meds.slice(0, 4).map(({ m, s }) => `
+      <div class="dash-item ${s.level}">
+        <span class="dash-item-title">${esc(m.name)} ${m.dose ? `<span class="muted">${esc(m.dose)}</span>` : ''}</span>
+        <span class="tag ${s.level}">${s.text}</span>
+        <button class="icon-btn" data-med-take="${m.id}" title="לקחתי מנה">✓</button>
+      </div>`).join('');
+  }
+
+  function renderDashBudget() {
+    const el = document.getElementById('dash-budget');
+    const mKey = Budget.monthKey();
+    const total = Budget.totalForMonth(mKey);
+    const limit = Budget.getBudget(mKey);
+    const pct = limit > 0 ? Math.min(100, (total / limit) * 100) : 0;
+    const left = limit - total;
+    const cls = pct >= 100 ? 'danger' : pct >= 80 ? 'warning' : 'success';
+    el.innerHTML = `
+      <div class="dash-budget-row">
+        <span class="dash-item-title">הוצאת ${Budget.format(total)}${limit > 0 ? ` מתוך ${Budget.format(limit)}` : ''}</span>
+        ${limit > 0 ? `<span class="tag ${cls}">${left >= 0 ? 'נשאר ' + Budget.format(left) : 'חריגה ' + Budget.format(-left)}</span>` : ''}
+      </div>
+      ${limit > 0
+        ? `<div class="budget-bar"><div class="budget-bar-fill ${pct >= 100 ? 'danger' : pct >= 80 ? 'warning' : ''}" style="width:${pct}%"></div></div>`
+        : `<div class="dash-empty">לא הוגדר תקציב חודשי — אפשר להגדיר במסך התקציב</div>`}`;
   }
 
   function renderCurrentView() {

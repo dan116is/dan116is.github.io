@@ -1,10 +1,11 @@
-const CACHE_NAME = 'habait-v2';
+const CACHE_NAME = 'habait-v3';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './manifest.json',
   './js/db.js',
+  './js/weather.js',
   './js/notifications.js',
   './js/medications.js',
   './js/shopping.js',
