@@ -22,7 +22,7 @@
     <!-- Dashboard -->
     <section id="view-dashboard" class="view active">
       <div class="welcome">
-        <h2>שלום!</h2>
+        <h2 id="greeting">שלום!</h2>
         <p class="welcome-sub" id="today-date"></p>
       </div>
 
@@ -184,7 +184,7 @@
         <h3>אזור מסוכן</h3>
         <button class="danger-btn" id="reset-btn">מחק את כל הנתונים</button>
       </div>
-      <div class="app-version">גרסה 1.0.0 · נבנה במיוחד עבורך</div>
+      <div class="app-version">גרסה 1.1.0 · נבנה במיוחד עבורך</div>
     </section>
   </main>
 
@@ -224,6 +224,20 @@
         <button class="close-btn" id="modal-close" aria-label="סגור">×</button>
       </div>
       <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Confirm dialog -->
+  <div id="confirm" class="confirm hidden">
+    <div class="confirm-backdrop"></div>
+    <div class="confirm-box">
+      <div class="confirm-icon" id="confirm-icon">⚠️</div>
+      <div class="confirm-title" id="confirm-title"></div>
+      <div class="confirm-msg" id="confirm-msg"></div>
+      <div class="confirm-actions">
+        <button class="ghost-btn" id="confirm-cancel">ביטול</button>
+        <button class="danger-btn" id="confirm-ok">אישור</button>
+      </div>
     </div>
   </div>
 
