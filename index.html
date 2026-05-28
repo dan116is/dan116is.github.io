@@ -6,15 +6,15 @@
   <meta name="theme-color" content="#0ea5e9">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="הבית שלי">
+  <meta name="apple-mobile-web-app-title" content="משפחת ישראלי">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="styles.css">
-  <title>הבית שלי - ניהול משפחה</title>
+  <title>משפחת ישראלי</title>
 </head>
 <body>
   <header class="app-header">
-    <h1 id="page-title">הבית שלי</h1>
+    <h1 id="page-title">משפחת ישראלי</h1>
     <button id="install-btn" class="install-btn hidden" aria-label="התקן">התקן</button>
   </header>
 
@@ -24,6 +24,11 @@
       <div class="welcome">
         <h2 id="greeting">שלום!</h2>
         <p class="welcome-sub" id="today-date"></p>
+      </div>
+
+      <!-- Weather + clothing -->
+      <div class="weather-card" id="weather-card">
+        <div class="weather-skeleton">טוען מזג אוויר…</div>
       </div>
 
       <div class="quick-stats">
@@ -51,7 +56,45 @@
         </div>
       </div>
 
-      <div class="dashboard-alerts" id="dashboard-alerts"></div>
+      <!-- Today's tasks -->
+      <div class="dash-widget">
+        <div class="dash-widget-head">
+          <h3>📋 משימות היום</h3>
+          <button class="link-btn" data-view="tasks">הכל ›</button>
+        </div>
+        <div id="dash-tasks" class="dash-list"></div>
+      </div>
+
+      <!-- Shopping -->
+      <div class="dash-widget">
+        <div class="dash-widget-head">
+          <h3>🛒 רשימת קניות</h3>
+          <button class="link-btn" data-view="shopping">הכל ›</button>
+        </div>
+        <div class="dash-quick-add">
+          <input type="text" id="dash-shop-input" placeholder="הוסף פריט מהיר…" autocomplete="off">
+          <button class="primary-btn" id="dash-shop-add" aria-label="הוסף">+</button>
+        </div>
+        <div id="dash-shopping" class="dash-list"></div>
+      </div>
+
+      <!-- Medications needing attention -->
+      <div class="dash-widget" id="dash-meds-widget" hidden>
+        <div class="dash-widget-head">
+          <h3>💊 תרופות לתשומת לב</h3>
+          <button class="link-btn" data-view="medications">הכל ›</button>
+        </div>
+        <div id="dash-meds" class="dash-list"></div>
+      </div>
+
+      <!-- Budget -->
+      <div class="dash-widget">
+        <div class="dash-widget-head">
+          <h3>💰 תקציב החודש</h3>
+          <button class="link-btn" data-view="budget">פירוט ›</button>
+        </div>
+        <div id="dash-budget"></div>
+      </div>
 
       <div class="quick-actions">
         <h3>פעולות מהירות</h3>
@@ -245,6 +288,7 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="js/db.js"></script>
+  <script src="js/weather.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/medications.js"></script>
   <script src="js/shopping.js"></script>
