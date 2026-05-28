@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="הבית שלי">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>הבית שלי - ניהול משפחה</title>
+</head>
+<body>
+  <header class="app-header">
+    <h1 id="page-title">הבית שלי</h1>
+    <button id="install-btn" class="install-btn hidden" aria-label="התקן">התקן</button>
+  </header>
+
+  <main id="app-content">
+    <!-- Dashboard -->
+    <section id="view-dashboard" class="view active">
+      <div class="welcome">
+        <h2>שלום!</h2>
+        <p class="welcome-sub" id="today-date"></p>
+      </div>
+
+      <div class="quick-stats">
+        <div class="stat-card" data-target="medications">
+          <div class="stat-icon">💊</div>
+          <div class="stat-value" id="stat-meds">0</div>
+          <div class="stat-label">תרופות פעילות</div>
+          <div class="stat-alert" id="alert-meds"></div>
+        </div>
+        <div class="stat-card" data-target="shopping">
+          <div class="stat-icon">🛒</div>
+          <div class="stat-value" id="stat-shopping">0</div>
+          <div class="stat-label">פריטים לקנייה</div>
+        </div>
+        <div class="stat-card" data-target="tasks">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value" id="stat-tasks">0</div>
+          <div class="stat-label">משימות פתוחות</div>
+          <div class="stat-alert" id="alert-tasks"></div>
+        </div>
+        <div class="stat-card" data-target="budget">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="stat-budget">₪0</div>
+          <div class="stat-label">הוצאות החודש</div>
+        </div>
+      </div>
+
+      <div class="dashboard-alerts" id="dashboard-alerts"></div>
+
+      <div class="quick-actions">
+        <h3>פעולות מהירות</h3>
+        <div class="quick-actions-grid">
+          <button class="quick-btn" data-action="add-shopping">+ פריט לקנייה</button>
+          <button class="quick-btn" data-action="add-expense">+ הוצאה</button>
+          <button class="quick-btn" data-action="add-task">+ משימה</button>
+          <button class="quick-btn" data-action="add-med">+ תרופה</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Medications -->
+    <section id="view-medications" class="view">
+      <div class="view-toolbar">
+        <h2>תרופות</h2>
+        <button class="primary-btn" id="add-med-btn">+ הוסף תרופה</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">הכל</button>
+        <button class="filter-btn" data-filter="expiring">תוקף קרוב</button>
+        <button class="filter-btn" data-filter="low">מלאי נמוך</button>
+      </div>
+      <div id="med-list" class="card-list"></div>
+    </section>
+
+    <!-- Shopping -->
+    <section id="view-shopping" class="view">
+      <div class="view-toolbar">
+        <h2>רשימת קניות</h2>
+        <div class="toolbar-actions">
+          <button class="ghost-btn" id="clear-bought-btn">נקה שנקנו</button>
+        </div>
+      </div>
+      <div class="add-inline">
+        <input type="text" id="shop-input" placeholder="הוסף פריט (למשל: חלב 2 ליטר)" autocomplete="off">
+        <select id="shop-category">
+          <option value="מזון">מזון</option>
+          <option value="ירקות ופירות">ירקות ופירות</option>
+          <option value="ניקיון">ניקיון</option>
+          <option value="טיפוח">טיפוח</option>
+          <option value="תרופות">תרופות</option>
+          <option value="אחר">אחר</option>
+        </select>
+        <button class="primary-btn" id="shop-add-btn">הוסף</button>
+      </div>
+      <div id="shop-list" class="card-list grouped"></div>
+    </section>
+
+    <!-- Tasks -->
+    <section id="view-tasks" class="view">
+      <div class="view-toolbar">
+        <h2>משימות ולוח שנה</h2>
+        <button class="primary-btn" id="add-task-btn">+ הוסף משימה</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-task-filter="all">הכל</button>
+        <button class="filter-btn" data-task-filter="today">היום</button>
+        <button class="filter-btn" data-task-filter="week">השבוע</button>
+        <button class="filter-btn" data-task-filter="overdue">באיחור</button>
+        <button class="filter-btn" data-task-filter="done">הושלמו</button>
+      </div>
+      <div id="task-list" class="card-list"></div>
+    </section>
+
+    <!-- Budget -->
+    <section id="view-budget" class="view">
+      <div class="view-toolbar">
+        <h2>תקציב והוצאות</h2>
+        <button class="primary-btn" id="add-expense-btn">+ הוסף הוצאה</button>
+      </div>
+      <div class="budget-summary">
+        <div class="budget-month">
+          <label>חודש:</label>
+          <input type="month" id="budget-month">
+        </div>
+        <div class="budget-cards">
+          <div class="budget-card">
+            <div class="budget-label">הוצאות החודש</div>
+            <div class="budget-value" id="budget-total">₪0</div>
+          </div>
+          <div class="budget-card">
+            <div class="budget-label">תקציב חודשי</div>
+            <div class="budget-value">
+              <input type="number" id="budget-limit" placeholder="0" inputmode="numeric">
+              <span>₪</span>
+            </div>
+          </div>
+          <div class="budget-card">
+            <div class="budget-label">נשאר</div>
+            <div class="budget-value" id="budget-left">₪0</div>
+            <div class="budget-bar"><div class="budget-bar-fill" id="budget-bar-fill"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="budget-categories" id="budget-categories"></div>
+      <h3 class="section-h">הוצאות אחרונות</h3>
+      <div id="expense-list" class="card-list"></div>
+    </section>
+
+    <!-- Settings -->
+    <section id="view-settings" class="view">
+      <div class="view-toolbar">
+        <h2>הגדרות</h2>
+      </div>
+      <div class="settings-section">
+        <h3>בני משפחה</h3>
+        <p class="hint">מי במשפחה שלך? משתמש במשימות וברשימות.</p>
+        <div id="family-list"></div>
+        <div class="add-inline">
+          <input type="text" id="family-input" placeholder="שם" autocomplete="off">
+          <button class="primary-btn" id="family-add-btn">הוסף</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>התראות</h3>
+        <button class="primary-btn" id="enable-notif-btn">הפעל התראות</button>
+        <p class="hint" id="notif-status"></p>
+      </div>
+      <div class="settings-section">
+        <h3>גיבוי ושחזור</h3>
+        <p class="hint">הנתונים נשמרים רק במכשיר. כדאי לעשות גיבוי מדי פעם.</p>
+        <div class="settings-actions">
+          <button class="primary-btn" id="export-btn">⬇ הורד גיבוי</button>
+          <button class="ghost-btn" id="import-btn">⬆ ייבא גיבוי</button>
+          <input type="file" id="import-file" accept=".json" hidden>
+        </div>
+      </div>
+      <div class="settings-section danger-zone">
+        <h3>אזור מסוכן</h3>
+        <button class="danger-btn" id="reset-btn">מחק את כל הנתונים</button>
+      </div>
+      <div class="app-version">גרסה 1.0.0 · נבנה במיוחד עבורך</div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="dashboard">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">בית</span>
+    </button>
+    <button class="nav-btn" data-view="shopping">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">קניות</span>
+    </button>
+    <button class="nav-btn" data-view="tasks">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">משימות</span>
+    </button>
+    <button class="nav-btn" data-view="budget">
+      <span class="nav-icon">💰</span>
+      <span class="nav-label">תקציב</span>
+    </button>
+    <button class="nav-btn" data-view="medications">
+      <span class="nav-icon">💊</span>
+      <span class="nav-label">תרופות</span>
+    </button>
+    <button class="nav-btn" data-view="settings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">הגדרות</span>
+    </button>
+  </nav>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">חדש</h3>
+        <button class="close-btn" id="modal-close" aria-label="סגור">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/db.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/medications.js"></script>
+  <script src="js/shopping.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/budget.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
