@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habait-v4';
+const CACHE_NAME = 'habait-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -35,21 +35,26 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-first for our own files so updates appear immediately when online;
+// falls back to cache when offline. Cross-origin requests (weather, football)
+// are left to the browser.
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetched = fetch(event.request)
-        .then((res) => {
-          if (res && res.status === 200 && res.type === 'basic') {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || fetched;
-    })
+    fetch(req)
+      .then((res) => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+        }
+        return res;
+      })
+      .catch(() =>
+        caches.match(req).then((cached) => cached || caches.match('./index.html'))
+      )
   );
 });
 
