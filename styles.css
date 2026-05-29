@@ -950,3 +950,93 @@ body.has-photo #view-dashboard .welcome h2 { text-shadow: 0 2px 12px rgba(0,0,0,
   body::before { animation: none !important; }
   .music-eq i { animation: none !important; }
 }
+
+/* =========================================================
+   2045 refinement — white · glass · cyan (תכלת), futuristic
+   A final cascade layer: unifies the palette to white + cyan,
+   calms the background, and keeps depth subtle and intentional.
+   ========================================================= */
+:root {
+  --bg: #eef4f9;
+  --bg-grad:
+    radial-gradient(820px 460px at 100% -10%, rgba(34,196,239,0.16), transparent 60%),
+    radial-gradient(760px 440px at -10% 6%, rgba(10,158,214,0.13), transparent 58%),
+    radial-gradient(900px 620px at 50% 120%, rgba(91,141,239,0.07), transparent 62%);
+  --glass: rgba(255,255,255,0.64);
+  --glass-strong: rgba(255,255,255,0.82);
+  --bg-elev: rgba(255,255,255,0.66);
+  --bg-elev-2: rgba(10,140,200,0.08);
+  --text: #0c1c28;
+  --text-muted: #5d7488;
+  --primary: #0a9ed6;
+  --primary-strong: #0784b4;
+  --primary-grad: linear-gradient(135deg, #2bc4ef 0%, #0a9ed6 100%);
+  --success: #14b8a0;
+  --warning: #f0a826;
+  --danger: #f25563;
+  --border: rgba(12,60,90,0.10);
+  --border-strong: rgba(12,60,90,0.16);
+  --radius: 26px;
+  --radius-sm: 16px;
+  --shadow: 0 22px 54px rgba(12,80,120,0.13);
+  --shadow-sm: 0 10px 30px rgba(12,80,120,0.08);
+  --c-meds: #6a8cf0;
+  --c-shopping: #16bfa0;
+  --c-tasks: #f5b14b;
+  --c-budget: #f283a8;
+  --c-beitar: #ffcb05;
+  --c-calendar: #5b8def;
+}
+:root[data-theme="dark"],
+:root[data-theme="dark"] body {
+  --bg: #05111a;
+  --bg-grad:
+    radial-gradient(820px 460px at 100% -10%, rgba(34,196,239,0.22), transparent 60%),
+    radial-gradient(760px 440px at -10% 6%, rgba(10,158,214,0.17), transparent 58%),
+    radial-gradient(900px 620px at 50% 120%, rgba(91,141,239,0.12), transparent 62%);
+  --glass: rgba(16,28,40,0.55);
+  --glass-strong: rgba(16,28,40,0.74);
+  --bg-elev: rgba(18,32,46,0.58);
+  --bg-elev-2: rgba(255,255,255,0.06);
+  --text: #eaf3f8;
+  --text-muted: #8aa1b2;
+  --border: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.18);
+  --shadow: 0 22px 54px rgba(0,0,0,0.6);
+  --shadow-sm: 0 10px 30px rgba(0,0,0,0.5);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --bg: #05111a;
+    --bg-grad:
+      radial-gradient(820px 460px at 100% -10%, rgba(34,196,239,0.22), transparent 60%),
+      radial-gradient(760px 440px at -10% 6%, rgba(10,158,214,0.17), transparent 58%),
+      radial-gradient(900px 620px at 50% 120%, rgba(91,141,239,0.12), transparent 62%);
+    --glass: rgba(16,28,40,0.55);
+    --glass-strong: rgba(16,28,40,0.74);
+    --bg-elev: rgba(18,32,46,0.58);
+    --bg-elev-2: rgba(255,255,255,0.06);
+    --text: #eaf3f8;
+    --text-muted: #8aa1b2;
+    --border: rgba(255,255,255,0.10);
+    --border-strong: rgba(255,255,255,0.18);
+    --shadow: 0 22px 54px rgba(0,0,0,0.6);
+    --shadow-sm: 0 10px 30px rgba(0,0,0,0.5);
+  }
+}
+
+/* calmer, slower floating aurora */
+body::before { animation-duration: 42s; }
+
+/* hero cards recolored into the cyan family (kept legible, less loud) */
+.weather-card { background: linear-gradient(140deg, #36c8f0 0%, #0a8fcf 100%); box-shadow: 0 22px 54px rgba(10,140,200,0.30); }
+.jewish-card  { background: linear-gradient(140deg, #0e83b4 0%, #0a4f78 100%); box-shadow: var(--shadow-sm); }
+.monthly-goal { background: linear-gradient(140deg, #38cdf2 0%, #5b8def 100%); box-shadow: 0 22px 54px rgba(20,140,210,0.30); }
+
+/* softer, glassier icon tiles (less saturated, more 2045) */
+.stat-icon, .widget-ico { box-shadow: none; }
+.stat-icon { background: color-mix(in srgb, var(--accent, var(--primary)) 16%, var(--glass-strong)); color: var(--text); }
+
+/* crisper hairline edges on the glass */
+.app-header { border-bottom-color: var(--border); }
+.bottom-nav { border-top-color: var(--border); }
