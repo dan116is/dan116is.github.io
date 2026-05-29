@@ -1,6 +1,6 @@
 // Main app controller: routing, modals, event delegation, dashboard.
 const App = (() => {
-  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'budget', 'settings'];
+  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'budget', 'settings'];
   let currentView = 'dashboard';
   let medFilter = 'all';
   let taskFilter = 'all';
@@ -16,6 +16,7 @@ const App = (() => {
     setView(parseHashView() || 'dashboard');
     renderAll();
     if (window.Weather) Weather.start();
+    if (window.Beitar) Beitar.start();
     Notifier.start();
     setInterval(renderAll, 60 * 1000);
     document.addEventListener('visibilitychange', () => {
@@ -126,6 +127,36 @@ const App = (() => {
     document.getElementById('dash-shop-add').addEventListener('click', addDashShopping);
     document.getElementById('dash-shop-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addDashShopping();
+    });
+
+    // Calendar view
+    document.getElementById('cal-prev').addEventListener('click', () => { haptic(8); Calendar.prev(); });
+    document.getElementById('cal-next').addEventListener('click', () => { haptic(8); Calendar.next(); });
+    document.getElementById('cal-grid').addEventListener('click', (e) => {
+      const day = e.target.closest('[data-cal-day]');
+      if (day) { haptic(8); Calendar.select(day.dataset.calDay); return; }
+    });
+    document.getElementById('cal-day-list').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (btn && btn.dataset.taskToggle) { haptic(); Tasks.toggle(btn.dataset.taskToggle); Calendar.render(); renderDashboard(); }
+    });
+    document.getElementById('cal-add-task').addEventListener('click', () => showTaskForm(null, Calendar.selected()));
+
+    // Personalization settings
+    document.getElementById('set-owner').addEventListener('change', (e) => {
+      DB.setSetting('ownerName', e.target.value.trim());
+      toast('נשמר', 'success');
+    });
+    document.getElementById('set-city').addEventListener('change', (e) => {
+      DB.setSetting('weatherCity', e.target.value);
+      if (window.Weather) Weather.refresh(true);
+      toast('העיר עודכנה', 'success');
+    });
+    document.getElementById('set-football-key').addEventListener('change', (e) => {
+      DB.setSetting('footballApiKey', e.target.value.trim());
+      DB.setSetting('beitarTeamId', '');
+      if (window.Beitar) Beitar.refresh();
+      toast('נשמר', 'success');
     });
 
     // Medications view
@@ -343,9 +374,13 @@ const App = (() => {
   }
 
   // ----- Tasks handlers -----
-  function showTaskForm(existing) {
+  function showTaskForm(existing, prefillDate) {
     openModal(existing ? 'ערוך משימה' : 'משימה חדשה', Tasks.openForm(existing));
     const form = document.getElementById('task-form');
+    if (!existing && prefillDate) {
+      const dateInput = form.querySelector('[name="dueDate"]');
+      if (dateInput) dateInput.value = prefillDate;
+    }
     form.querySelector('[data-close]').addEventListener('click', closeModal);
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -446,6 +481,16 @@ const App = (() => {
     return (DB.getSettings().ownerName || 'דניאל');
   }
 
+  function renderPersonalization() {
+    const s = DB.getSettings();
+    document.getElementById('set-owner').value = s.ownerName || '';
+    document.getElementById('set-football-key').value = s.footballApiKey || '';
+    const sel = document.getElementById('set-city');
+    const cities = (window.Weather && Weather.cityList()) || ['ירושלים'];
+    const current = s.weatherCity || 'ירושלים';
+    sel.innerHTML = cities.map((c) => `<option value="${c}" ${c === current ? 'selected' : ''}>${c}</option>`).join('');
+  }
+
   function renderDashboard() {
     const today = new Date();
     document.getElementById('greeting').textContent = `${greetingText(today)}, ${ownerName()}`;
@@ -465,6 +510,7 @@ const App = (() => {
     document.getElementById('stat-budget').textContent = Budget.format(Budget.totalForMonth(Budget.monthKey()));
 
     if (window.Weather) Weather.paint();
+    if (window.Beitar) Beitar.paint();
     renderDashTasks();
     renderDashShopping();
     renderDashMeds();
@@ -564,10 +610,12 @@ const App = (() => {
     else if (currentView === 'medications') Medications.render(document.getElementById('med-list'), medFilter);
     else if (currentView === 'shopping') Shopping.render(document.getElementById('shop-list'));
     else if (currentView === 'tasks') Tasks.render(document.getElementById('task-list'), taskFilter);
+    else if (currentView === 'calendar') Calendar.render();
     else if (currentView === 'budget') renderBudget();
     else if (currentView === 'settings') {
       Settings.renderFamily();
       Settings.renderNotifStatus();
+      renderPersonalization();
     }
   }
 

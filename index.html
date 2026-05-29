@@ -31,6 +31,9 @@
         <div class="weather-skeleton">טוען מזג אוויר…</div>
       </div>
 
+      <!-- Beitar Jerusalem -->
+      <div class="beitar-card" id="beitar-card"></div>
+
       <div class="quick-stats">
         <div class="stat-card" data-target="medications">
           <div class="stat-icon">💊</div>
@@ -59,7 +62,7 @@
       <!-- Today's tasks -->
       <div class="dash-widget">
         <div class="dash-widget-head">
-          <h3>📋 משימות היום</h3>
+          <h3><span class="widget-ico tasks">📋</span> משימות היום</h3>
           <button class="link-btn" data-view="tasks">הכל ›</button>
         </div>
         <div id="dash-tasks" class="dash-list"></div>
@@ -68,7 +71,7 @@
       <!-- Shopping -->
       <div class="dash-widget">
         <div class="dash-widget-head">
-          <h3>🛒 רשימת קניות</h3>
+          <h3><span class="widget-ico shopping">🛒</span> רשימת קניות</h3>
           <button class="link-btn" data-view="shopping">הכל ›</button>
         </div>
         <div class="dash-quick-add">
@@ -81,7 +84,7 @@
       <!-- Medications needing attention -->
       <div class="dash-widget" id="dash-meds-widget" hidden>
         <div class="dash-widget-head">
-          <h3>💊 תרופות לתשומת לב</h3>
+          <h3><span class="widget-ico meds">💊</span> תרופות לתשומת לב</h3>
           <button class="link-btn" data-view="medications">הכל ›</button>
         </div>
         <div id="dash-meds" class="dash-list"></div>
@@ -90,7 +93,7 @@
       <!-- Budget -->
       <div class="dash-widget">
         <div class="dash-widget-head">
-          <h3>💰 תקציב החודש</h3>
+          <h3><span class="widget-ico budget">💰</span> תקציב החודש</h3>
           <button class="link-btn" data-view="budget">פירוט ›</button>
         </div>
         <div id="dash-budget"></div>
@@ -195,10 +198,44 @@
       <div id="expense-list" class="card-list"></div>
     </section>
 
+    <!-- Calendar -->
+    <section id="view-calendar" class="view">
+      <div class="cal-head">
+        <button class="cal-nav-btn" id="cal-prev" aria-label="חודש קודם">›</button>
+        <div class="cal-title" id="cal-title"></div>
+        <button class="cal-nav-btn" id="cal-next" aria-label="חודש הבא">‹</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-head" style="margin-bottom:10px;">
+        <div class="cal-selected-head" id="cal-selected-head" style="margin:0;"></div>
+        <button class="primary-btn" id="cal-add-task">+ משימה</button>
+      </div>
+      <div id="cal-day-list" class="dash-list"></div>
+    </section>
+
     <!-- Settings -->
     <section id="view-settings" class="view">
       <div class="view-toolbar">
         <h2>הגדרות</h2>
+      </div>
+      <div class="settings-section">
+        <h3>התאמה אישית</h3>
+        <div class="settings-field">
+          <label>השם שמופיע בברכה</label>
+          <input type="text" id="set-owner" placeholder="דניאל" autocomplete="off">
+        </div>
+        <div class="settings-field">
+          <label>עיר למזג אוויר</label>
+          <select id="set-city"></select>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>⚽ ביתר ירושלים</h3>
+        <p class="hint">כדי לראות את המשחק הבא והתוצאה האחרונה אוטומטית בדשבורד, הדבק כאן מפתח חינמי מ-<a href="https://www.api-football.com/" target="_blank" rel="noopener">api-football.com</a> (הרשמה חינם). בלי מפתח הווידג'ט עדיין עובד עם קישורים מהירים.</p>
+        <div class="settings-field">
+          <label>מפתח API לכדורגל (אופציונלי)</label>
+          <input type="text" id="set-football-key" placeholder="הדבק מפתח כאן" autocomplete="off">
+        </div>
       </div>
       <div class="settings-section">
         <h3>בני משפחה</h3>
@@ -243,6 +280,10 @@
     <button class="nav-btn" data-view="tasks">
       <span class="nav-icon">📋</span>
       <span class="nav-label">משימות</span>
+    </button>
+    <button class="nav-btn" data-view="calendar">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">לוח שנה</span>
     </button>
     <button class="nav-btn" data-view="budget">
       <span class="nav-icon">💰</span>
@@ -289,6 +330,8 @@
 
   <script src="js/db.js"></script>
   <script src="js/weather.js"></script>
+  <script src="js/beitar.js"></script>
+  <script src="js/calendar.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/medications.js"></script>
   <script src="js/shopping.js"></script>
