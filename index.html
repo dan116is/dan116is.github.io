@@ -42,6 +42,9 @@
       <!-- Today at a glance -->
       <div class="glance" id="glance"></div>
 
+      <!-- Goal of the month -->
+      <div class="monthly-goal" id="monthly-goal"></div>
+
       <!-- Weather + clothing -->
       <div class="weather-card" id="weather-card">
         <div class="weather-skeleton">טוען מזג אוויר…</div>
@@ -109,12 +112,30 @@
         <div id="dash-meds" class="dash-list"></div>
       </div>
 
+      <!-- Today's schedule -->
+      <div class="dash-widget">
+        <div class="dash-widget-head">
+          <h3><span class="widget-ico sched">🗓️</span> הלו״ז של היום</h3>
+          <button class="link-btn" data-view="schedule">השבוע ›</button>
+        </div>
+        <div id="dash-schedule" class="dash-list"></div>
+      </div>
+
       <!-- Daily habits & water -->
       <div class="dash-widget">
         <div class="dash-widget-head">
           <h3><span class="widget-ico habits">🔥</span> הרגלים יומיים</h3>
         </div>
         <div id="dash-habits" class="habits-grid"></div>
+      </div>
+
+      <!-- Family goals snapshot -->
+      <div class="dash-widget">
+        <div class="dash-widget-head">
+          <h3><span class="widget-ico goals">🎯</span> יעדי המשפחה</h3>
+          <button class="link-btn" data-view="goals">הכל ›</button>
+        </div>
+        <div id="dash-goals" class="goals-mini"></div>
       </div>
 
       <!-- Upcoming events & birthdays -->
@@ -264,6 +285,23 @@
       <div id="event-list" class="card-list"></div>
     </section>
 
+    <!-- Goals -->
+    <section id="view-goals" class="view">
+      <div class="view-toolbar">
+        <h2>יעדים והתפתחות</h2>
+      </div>
+      <div id="goals-list"></div>
+    </section>
+
+    <!-- Weekly schedule -->
+    <section id="view-schedule" class="view">
+      <div class="view-toolbar">
+        <h2>לו״ז שבועי משותף</h2>
+        <button class="primary-btn" id="add-sched-btn">+ פעילות</button>
+      </div>
+      <div id="sched-board" class="sched-board"></div>
+    </section>
+
     <!-- Settings -->
     <section id="view-settings" class="view">
       <div class="view-toolbar">
@@ -286,6 +324,26 @@
             <option value="light">בהיר</option>
             <option value="dark">כהה</option>
           </select>
+        </div>
+        <div class="settings-field">
+          <label>תמונה משפחתית (רקע הדשבורד)</label>
+          <div class="settings-actions">
+            <button class="primary-btn" id="photo-pick-btn">📷 בחר תמונה</button>
+            <button class="ghost-btn" id="photo-clear-btn">הסר</button>
+            <input type="file" id="photo-file" accept="image/*" hidden>
+          </div>
+        </div>
+        <div class="settings-field">
+          <label>יעד כוסות מים ביום</label>
+          <input type="number" id="set-water-goal" inputmode="numeric" min="1" max="20" placeholder="8">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>🎵 מוזיקה</h3>
+        <p class="hint">הדבק קישור לפלייליסט שאתה אוהב (Spotify) — כפתור המוזיקה בדשבורד יפתח אותו ישירות.</p>
+        <div class="settings-field">
+          <label>קישור פלייליסט</label>
+          <input type="text" id="set-playlist" placeholder="https://open.spotify.com/playlist/..." autocomplete="off">
         </div>
       </div>
       <div class="settings-section">
@@ -373,8 +431,10 @@
     <div class="more-content">
       <div class="more-grid">
         <button class="more-item" data-view="tasks"><span class="more-ico" style="background:var(--c-tasks)">📋</span>משימות</button>
-        <button class="more-item" data-view="medications"><span class="more-ico" style="background:var(--c-meds)">💊</span>תרופות</button>
+        <button class="more-item" data-view="schedule"><span class="more-ico" style="background:#5e5ce6">🗓️</span>לו״ז</button>
+        <button class="more-item" data-view="goals"><span class="more-ico" style="background:#30d158">🎯</span>יעדים</button>
         <button class="more-item" data-view="events"><span class="more-ico" style="background:var(--c-budget)">🎂</span>אירועים</button>
+        <button class="more-item" data-view="medications"><span class="more-ico" style="background:var(--c-meds)">💊</span>תרופות</button>
         <button class="more-item" data-view="settings"><span class="more-ico" style="background:#8e8e93">⚙️</span>הגדרות</button>
       </div>
     </div>
@@ -417,6 +477,8 @@
   <script src="js/calendar.js"></script>
   <script src="js/events.js"></script>
   <script src="js/habits.js"></script>
+  <script src="js/goals.js"></script>
+  <script src="js/schedule.js"></script>
   <script src="js/quickadd.js"></script>
   <script src="js/ux.js"></script>
   <script src="js/notifications.js"></script>

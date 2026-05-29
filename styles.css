@@ -801,6 +801,76 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .music-eq i:nth-child(4) { height: 13px; animation-delay: 0.1s; }
 @keyframes eq { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
 
+/* ---------- Family photo background ---------- */
+body.has-photo #view-dashboard .welcome {
+  position: relative;
+  padding: 20px 18px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  color: #fff;
+  min-height: 150px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  background-image: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.05)), var(--family-photo);
+  background-size: cover; background-position: center 28%;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+body.has-photo #view-dashboard .welcome .welcome-sub { color: rgba(255,255,255,0.92); }
+body.has-photo #view-dashboard .welcome h2 { text-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+
+/* ---------- Monthly goal hero ---------- */
+.monthly-goal {
+  background: linear-gradient(135deg, #5e5ce6 0%, #ff375f 100%);
+  color: #fff; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 18px;
+  box-shadow: 0 14px 34px rgba(94,92,230,0.4); animation: floatIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+.monthly-goal.empty { background: var(--glass); border: 1px dashed var(--border-strong); box-shadow: var(--shadow-sm); padding: 0; }
+.mg-set { width: 100%; background: transparent; border: none; color: var(--text); padding: 16px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.mg-head { display: flex; align-items: center; justify-content: space-between; }
+.mg-label { font-size: 12.5px; font-weight: 700; opacity: 0.9; }
+.mg-edit { background: rgba(255,255,255,0.2); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 14px; }
+.mg-title { font-size: 19px; font-weight: 800; margin: 6px 0 11px; letter-spacing: -0.3px; }
+.mg-bar { height: 9px; background: rgba(255,255,255,0.25); border-radius: 5px; overflow: hidden; }
+.mg-bar-fill { height: 100%; background: #fff; border-radius: 5px; transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
+.mg-foot { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 11px; }
+.mg-step { width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(255,255,255,0.22); color: #fff; font-size: 22px; cursor: pointer; font-family: inherit; line-height: 1; }
+.mg-step:active { transform: scale(0.9); }
+.mg-pct { font-size: 18px; font-weight: 800; min-width: 54px; text-align: center; }
+
+/* ---------- Goals mini (dashboard) ---------- */
+.goals-mini { display: flex; flex-direction: column; gap: 10px; }
+.goal-mini { display: flex; align-items: center; gap: 10px; background: transparent; border: none; cursor: pointer; font-family: inherit; color: var(--text); padding: 4px 0; width: 100%; }
+.goal-mini-emoji { font-size: 22px; }
+.goal-mini-name { font-size: 14px; font-weight: 700; min-width: 48px; text-align: start; }
+.goal-mini-bar { flex: 1; height: 8px; background: var(--bg-elev-2); border-radius: 4px; overflow: hidden; }
+.goal-mini-bar span { display: block; height: 100%; background: var(--primary-grad); border-radius: 4px; transition: width 0.4s ease; }
+.goal-mini-pct { font-size: 12px; font-weight: 700; color: var(--text-muted); min-width: 34px; text-align: end; }
+.widget-ico.goals { background: linear-gradient(135deg, #30d158, #34c759); }
+.widget-ico.sched { background: linear-gradient(135deg, #5e5ce6, #0a84ff); }
+
+/* ---------- Goals view ---------- */
+.goal-person { background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm); backdrop-filter: saturate(180%) blur(22px); -webkit-backdrop-filter: saturate(180%) blur(22px); }
+.goal-person-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.goal-person-emoji { font-size: 24px; }
+.goal-person-name { font-size: 17px; font-weight: 800; flex: 1; }
+.goal-person-pct { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+.goal-bar { height: 8px; background: var(--bg-elev-2); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+.goal-bar-fill { height: 100%; background: var(--primary-grad); border-radius: 4px; transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
+.goal-items { display: flex; flex-direction: column; margin-bottom: 8px; }
+
+/* ---------- Schedule ---------- */
+.sched-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.sched-board { display: flex; flex-direction: column; gap: 12px; }
+.sched-day { background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 15px; box-shadow: var(--shadow-sm); backdrop-filter: saturate(180%) blur(22px); -webkit-backdrop-filter: saturate(180%) blur(22px); }
+.sched-day.today { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(10,132,255,0.25), var(--shadow-sm); }
+.sched-day-head { font-size: 14px; font-weight: 800; margin-bottom: 9px; }
+.sched-card { display: flex; align-items: center; gap: 10px; background: var(--bg-elev-2); border-radius: 12px; padding: 10px 12px; margin-bottom: 7px; }
+.sched-card-main { flex: 1; min-width: 0; }
+.sched-card-title { font-size: 14px; font-weight: 600; }
+.sched-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.sched-empty { color: var(--text-muted); font-size: 13px; padding: 2px 0 6px; }
+.sched-add { margin-top: 2px; }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   body::before { animation: none !important; }
