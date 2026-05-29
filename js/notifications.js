@@ -49,6 +49,7 @@ const Notifier = (() => {
     Medications.checkAlerts(notify);
     Tasks.checkAlerts(notify);
     if (typeof Events !== 'undefined') checkEvents();
+    if (typeof Maintenance !== 'undefined') Maintenance.checkAlerts(notify);
   }
 
   function checkEvents() {

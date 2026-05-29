@@ -3,7 +3,7 @@
 // fast and fully offline-capable when sync is off. Data for all collections
 // is mirrored to families/{familyCode}; last-write-wins on the whole payload.
 const Sync = (() => {
-  const COLLECTIONS = ['meds', 'shopping', 'tasks', 'expenses', 'budgets', 'family', 'events', 'goals', 'schedule'];
+  const COLLECTIONS = ['meds', 'shopping', 'tasks', 'expenses', 'budgets', 'family', 'events', 'goals', 'schedule', 'maintenance', 'meals', 'growth', 'stars', 'savings'];
   const SDK = '10.12.2';
   let app = null, db = null, unsub = null, enabled = false;
   let applyingRemote = false, pushTimer = null;

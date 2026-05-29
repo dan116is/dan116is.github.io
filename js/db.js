@@ -12,6 +12,11 @@ const DB = (() => {
     events: 'events',
     goals: 'goals',
     schedule: 'schedule',
+    maintenance: 'maintenance',
+    meals: 'meals',
+    growth: 'growth',
+    stars: 'stars',
+    savings: 'savings',
     settings: 'settings'
   };
 
