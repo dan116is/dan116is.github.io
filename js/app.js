@@ -1,6 +1,6 @@
 // Main app controller: routing, modals, event delegation, dashboard.
 const App = (() => {
-  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'events', 'budget', 'settings'];
+  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'events', 'goals', 'schedule', 'budget', 'settings'];
   let currentView = 'dashboard';
   let medFilter = 'all';
   let taskFilter = 'all';
@@ -10,6 +10,8 @@ const App = (() => {
     applyTheme(DB.getSettings().theme || 'auto');
     Settings.seedDefaultFamily();
     if (window.Habits) Habits.ensureSeed();
+    if (window.Goals) Goals.ensureSeed();
+    applyFamilyPhoto();
     setupNav();
     setupModal();
     setupHandlers();
@@ -287,6 +289,44 @@ const App = (() => {
     document.getElementById('add-event-btn').addEventListener('click', () => showEventForm());
     document.getElementById('event-list').addEventListener('click', onEventListClick);
 
+    // Goals view
+    document.getElementById('goals-list').addEventListener('click', onGoalsClick);
+
+    // Schedule view
+    document.getElementById('add-sched-btn').addEventListener('click', () => showScheduleForm());
+    document.getElementById('sched-board').addEventListener('click', onScheduleClick);
+
+    // Music shortcut -> user playlist
+    document.getElementById('music-btn').addEventListener('click', (e) => {
+      const url = (DB.getSettings().playlistUrl || '').trim();
+      if (url) { e.currentTarget.href = url; }
+    });
+
+    // Family photo + playlist + water goal (settings)
+    document.getElementById('photo-pick-btn').addEventListener('click', () => document.getElementById('photo-file').click());
+    document.getElementById('photo-file').addEventListener('change', onPhotoPicked);
+    document.getElementById('photo-clear-btn').addEventListener('click', () => {
+      DB.setSetting('familyPhoto', '');
+      applyFamilyPhoto();
+      toast('התמונה הוסרה');
+    });
+    document.getElementById('set-playlist').addEventListener('change', (e) => {
+      DB.setSetting('playlistUrl', e.target.value.trim());
+      const url = (e.target.value.trim()) || 'https://open.spotify.com';
+      document.getElementById('music-btn').href = url;
+      toast('נשמר', 'success');
+    });
+    document.getElementById('set-water-goal').addEventListener('change', (e) => {
+      const g = Math.max(1, Math.min(20, Number(e.target.value) || 8));
+      if (window.Habits) {
+        const list = Habits.all();
+        const w = list.find((h) => h.id === 'water');
+        if (w) { w.goal = g; DB.setSetting('habits', list); }
+      }
+      toast('יעד המים עודכן', 'success');
+      renderDashHabits();
+    });
+
     // Settings view
     document.getElementById('family-add-btn').addEventListener('click', addFamilyFromInput);
     document.getElementById('family-input').addEventListener('keypress', (e) => {
@@ -389,7 +429,16 @@ const App = (() => {
       const nowDone = Habits.isDone(Habits.all().find((x) => x.id === btn.dataset.habit) || {});
       if (!wasDone && nowDone && window.UX) UX.confetti();
       renderDashHabits();
-    } else if (btn.classList.contains('link-btn') && btn.dataset.view) {
+    } else if (btn.id === 'mg-set') {
+      showMonthlyGoalForm();
+    } else if (btn.dataset.mg) {
+      haptic();
+      const m = Goals.monthly();
+      Goals.setMonthly({ progress: Math.max(0, Math.min(100, (Number(m.progress) || 0) + Number(btn.dataset.mg))) });
+      const after = Goals.monthly();
+      if (Number(after.progress) >= 100 && window.UX) UX.confetti();
+      renderMonthlyGoal();
+    } else if (btn.dataset.view && (btn.classList.contains('goal-mini') || btn.classList.contains('link-btn'))) {
       setView(btn.dataset.view);
     }
   }
@@ -627,6 +676,143 @@ const App = (() => {
     }
   }
 
+  // ----- Goals handlers -----
+  function showMonthlyGoalForm() {
+    const m = Goals.monthly();
+    openModal('היעד שלי לחודש', `
+      <form id="mg-form">
+        <div class="form-group">
+          <label>מה היעד שלך החודש?</label>
+          <input name="title" value="${escapeAttr(m.title || '')}" placeholder="לדוגמה: 12 אימונים" required>
+        </div>
+        <div class="form-group">
+          <label>התקדמות: <span id="mg-val">${Number(m.progress) || 0}</span>%</label>
+          <input name="progress" type="range" min="0" max="100" step="5" value="${Number(m.progress) || 0}" oninput="document.getElementById('mg-val').textContent=this.value">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="ghost-btn" data-close>ביטול</button>
+          <button type="submit" class="primary-btn">שמור</button>
+        </div>
+      </form>`);
+    const form = document.getElementById('mg-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      Goals.setMonthly({ title: d.title.trim(), progress: Number(d.progress) });
+      closeModal(); renderDashboard(); toast('נשמר', 'success');
+    });
+  }
+
+  function showGoalForm(who) {
+    openModal('יעד חדש ל' + who, `
+      <form id="goal-form">
+        <div class="form-group">
+          <label>היעד</label>
+          <input name="title" required placeholder="מה רוצים להשיג?">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="ghost-btn" data-close>ביטול</button>
+          <button type="submit" class="primary-btn">הוסף</button>
+        </div>
+      </form>`);
+    const form = document.getElementById('goal-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      Goals.add({ who, title: d.title.trim(), category: 'custom' });
+      closeModal(); renderAll(); toast('נוסף', 'success');
+    });
+  }
+
+  async function onGoalsClick(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.goalToggle) {
+      haptic(); Goals.toggle(btn.dataset.goalToggle); renderAll();
+    } else if (btn.dataset.goalDel) {
+      const ok = await confirmDialog({ title: 'מחיקת יעד', message: 'למחוק את היעד?', okText: 'מחק', icon: '🎯' });
+      if (!ok) return;
+      Goals.remove(btn.dataset.goalDel); renderAll(); toast('נמחק', 'success');
+    } else if (btn.dataset.goalAdd) {
+      showGoalForm(btn.dataset.goalAdd);
+    }
+  }
+
+  // ----- Schedule handlers -----
+  function showScheduleForm(existing, presetDay) {
+    openModal(existing ? 'ערוך פעילות' : 'פעילות חדשה', Schedule.openForm(existing, presetDay));
+    const form = document.getElementById('sched-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      if (existing) Schedule.update(existing.id, d); else Schedule.add(d);
+      closeModal(); renderAll(); toast(existing ? 'עודכן' : 'נוסף', 'success');
+    });
+  }
+
+  async function onScheduleClick(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.schedAdd != null) {
+      showScheduleForm(null, btn.dataset.schedAdd);
+    } else if (btn.dataset.schedDel) {
+      const ok = await confirmDialog({ title: 'מחיקת פעילות', message: 'למחוק מהלו״ז?', okText: 'מחק', icon: '🗓️' });
+      if (!ok) return;
+      Schedule.remove(btn.dataset.schedDel); renderAll(); toast('נמחק', 'success');
+    }
+  }
+
+  // ----- Family photo -----
+  function applyFamilyPhoto() {
+    const photo = DB.getSettings().familyPhoto;
+    const view = document.getElementById('view-dashboard');
+    if (!view) return;
+    if (photo) {
+      document.documentElement.style.setProperty('--family-photo', `url("${photo}")`);
+      document.body.classList.add('has-photo');
+    } else {
+      document.documentElement.style.removeProperty('--family-photo');
+      document.body.classList.remove('has-photo');
+    }
+  }
+
+  function onPhotoPicked(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    // Downscale to keep storage small (localStorage limit), then save as DataURL.
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 1200;
+        let { width, height } = img;
+        if (width > max || height > max) {
+          const r = Math.min(max / width, max / height);
+          width = Math.round(width * r); height = Math.round(height * r);
+        }
+        const cv = document.createElement('canvas');
+        cv.width = width; cv.height = height;
+        cv.getContext('2d').drawImage(img, 0, 0, width, height);
+        try {
+          const data = cv.toDataURL('image/jpeg', 0.82);
+          DB.setSetting('familyPhoto', data);
+          applyFamilyPhoto();
+          toast('התמונה נשמרה 🤍', 'success');
+        } catch (err) {
+          toast('התמונה גדולה מדי', 'error');
+        }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  function escapeAttr(s) { return String(s || '').replace(/"/g, '&quot;'); }
+
   function renderBudget() {
     const mKey = document.getElementById('budget-month').value || Budget.monthKey();
     Budget.renderSummary(mKey);
@@ -675,6 +861,11 @@ const App = (() => {
     document.getElementById('set-theme').value = s.theme || 'auto';
     document.getElementById('set-family-code').value = s.familyCode || '';
     document.getElementById('set-fb-config').value = s.firebaseConfig || '';
+    document.getElementById('set-playlist').value = s.playlistUrl || '';
+    const waterGoal = (window.Habits && (Habits.all().find((h) => h.id === 'water') || {}).goal) || 8;
+    document.getElementById('set-water-goal').value = waterGoal;
+    const mb = document.getElementById('music-btn');
+    if (mb && s.playlistUrl) mb.href = s.playlistUrl;
   }
 
   function renderDashboard() {
@@ -700,12 +891,56 @@ const App = (() => {
     if (window.Weather) Weather.paint();
     if (window.Jewish) Jewish.paint();
     if (window.Beitar) Beitar.paint();
+    renderMonthlyGoal();
+    if (window.Schedule) Schedule.renderToday(document.getElementById('dash-schedule'));
     renderDashTasks();
     renderDashShopping();
     renderDashHabits();
+    renderDashGoals();
     renderDashMeds();
     renderDashEvents();
     renderDashBudget();
+  }
+
+  function renderMonthlyGoal() {
+    const el = document.getElementById('monthly-goal');
+    if (!el || !window.Goals) return;
+    const m = Goals.monthly();
+    const pct = Math.max(0, Math.min(100, Number(m.progress) || 0));
+    if (!m.title) {
+      el.className = 'monthly-goal empty';
+      el.innerHTML = `<button class="mg-set" id="mg-set">🎯 הגדר יעד אישי לחודש</button>`;
+      return;
+    }
+    el.className = 'monthly-goal';
+    el.innerHTML = `
+      <div class="mg-head">
+        <span class="mg-label">🎯 היעד שלי לחודש</span>
+        <button class="mg-edit" id="mg-set" aria-label="ערוך">✎</button>
+      </div>
+      <div class="mg-title">${esc(m.title)}</div>
+      <div class="mg-bar"><div class="mg-bar-fill" style="width:${pct}%"></div></div>
+      <div class="mg-foot">
+        <button class="mg-step" data-mg="-10">−</button>
+        <span class="mg-pct">${pct}%</span>
+        <button class="mg-step" data-mg="10">+</button>
+      </div>`;
+  }
+
+  function renderDashGoals() {
+    const el = document.getElementById('dash-goals');
+    if (!el || !window.Goals) return;
+    const ppl = Goals.people();
+    if (!ppl.length) { el.innerHTML = `<div class="dash-empty">אין יעדים</div>`; return; }
+    el.innerHTML = ppl.map((who) => {
+      const p = Goals.progress(who);
+      return `<button class="goal-mini" data-view="goals">
+        <span class="goal-mini-emoji">${Goals.emojiFor(who)}</span>
+        <span class="goal-mini-name">${esc(who)}</span>
+        <span class="goal-mini-bar"><span style="width:${p.pct}%"></span></span>
+        <span class="goal-mini-pct">${p.done}/${p.total}</span>
+      </button>`;
+    }).join('');
   }
 
   function renderDashHabits() {
@@ -880,6 +1115,8 @@ const App = (() => {
     else if (currentView === 'tasks') Tasks.render(document.getElementById('task-list'), taskFilter);
     else if (currentView === 'calendar') Calendar.render();
     else if (currentView === 'events') Events.render(document.getElementById('event-list'));
+    else if (currentView === 'goals') Goals.render(document.getElementById('goals-list'));
+    else if (currentView === 'schedule') Schedule.render(document.getElementById('sched-board'));
     else if (currentView === 'budget') renderBudget();
     else if (currentView === 'settings') {
       Settings.renderFamily();

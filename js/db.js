@@ -10,6 +10,8 @@ const DB = (() => {
     budgets: 'budgets',
     family: 'family',
     events: 'events',
+    goals: 'goals',
+    schedule: 'schedule',
     settings: 'settings'
   };
 
