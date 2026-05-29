@@ -126,3 +126,4 @@ const Goals = (() => {
   return { list, add, update, remove, toggle, ensureSeed, people, byPerson, progress,
            monthly, setMonthly, monthKey, emojiFor, render };
 })();
+if (typeof window !== "undefined") window.Goals = Goals;

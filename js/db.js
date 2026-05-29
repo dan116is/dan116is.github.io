@@ -117,3 +117,4 @@ const DB = (() => {
     exportAll, importAll, reset
   };
 })();
+if (typeof window !== "undefined") window.DB = DB;

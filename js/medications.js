@@ -156,3 +156,4 @@ const Medications = (() => {
 
   return { list, add, update, remove, takeDose, statusOf, activeCount, alertCount, checkAlerts, render, openForm };
 })();
+if (typeof window !== "undefined") window.Medications = Medications;

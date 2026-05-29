@@ -65,3 +65,4 @@ const Savings = (() => {
 
   return { list, add, update, remove, deposit, fmt, render, openForm };
 })();
+if (typeof window !== "undefined") window.Savings = Savings;

@@ -72,3 +72,4 @@ const Meals = (() => {
 
   return { DAYS, all, forDay, setMeal, clearDay, addIngredientsToShopping, todayMeal, render, openForm };
 })();
+if (typeof window !== "undefined") window.Meals = Meals;

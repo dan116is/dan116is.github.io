@@ -159,3 +159,4 @@ const Tasks = (() => {
 
   return { list, activeCount, overdueCount, add, update, remove, toggle, checkAlerts, render, openForm };
 })();
+if (typeof window !== "undefined") window.Tasks = Tasks;

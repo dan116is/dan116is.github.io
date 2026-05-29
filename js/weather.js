@@ -141,3 +141,4 @@ const Weather = (() => {
   function start() { paint(); }
   return { start, paint, refresh, cityList };
 })();
+if (typeof window !== "undefined") window.Weather = Weather;

@@ -123,3 +123,4 @@ const UX = (() => {
 
   return { enableSwipe, confetti, enablePullToRefresh };
 })();
+if (typeof window !== "undefined") window.UX = UX;

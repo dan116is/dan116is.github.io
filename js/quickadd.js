@@ -110,3 +110,4 @@ const QuickAdd = (() => {
 
   return { handle, parseDate, voiceSupported, startVoice };
 })();
+if (typeof window !== "undefined") window.QuickAdd = QuickAdd;

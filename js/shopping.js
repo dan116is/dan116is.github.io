@@ -72,3 +72,4 @@ const Shopping = (() => {
 
   return { CATEGORIES, list, activeCount, add, toggle, remove, clearBought, render };
 })();
+if (typeof window !== "undefined") window.Shopping = Shopping;

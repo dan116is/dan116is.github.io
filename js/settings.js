@@ -80,3 +80,4 @@ const Settings = (() => {
 
   return { family, addMember, removeMember, renderFamily, seedDefaultFamily, renderNotifStatus, exportBackup, importBackup };
 })();
+if (typeof window !== "undefined") window.Settings = Settings;
