@@ -30,8 +30,25 @@
   --safe-bot: env(safe-area-inset-bottom, 0px);
 }
 
+/* Dark palette: applied via manual [data-theme="dark"] or, when set to auto
+   (no data-theme attribute), via the OS preference. */
+:root[data-theme="dark"],
+:root[data-theme="dark"] body {
+  --bg: #000000;
+  --bg-grad: radial-gradient(1100px 520px at 100% -8%, rgba(94,92,230,0.20), transparent 60%),
+             radial-gradient(900px 480px at -8% 0%, rgba(10,132,255,0.16), transparent 55%);
+  --bg-elev: #1c1c1e;
+  --bg-elev-2: #2c2c2e;
+  --text: #f5f5f7;
+  --text-muted: #98989d;
+  --border: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.18);
+  --shadow: 0 12px 34px rgba(0,0,0,0.5);
+  --shadow-sm: 0 4px 16px rgba(0,0,0,0.4);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
     --bg: #000000;
     --bg-grad: radial-gradient(1100px 520px at 100% -8%, rgba(94,92,230,0.20), transparent 60%),
                radial-gradient(900px 480px at -8% 0%, rgba(10,132,255,0.16), transparent 55%);
@@ -524,6 +541,59 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .cat-amount { color: var(--text-muted); font-weight: 600; }
 .cat-bar { width: 100%; height: 6px; background: var(--bg-elev-2); border-radius: 3px; overflow: hidden; }
 .cat-bar-fill { height: 100%; background: var(--primary-grad); border-radius: 3px; transition: width 0.4s ease; }
+
+/* ---------- Header actions / theme ---------- */
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.theme-btn {
+  background: var(--bg-elev); border: 1px solid var(--border); color: var(--text);
+  width: 38px; height: 38px; border-radius: 50%; font-size: 17px; cursor: pointer;
+  font-family: inherit; box-shadow: var(--shadow-sm); transition: transform 0.15s ease;
+}
+.theme-btn:active { transform: scale(0.9); }
+
+/* ---------- Smart quick-add bar ---------- */
+.smart-bar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 18px;
+  background: var(--bg-elev); border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 6px 6px 6px; box-shadow: var(--shadow-sm);
+}
+.smart-bar input {
+  flex: 1; min-width: 0; background: transparent; border: none; color: var(--text);
+  font-size: 15px; padding: 10px 6px; font-family: inherit;
+}
+.smart-bar input::placeholder { color: var(--text-muted); }
+.smart-bar input:focus { outline: none; }
+.smart-mic {
+  width: 42px; height: 42px; flex-shrink: 0; border: none; border-radius: 50%;
+  background: var(--primary-grad); color: #fff; font-size: 18px; cursor: pointer;
+  font-family: inherit; box-shadow: 0 4px 12px rgba(10,132,255,0.35); transition: transform 0.15s ease;
+}
+.smart-mic:active { transform: scale(0.9); }
+.smart-mic.listening { animation: micPulse 1.1s ease-in-out infinite; }
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,48,0.5); background: var(--danger); }
+  50% { box-shadow: 0 0 0 10px rgba(255,59,48,0); background: var(--danger); }
+}
+.smart-go {
+  width: 38px; height: 38px; flex-shrink: 0; border: none; border-radius: 50%;
+  background: var(--bg-elev-2); color: var(--primary); font-size: 18px; cursor: pointer;
+  font-family: inherit; transition: transform 0.15s ease;
+}
+.smart-go:active { transform: scale(0.9); }
+
+/* ---------- Budget trend chart ---------- */
+.budget-trend {
+  background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm);
+}
+.budget-trend:empty { display: none; }
+.trend-head { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px; }
+.trend-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+.trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; }
+.trend-amt { font-size: 9.5px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+.trend-bar { width: 70%; max-width: 30px; background: var(--bg-elev-2); border-radius: 7px 7px 4px 4px; transition: height 0.5s cubic-bezier(0.22,1,0.36,1); }
+.trend-bar.current { background: var(--primary-grad); }
+.trend-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
