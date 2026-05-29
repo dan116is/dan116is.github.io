@@ -48,6 +48,16 @@ const Notifier = (() => {
     if (!isSupported() || Notification.permission !== 'granted') return;
     Medications.checkAlerts(notify);
     Tasks.checkAlerts(notify);
+    if (typeof Events !== 'undefined') checkEvents();
+  }
+
+  function checkEvents() {
+    const hour = new Date().getHours();
+    if (hour < 8 || hour > 22) return;
+    for (const { ev, d } of Events.upcoming(7)) {
+      if (d === 0) notify('🎉 היום!', { body: ev.title, tag: 'ev-' + ev.id });
+      else if (d === 1) notify('מחר', { body: ev.title + ' — ' + Events.countdownText(d), tag: 'evn-' + ev.id });
+    }
   }
 
   function start() {
