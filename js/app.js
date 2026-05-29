@@ -406,7 +406,8 @@ const App = (() => {
     }
   }
 
-  function addDashShopping() {
+  // ----- Smart quick-add -----
+  function runSmartAdd() {
     const input = document.getElementById('smart-input');
     const text = input.value.trim();
     if (!text) return;
