@@ -7,6 +7,7 @@ const App = (() => {
   let installPromptEvent = null;
 
   function init() {
+    applyTheme(DB.getSettings().theme || 'auto');
     Settings.seedDefaultFamily();
     setupNav();
     setupModal();
@@ -122,6 +123,16 @@ const App = (() => {
       btn.addEventListener('click', () => handleQuickAction(btn.dataset.action));
     });
 
+    // Smart quick-add bar
+    document.getElementById('smart-add').addEventListener('click', runSmartAdd);
+    document.getElementById('smart-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') runSmartAdd();
+    });
+    setupSmartMic();
+
+    // Theme toggle
+    document.getElementById('theme-btn').addEventListener('click', cycleTheme);
+
     // Dashboard live widgets (delegated)
     document.getElementById('view-dashboard').addEventListener('click', onDashClick);
     document.getElementById('dash-shop-add').addEventListener('click', addDashShopping);
@@ -157,6 +168,10 @@ const App = (() => {
       DB.setSetting('beitarTeamId', '');
       if (window.Beitar) Beitar.refresh();
       toast('נשמר', 'success');
+    });
+    document.getElementById('set-theme').addEventListener('change', (e) => {
+      DB.setSetting('theme', e.target.value);
+      applyTheme(e.target.value);
     });
 
     // Medications view
@@ -309,6 +324,52 @@ const App = (() => {
     renderAll();
   }
 
+  // ----- Smart quick-add -----
+  function runSmartAdd() {
+    const input = document.getElementById('smart-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const res = QuickAdd.handle(text);
+    if (res) {
+      input.value = '';
+      haptic();
+      renderAll();
+      toast(res.msg, 'success');
+    } else {
+      toast('לא הצלחתי להבין — נסה שוב', 'error');
+    }
+  }
+
+  function setupSmartMic() {
+    const mic = document.getElementById('smart-mic');
+    if (!QuickAdd.voiceSupported()) { mic.style.display = 'none'; return; }
+    mic.addEventListener('click', () => {
+      haptic();
+      const input = document.getElementById('smart-input');
+      QuickAdd.startVoice(
+        (text) => { input.value = text; runSmartAdd(); },
+        (state) => { mic.classList.toggle('listening', state === 'listening'); }
+      );
+    });
+  }
+
+  // ----- Theme -----
+  function applyTheme(t) {
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  function currentTheme() { return DB.getSettings().theme || 'auto'; }
+  function cycleTheme() {
+    haptic();
+    const order = ['auto', 'light', 'dark'];
+    const next = order[(order.indexOf(currentTheme()) + 1) % order.length];
+    DB.setSetting('theme', next);
+    applyTheme(next);
+    const sel = document.getElementById('set-theme');
+    if (sel) sel.value = next;
+    toast(next === 'auto' ? 'ערכת נושא: אוטומטי' : next === 'light' ? 'מצב בהיר' : 'מצב כהה');
+  }
+
   // ----- Medications handlers -----
   function showMedForm(existing) {
     openModal(existing ? 'ערוך תרופה' : 'תרופה חדשה', Medications.openForm(existing));
@@ -448,6 +509,7 @@ const App = (() => {
   function renderBudget() {
     const mKey = document.getElementById('budget-month').value || Budget.monthKey();
     Budget.renderSummary(mKey);
+    Budget.renderTrend(mKey);
     Budget.renderCategories(mKey);
     Budget.renderList(mKey);
   }
@@ -489,6 +551,7 @@ const App = (() => {
     const cities = (window.Weather && Weather.cityList()) || ['ירושלים'];
     const current = s.weatherCity || 'ירושלים';
     sel.innerHTML = cities.map((c) => `<option value="${c}" ${c === current ? 'selected' : ''}>${c}</option>`).join('');
+    document.getElementById('set-theme').value = s.theme || 'auto';
   }
 
   function renderDashboard() {

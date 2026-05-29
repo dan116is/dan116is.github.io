@@ -15,7 +15,10 @@
 <body>
   <header class="app-header">
     <h1 id="page-title">משפחת ישראלי</h1>
-    <button id="install-btn" class="install-btn hidden" aria-label="התקן">התקן</button>
+    <div class="header-actions">
+      <button id="theme-btn" class="theme-btn" aria-label="ערכת נושא">🌗</button>
+      <button id="install-btn" class="install-btn hidden" aria-label="התקן">התקן</button>
+    </div>
   </header>
 
   <main id="app-content">
@@ -24,6 +27,13 @@
       <div class="welcome">
         <h2 id="greeting">שלום!</h2>
         <p class="welcome-sub" id="today-date"></p>
+      </div>
+
+      <!-- Smart quick-add -->
+      <div class="smart-bar">
+        <button class="smart-mic" id="smart-mic" aria-label="קלט קולי">🎤</button>
+        <input type="text" id="smart-input" placeholder="הוסף משהו… &quot;חלב וביצים&quot;, &quot;תזכיר מחר רופא&quot;" autocomplete="off">
+        <button class="smart-go" id="smart-add" aria-label="הוסף">↵</button>
       </div>
 
       <!-- Weather + clothing -->
@@ -193,6 +203,7 @@
           </div>
         </div>
       </div>
+      <div class="budget-trend" id="budget-trend"></div>
       <div class="budget-categories" id="budget-categories"></div>
       <h3 class="section-h">הוצאות אחרונות</h3>
       <div id="expense-list" class="card-list"></div>
@@ -227,6 +238,14 @@
         <div class="settings-field">
           <label>עיר למזג אוויר</label>
           <select id="set-city"></select>
+        </div>
+        <div class="settings-field">
+          <label>ערכת נושא</label>
+          <select id="set-theme">
+            <option value="auto">אוטומטי (לפי המכשיר)</option>
+            <option value="light">בהיר</option>
+            <option value="dark">כהה</option>
+          </select>
         </div>
       </div>
       <div class="settings-section">
@@ -332,6 +351,7 @@
   <script src="js/weather.js"></script>
   <script src="js/beitar.js"></script>
   <script src="js/calendar.js"></script>
+  <script src="js/quickadd.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/medications.js"></script>
   <script src="js/shopping.js"></script>

@@ -102,6 +102,32 @@ const Budget = (() => {
     }).join('');
   }
 
+  function renderTrend(mKey) {
+    const container = document.getElementById('budget-trend');
+    if (!container) return;
+    const [y, m] = mKey.split('-').map(Number);
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(y, m - 1 - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      months.push({ key, label: d.toLocaleDateString('he-IL', { month: 'short' }), total: totalForMonth(key) });
+    }
+    const max = Math.max(1, ...months.map((x) => x.total));
+    if (!months.some((x) => x.total > 0)) { container.innerHTML = ''; return; }
+    container.innerHTML = `
+      <div class="trend-head">מגמת הוצאות · 6 חודשים</div>
+      <div class="trend-bars">
+        ${months.map((x) => {
+          const h = Math.max(4, Math.round((x.total / max) * 100));
+          return `<div class="trend-col">
+            <div class="trend-amt">${x.total > 0 ? format(x.total).replace('₪', '') : ''}</div>
+            <div class="trend-bar ${x.key === mKey ? 'current' : ''}" style="height:${h}%"></div>
+            <div class="trend-lbl">${x.label}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  }
+
   function renderList(mKey) {
     const container = document.getElementById('expense-list');
     const items = list().filter((e) => inMonth(e, mKey)).sort((a, b) => (b.date > a.date ? 1 : -1)).slice(0, 50);
@@ -169,6 +195,6 @@ const Budget = (() => {
   return {
     CATEGORIES, list, add, update, remove,
     totalForMonth, byCategory, getBudget, setBudget, monthKey,
-    renderSummary, renderCategories, renderList, openForm, format
+    renderSummary, renderCategories, renderList, renderTrend, openForm, format
   };
 })();
