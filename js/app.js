@@ -17,12 +17,35 @@ const App = (() => {
     setView(parseHashView() || 'dashboard');
     renderAll();
     if (window.Weather) Weather.start();
+    if (window.Jewish) Jewish.start();
     if (window.Beitar) Beitar.start();
     if (window.Sync) Sync.start();
     Notifier.start();
+    setupUX();
     setInterval(renderAll, 60 * 1000);
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && window.Weather) Weather.paint();
+      if (!document.hidden) { if (window.Weather) Weather.paint(); if (window.Jewish) Jewish.paint(); }
+    });
+  }
+
+  function setupUX() {
+    if (!window.UX) return;
+    UX.enablePullToRefresh(document.getElementById('app-content'), () => {
+      haptic(10);
+      if (window.Weather) Weather.refresh(true);
+      if (window.Jewish) Jewish.refresh();
+      if (window.Beitar) Beitar.refresh();
+      renderAll();
+    });
+    UX.enableSwipe(document.getElementById('dash-tasks'), {
+      rowSelector: '.dash-item',
+      onComplete: (row) => { const b = row.querySelector('[data-task-toggle]'); if (b) { haptic(); Tasks.toggle(b.dataset.taskToggle); renderAll(); } },
+      onDelete: (row) => { const b = row.querySelector('[data-task-toggle]'); if (b) { haptic(); Tasks.remove(b.dataset.taskToggle); renderAll(); toast('נמחק'); } }
+    });
+    UX.enableSwipe(document.getElementById('dash-shopping'), {
+      rowSelector: '.dash-item',
+      onComplete: (row) => { const b = row.querySelector('[data-shop-toggle]'); if (b) { haptic(); Shopping.toggle(b.dataset.shopToggle); renderAll(); } },
+      onDelete: (row) => { const b = row.querySelector('[data-shop-toggle]'); if (b) { haptic(); Shopping.remove(b.dataset.shopToggle); renderAll(); toast('נמחק'); } }
     });
   }
 
@@ -338,9 +361,13 @@ const App = (() => {
     if (btn.id === 'weather-refresh') {
       haptic();
       if (window.Weather) Weather.refresh(true);
+    } else if (btn.id === 'jewish-refresh') {
+      haptic();
+      if (window.Jewish) Jewish.refresh();
     } else if (btn.dataset.taskToggle) {
       haptic();
       Tasks.toggle(btn.dataset.taskToggle);
+      celebrateIfAllDone();
       renderAll();
     } else if (btn.dataset.shopToggle) {
       haptic();
@@ -369,8 +396,17 @@ const App = (() => {
     renderAll();
   }
 
-  // ----- Smart quick-add -----
-  function runSmartAdd() {
+  // Celebrate when the last open task for today gets completed.
+  function celebrateIfAllDone() {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const remaining = Tasks.list().filter((t) => !t.done && (t.dueDate === todayKey || !t.dueDate)).length;
+    if (remaining === 0 && window.UX) {
+      UX.confetti();
+      toast('כל הכבוד! סיימת הכל 🎉', 'success');
+    }
+  }
+
+  function addDashShopping() {
     const input = document.getElementById('smart-input');
     const text = input.value.trim();
     if (!text) return;
@@ -653,6 +689,7 @@ const App = (() => {
     renderWeekStrip();
     renderGlance();
     if (window.Weather) Weather.paint();
+    if (window.Jewish) Jewish.paint();
     if (window.Beitar) Beitar.paint();
     renderDashTasks();
     renderDashShopping();
