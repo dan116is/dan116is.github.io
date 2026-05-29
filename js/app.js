@@ -18,6 +18,7 @@ const App = (() => {
     renderAll();
     if (window.Weather) Weather.start();
     if (window.Beitar) Beitar.start();
+    if (window.Sync) Sync.start();
     Notifier.start();
     setInterval(renderAll, 60 * 1000);
     document.addEventListener('visibilitychange', () => {
@@ -172,6 +173,28 @@ const App = (() => {
     document.getElementById('set-theme').addEventListener('change', (e) => {
       DB.setSetting('theme', e.target.value);
       applyTheme(e.target.value);
+    });
+
+    // Family sync
+    if (window.Sync) {
+      Sync.onStatus((state, msg) => {
+        const el = document.getElementById('sync-status');
+        if (el) el.textContent = 'מצב סנכרון: ' + (msg || state);
+      });
+    }
+    document.getElementById('sync-enable-btn').addEventListener('click', async () => {
+      const codeV = document.getElementById('set-family-code').value.trim();
+      const parsed = Sync.parseConfig(document.getElementById('set-fb-config').value.trim());
+      if (!codeV) { toast('הזן קוד משפחה', 'error'); return; }
+      if (!parsed) { toast('קונפיג Firebase לא תקין', 'error'); return; }
+      DB.setSetting('familyCode', codeV);
+      DB.setSetting('firebaseConfig', JSON.stringify(parsed));
+      const ok = await Sync.enable();
+      toast(ok ? 'הסנכרון הופעל ✓' : 'הפעלת הסנכרון נכשלה', ok ? 'success' : 'error');
+    });
+    document.getElementById('sync-disable-btn').addEventListener('click', () => {
+      Sync.disable();
+      toast('הסנכרון כובה');
     });
 
     // Medications view
@@ -552,6 +575,8 @@ const App = (() => {
     const current = s.weatherCity || 'ירושלים';
     sel.innerHTML = cities.map((c) => `<option value="${c}" ${c === current ? 'selected' : ''}>${c}</option>`).join('');
     document.getElementById('set-theme').value = s.theme || 'auto';
+    document.getElementById('set-family-code').value = s.familyCode || '';
+    document.getElementById('set-fb-config').value = s.firebaseConfig || '';
   }
 
   function renderDashboard() {
@@ -718,7 +743,7 @@ const App = (() => {
     }
   }
 
-  return { init, setView, toast };
+  return { init, setView, toast, refresh: renderAll };
 })();
 
 document.addEventListener('DOMContentLoaded', App.init);
