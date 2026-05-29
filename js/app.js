@@ -1,6 +1,6 @@
 // Main app controller: routing, modals, event delegation, dashboard.
 const App = (() => {
-  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'events', 'goals', 'schedule', 'budget', 'settings'];
+  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'events', 'goals', 'schedule', 'meals', 'maintenance', 'growth', 'stars', 'savings', 'budget', 'settings'];
   let currentView = 'dashboard';
   let medFilter = 'all';
   let taskFilter = 'all';
@@ -11,6 +11,7 @@ const App = (() => {
     Settings.seedDefaultFamily();
     if (window.Habits) Habits.ensureSeed();
     if (window.Goals) Goals.ensureSeed();
+    if (window.Maintenance) Maintenance.ensureSeed();
     applyFamilyPhoto();
     setupNav();
     setupModal();
@@ -296,6 +297,23 @@ const App = (() => {
     document.getElementById('add-sched-btn').addEventListener('click', () => showScheduleForm());
     document.getElementById('sched-board').addEventListener('click', onScheduleClick);
 
+    // Meals view
+    document.getElementById('meals-board').addEventListener('click', onMealsClick);
+
+    // Maintenance view
+    document.getElementById('add-maint-btn').addEventListener('click', () => showMaintForm());
+    document.getElementById('maint-list').addEventListener('click', onMaintClick);
+
+    // Growth view
+    document.getElementById('growth-list').addEventListener('click', onGrowthClick);
+
+    // Stars view
+    document.getElementById('stars-list').addEventListener('click', onStarsClick);
+
+    // Savings view
+    document.getElementById('add-savings-btn').addEventListener('click', () => showSavingsForm());
+    document.getElementById('savings-list').addEventListener('click', onSavingsClick);
+
     // Music shortcut -> user playlist
     document.getElementById('music-btn').addEventListener('click', (e) => {
       const url = (DB.getSettings().playlistUrl || '').trim();
@@ -438,6 +456,16 @@ const App = (() => {
       const after = Goals.monthly();
       if (Number(after.progress) >= 100 && window.UX) UX.confetti();
       renderMonthlyGoal();
+    } else if (btn.dataset.maintDone) {
+      haptic();
+      Maintenance.markDone(btn.dataset.maintDone);
+      renderDashboard();
+      toast('עודכן — נקבע מועד הבא', 'success');
+    } else if (btn.dataset.mealShop != null) {
+      haptic();
+      const n = Meals.addIngredientsToShopping(Number(btn.dataset.mealShop));
+      renderAll();
+      toast(n ? `נוספו ${n} מצרכים לקניות` : 'אין מצרכים', n ? 'success' : 'error');
     } else if (btn.dataset.view && (btn.classList.contains('goal-mini') || btn.classList.contains('link-btn'))) {
       setView(btn.dataset.view);
     }
@@ -765,6 +793,136 @@ const App = (() => {
     }
   }
 
+  // ----- Meals handlers -----
+  function showMealForm(dow) {
+    openModal('ארוחת ערב', Meals.openForm(dow));
+    const form = document.getElementById('meal-form');
+    form.querySelector('[data-close]') && form.querySelector('[data-close]').addEventListener('click', closeModal);
+    const clearBtn = form.querySelector('[data-meal-clear]');
+    if (clearBtn) clearBtn.addEventListener('click', () => { Meals.clearDay(dow); closeModal(); renderAll(); toast('נוקה'); });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      Meals.setMeal(dow, d.title, d.ingredients);
+      closeModal(); renderAll(); toast('נשמר', 'success');
+    });
+  }
+  function onMealsClick(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.mealEdit != null) showMealForm(Number(btn.dataset.mealEdit));
+    else if (btn.dataset.mealShop != null) {
+      haptic();
+      const n = Meals.addIngredientsToShopping(Number(btn.dataset.mealShop));
+      renderAll();
+      toast(n ? `נוספו ${n} מצרכים לקניות` : 'אין מצרכים', n ? 'success' : 'error');
+    }
+  }
+
+  // ----- Maintenance handlers -----
+  function showMaintForm(existing) {
+    openModal(existing ? 'ערוך תחזוקה' : 'פריט תחזוקה', Maintenance.openForm(existing));
+    const form = document.getElementById('maint-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      d.intervalMonths = Number(d.intervalMonths);
+      if (existing) Maintenance.update(existing.id, d); else Maintenance.add(d);
+      closeModal(); renderAll(); toast(existing ? 'עודכן' : 'נוסף', 'success');
+    });
+  }
+  async function onMaintClick(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.maintDone) { haptic(); Maintenance.markDone(btn.dataset.maintDone); renderAll(); toast('עודכן — נקבע מועד הבא', 'success'); }
+    else if (btn.dataset.maintEdit) { const it = DB.findById(DB.KEYS.maintenance, btn.dataset.maintEdit); if (it) showMaintForm(it); }
+    else if (btn.dataset.maintDel) {
+      const ok = await confirmDialog({ title: 'מחיקת פריט', message: 'למחוק מהתחזוקה?', okText: 'מחק', icon: '🔧' });
+      if (!ok) return;
+      Maintenance.remove(btn.dataset.maintDel); renderAll(); toast('נמחק', 'success');
+    }
+  }
+
+  // ----- Growth handlers -----
+  function showGrowthForm(child) {
+    openModal('מדידה — ' + child, Growth.openForm(child));
+    const form = document.getElementById('growth-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      if (!d.height && !d.weight) { toast('הזן גובה או משקל', 'error'); return; }
+      Growth.add(d);
+      closeModal(); renderAll(); toast('נשמר', 'success');
+    });
+  }
+  async function onGrowthClick(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.growthAdd) showGrowthForm(btn.dataset.growthAdd);
+    else if (btn.dataset.growthDel) {
+      const ok = await confirmDialog({ title: 'מחיקת מדידה', message: 'למחוק?', okText: 'מחק', icon: '📏' });
+      if (!ok) return;
+      Growth.remove(btn.dataset.growthDel); renderAll(); toast('נמחק', 'success');
+    }
+  }
+
+  // ----- Stars handlers -----
+  function showStarConfig(child) {
+    openModal('יעד ופרס — ' + child, Stars.configForm(child));
+    const form = document.getElementById('star-config-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      Stars.setGoal(d.child, d.goal);
+      Stars.setReward(d.child, d.reward);
+      closeModal(); renderAll(); toast('נשמר', 'success');
+    });
+  }
+  function onStarsClick(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.starGive) {
+      haptic(); Stars.award(btn.dataset.starGive, btn.dataset.reason, 1);
+      if (window.UX) UX.confetti();
+      renderAll(); toast('⭐ כוכב נוסף!', 'success');
+    } else if (btn.dataset.starRedeem) {
+      Stars.redeem(btn.dataset.starRedeem); if (window.UX) UX.confetti(); renderAll(); toast('🎉 פרס מומש!', 'success');
+    } else if (btn.dataset.starConfig) {
+      showStarConfig(btn.dataset.starConfig);
+    }
+  }
+
+  // ----- Savings handlers -----
+  function showSavingsForm() {
+    openModal('יעד חיסכון חדש', Savings.openForm());
+    const form = document.getElementById('savings-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      d.target = Number(d.target);
+      Savings.add(d);
+      closeModal(); renderAll(); toast('נוצר יעד', 'success');
+    });
+  }
+  async function onSavingsClick(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.dataset.savingsAdd) {
+      haptic(); Savings.deposit(btn.dataset.savingsAdd, btn.dataset.amt); renderAll(); toast('הופקד ✓', 'success');
+    } else if (btn.dataset.savingsCustom) {
+      const v = prompt('כמה להפקיד? (₪)');
+      if (v && !isNaN(Number(v))) { Savings.deposit(btn.dataset.savingsCustom, Number(v)); renderAll(); toast('הופקד ✓', 'success'); }
+    } else if (btn.dataset.savingsDel) {
+      const ok = await confirmDialog({ title: 'מחיקת יעד', message: 'למחוק את יעד החיסכון?', okText: 'מחק', icon: '🐷' });
+      if (!ok) return;
+      Savings.remove(btn.dataset.savingsDel); renderAll(); toast('נמחק', 'success');
+    }
+  }
+
   // ----- Family photo -----
   function applyFamilyPhoto() {
     const photo = DB.getSettings().familyPhoto;
@@ -893,6 +1051,8 @@ const App = (() => {
     if (window.Beitar) Beitar.paint();
     renderMonthlyGoal();
     if (window.Schedule) Schedule.renderToday(document.getElementById('dash-schedule'));
+    renderDashMeal();
+    renderDashMaint();
     renderDashTasks();
     renderDashShopping();
     renderDashHabits();
@@ -925,6 +1085,35 @@ const App = (() => {
         <span class="mg-pct">${pct}%</span>
         <button class="mg-step" data-mg="10">+</button>
       </div>`;
+  }
+
+  function renderDashMeal() {
+    const widget = document.getElementById('dash-meal-widget');
+    const el = document.getElementById('dash-meal');
+    if (!widget || !window.Meals) return;
+    const m = Meals.todayMeal();
+    if (!m || !m.title) { widget.hidden = true; return; }
+    widget.hidden = false;
+    el.innerHTML = `<div class="dash-item"><span class="dash-item-title">🍽️ ${esc(m.title)}</span>
+      ${m.ingredients ? `<button class="link-btn" data-meal-shop="${new Date().getDay()}">+ לקניות</button>` : ''}</div>`;
+  }
+
+  function renderDashMaint() {
+    const widget = document.getElementById('dash-maint-widget');
+    const el = document.getElementById('dash-maint');
+    if (!widget || !window.Maintenance) return;
+    const due = Maintenance.dueSoon(21);
+    if (!due.length) { widget.hidden = true; return; }
+    widget.hidden = false;
+    el.innerHTML = due.slice(0, 4).map(({ it }) => {
+      const s = Maintenance.statusOf(it);
+      return `<div class="dash-item ${s.level === 'danger' ? 'danger' : ''}">
+        <div class="event-emoji sm">${it.emoji || '🔧'}</div>
+        <span class="dash-item-title">${esc(it.title)}</span>
+        <span class="tag ${s.level}">${s.text}</span>
+        <button class="icon-btn" data-maint-done="${it.id}" title="בוצע">✓</button>
+      </div>`;
+    }).join('');
   }
 
   function renderDashGoals() {
@@ -1117,6 +1306,11 @@ const App = (() => {
     else if (currentView === 'events') Events.render(document.getElementById('event-list'));
     else if (currentView === 'goals') Goals.render(document.getElementById('goals-list'));
     else if (currentView === 'schedule') Schedule.render(document.getElementById('sched-board'));
+    else if (currentView === 'meals') Meals.render(document.getElementById('meals-board'));
+    else if (currentView === 'maintenance') Maintenance.render(document.getElementById('maint-list'));
+    else if (currentView === 'growth') Growth.render(document.getElementById('growth-list'));
+    else if (currentView === 'stars') Stars.render(document.getElementById('stars-list'));
+    else if (currentView === 'savings') Savings.render(document.getElementById('savings-list'));
     else if (currentView === 'budget') renderBudget();
     else if (currentView === 'settings') {
       Settings.renderFamily();

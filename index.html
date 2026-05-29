@@ -121,6 +121,24 @@
         <div id="dash-schedule" class="dash-list"></div>
       </div>
 
+      <!-- Tonight's dinner -->
+      <div class="dash-widget" id="dash-meal-widget" hidden>
+        <div class="dash-widget-head">
+          <h3><span class="widget-ico meals">🍽️</span> ארוחת הערב</h3>
+          <button class="link-btn" data-view="meals">השבוע ›</button>
+        </div>
+        <div id="dash-meal"></div>
+      </div>
+
+      <!-- Maintenance due soon -->
+      <div class="dash-widget" id="dash-maint-widget" hidden>
+        <div class="dash-widget-head">
+          <h3><span class="widget-ico maint">🔧</span> תחזוקה מתקרבת</h3>
+          <button class="link-btn" data-view="maintenance">הכל ›</button>
+        </div>
+        <div id="dash-maint" class="dash-list"></div>
+      </div>
+
       <!-- Daily habits & water -->
       <div class="dash-widget">
         <div class="dash-widget-head">
@@ -302,6 +320,42 @@
       <div id="sched-board" class="sched-board"></div>
     </section>
 
+    <!-- Meals -->
+    <section id="view-meals" class="view">
+      <div class="view-toolbar"><h2>תכנון ארוחות</h2></div>
+      <div id="meals-board" class="meals-board"></div>
+    </section>
+
+    <!-- Maintenance -->
+    <section id="view-maintenance" class="view">
+      <div class="view-toolbar">
+        <h2>תחזוקה ותזכורות</h2>
+        <button class="primary-btn" id="add-maint-btn">+ הוסף</button>
+      </div>
+      <div id="maint-list" class="card-list"></div>
+    </section>
+
+    <!-- Growth -->
+    <section id="view-growth" class="view">
+      <div class="view-toolbar"><h2>מעקב גדילה</h2></div>
+      <div id="growth-list"></div>
+    </section>
+
+    <!-- Stars -->
+    <section id="view-stars" class="view">
+      <div class="view-toolbar"><h2>טבלת כוכבים</h2></div>
+      <div id="stars-list"></div>
+    </section>
+
+    <!-- Savings -->
+    <section id="view-savings" class="view">
+      <div class="view-toolbar">
+        <h2>קופת חיסכון</h2>
+        <button class="primary-btn" id="add-savings-btn">+ יעד</button>
+      </div>
+      <div id="savings-list"></div>
+    </section>
+
     <!-- Settings -->
     <section id="view-settings" class="view">
       <div class="view-toolbar">
@@ -433,7 +487,12 @@
         <button class="more-item" data-view="tasks"><span class="more-ico" style="background:var(--c-tasks)">📋</span>משימות</button>
         <button class="more-item" data-view="schedule"><span class="more-ico" style="background:#5e5ce6">🗓️</span>לו״ז</button>
         <button class="more-item" data-view="goals"><span class="more-ico" style="background:#30d158">🎯</span>יעדים</button>
+        <button class="more-item" data-view="meals"><span class="more-ico" style="background:#ff9f0a">🍽️</span>ארוחות</button>
         <button class="more-item" data-view="events"><span class="more-ico" style="background:var(--c-budget)">🎂</span>אירועים</button>
+        <button class="more-item" data-view="stars"><span class="more-ico" style="background:#ffcb05">⭐</span>כוכבים</button>
+        <button class="more-item" data-view="growth"><span class="more-ico" style="background:#34c759">📏</span>גדילה</button>
+        <button class="more-item" data-view="savings"><span class="more-ico" style="background:#5e5ce6">🐷</span>חיסכון</button>
+        <button class="more-item" data-view="maintenance"><span class="more-ico" style="background:#8e8e93">🔧</span>תחזוקה</button>
         <button class="more-item" data-view="medications"><span class="more-ico" style="background:var(--c-meds)">💊</span>תרופות</button>
         <button class="more-item" data-view="settings"><span class="more-ico" style="background:#8e8e93">⚙️</span>הגדרות</button>
       </div>
@@ -479,6 +538,11 @@
   <script src="js/habits.js"></script>
   <script src="js/goals.js"></script>
   <script src="js/schedule.js"></script>
+  <script src="js/maintenance.js"></script>
+  <script src="js/meals.js"></script>
+  <script src="js/growth.js"></script>
+  <script src="js/stars.js"></script>
+  <script src="js/savings.js"></script>
   <script src="js/quickadd.js"></script>
   <script src="js/ux.js"></script>
   <script src="js/notifications.js"></script>
