@@ -9,6 +9,7 @@ const App = (() => {
   function init() {
     applyTheme(DB.getSettings().theme || 'auto');
     Settings.seedDefaultFamily();
+    if (window.Habits) Habits.ensureSeed();
     setupNav();
     setupModal();
     setupHandlers();
@@ -381,6 +382,13 @@ const App = (() => {
     } else if (btn.dataset.wkDay) {
       haptic(8);
       if (window.Calendar) { Calendar.select(btn.dataset.wkDay); setView('calendar'); }
+    } else if (btn.dataset.habit) {
+      haptic();
+      const wasDone = Habits.isDone(Habits.all().find((x) => x.id === btn.dataset.habit) || {});
+      Habits.bump(btn.dataset.habit, 1);
+      const nowDone = Habits.isDone(Habits.all().find((x) => x.id === btn.dataset.habit) || {});
+      if (!wasDone && nowDone && window.UX) UX.confetti();
+      renderDashHabits();
     } else if (btn.classList.contains('link-btn') && btn.dataset.view) {
       setView(btn.dataset.view);
     }
@@ -694,9 +702,29 @@ const App = (() => {
     if (window.Beitar) Beitar.paint();
     renderDashTasks();
     renderDashShopping();
+    renderDashHabits();
     renderDashMeds();
     renderDashEvents();
     renderDashBudget();
+  }
+
+  function renderDashHabits() {
+    const el = document.getElementById('dash-habits');
+    if (!el || !window.Habits) return;
+    const items = Habits.all();
+    if (!items.length) { el.innerHTML = `<div class="dash-empty">אין הרגלים. אפשר להוסיף בקרוב.</div>`; return; }
+    el.innerHTML = items.map((h) => {
+      const done = Habits.isDone(h);
+      const streak = Habits.streak(h);
+      const val = Habits.valueToday(h);
+      const sub = h.type === 'count' ? `${val}/${h.goal}` : (done ? 'בוצע' : 'לא בוצע');
+      return `<button class="habit-tile ${done ? 'done' : ''}" data-habit="${h.id}">
+        <span class="habit-emoji">${h.emoji}</span>
+        <span class="habit-name">${esc(h.name)}</span>
+        <span class="habit-sub">${sub}</span>
+        ${streak > 0 ? `<span class="habit-streak">🔥 ${streak}</span>` : ''}
+      </button>`;
+    }).join('');
   }
 
   function dkey(d) {
