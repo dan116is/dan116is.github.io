@@ -133,3 +133,4 @@ const Maintenance = (() => {
 
   return { list, add, update, remove, markDone, ensureSeed, dueSoon, daysUntil, nextDate, statusOf, checkAlerts, render, openForm };
 })();
+if (typeof window !== "undefined") window.Maintenance = Maintenance;

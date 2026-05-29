@@ -198,3 +198,4 @@ const Budget = (() => {
     renderSummary, renderCategories, renderList, renderTrend, openForm, format
   };
 })();
+if (typeof window !== "undefined") window.Budget = Budget;

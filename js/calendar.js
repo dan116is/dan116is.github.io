@@ -108,3 +108,4 @@ const Calendar = (() => {
 
   return { render, prev, next, select, selected };
 })();
+if (typeof window !== "undefined") window.Calendar = Calendar;

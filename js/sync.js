@@ -126,3 +126,4 @@ const Sync = (() => {
 
   return { start, enable, disable, onLocalChange, onStatus, parseConfig, isConfigured, isEnabled };
 })();
+if (typeof window !== "undefined") window.Sync = Sync;

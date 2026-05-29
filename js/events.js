@@ -124,3 +124,4 @@ const Events = (() => {
 
   return { list, add, update, remove, upcoming, daysUntil, nextDate, ageTurning, countdownText, icon, formatNext, render, openForm };
 })();
+if (typeof window !== "undefined") window.Events = Events;

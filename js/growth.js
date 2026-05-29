@@ -81,3 +81,4 @@ const Growth = (() => {
 
   return { list, add, remove, forChild, children, render, openForm };
 })();
+if (typeof window !== "undefined") window.Growth = Growth;

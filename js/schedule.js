@@ -99,3 +99,4 @@ const Schedule = (() => {
 
   return { DAYS, TYPES, list, add, update, remove, todayItems, renderToday, render, openForm };
 })();
+if (typeof window !== "undefined") window.Schedule = Schedule;

@@ -72,3 +72,4 @@ const Notifier = (() => {
 
   return { isSupported, permission, request, notify, checkAll, start };
 })();
+if (typeof window !== "undefined") window.Notifier = Notifier;

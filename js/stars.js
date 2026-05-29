@@ -78,3 +78,4 @@ const Stars = (() => {
 
   return { log, award, removeEntry, totalFor, goalFor, setGoal, rewardFor, setReward, redeem, kids, render, configForm };
 })();
+if (typeof window !== "undefined") window.Stars = Stars;

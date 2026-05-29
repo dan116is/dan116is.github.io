@@ -86,3 +86,4 @@ const Jewish = (() => {
   function start() { paint(); }
   return { start, paint, refresh };
 })();
+if (typeof window !== "undefined") window.Jewish = Jewish;

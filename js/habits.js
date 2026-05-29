@@ -67,3 +67,4 @@ const Habits = (() => {
 
   return { all, ensureSeed, valueToday, isDone, bump, add, remove, streak, today };
 })();
+if (typeof window !== "undefined") window.Habits = Habits;
