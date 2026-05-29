@@ -925,6 +925,26 @@ body.has-photo #view-dashboard .welcome h2 { text-shadow: 0 2px 12px rgba(0,0,0,
 .savings-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .savings-actions button { flex: 1; min-width: 60px; padding: 10px; }
 
+/* ---------- Setup guide ---------- */
+.setup-card {
+  background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 18px; box-shadow: var(--shadow-sm);
+  backdrop-filter: saturate(180%) blur(22px); -webkit-backdrop-filter: saturate(180%) blur(22px);
+  animation: floatIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+.setup-card[hidden] { display: none; }
+.setup-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; font-weight: 800; font-size: 14px; }
+.setup-dismiss { background: transparent; border: none; color: var(--text-muted); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.setup-steps { display: flex; flex-direction: column; gap: 8px; }
+.setup-step {
+  display: flex; align-items: center; gap: 11px; text-align: start;
+  background: var(--bg-elev-2); border: 1px solid var(--border-strong); border-radius: 13px;
+  padding: 12px 14px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; color: var(--text);
+}
+.setup-step:active { transform: scale(0.98); }
+.setup-step::after { content: '›'; margin-inline-start: auto; color: var(--text-muted); font-size: 18px; }
+.setup-ico { font-size: 20px; }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   body::before { animation: none !important; }

@@ -155,6 +155,33 @@ const App = (() => {
     });
   }
 
+  // Themed input dialog, returns Promise<string|null>.
+  function promptDialog({ title = '', label = '', value = '', placeholder = '', type = 'text', okText = 'אישור' } = {}) {
+    return new Promise((resolve) => {
+      openModal(title, `
+        <form id="prompt-form">
+          <div class="form-group">
+            ${label ? `<label>${label}</label>` : ''}
+            <input name="val" type="${type}" value="${String(value).replace(/"/g, '&quot;')}" placeholder="${String(placeholder).replace(/"/g, '&quot;')}" ${type === 'number' ? 'inputmode="numeric"' : ''} autofocus>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="ghost-btn" data-close>ביטול</button>
+            <button type="submit" class="primary-btn">${okText}</button>
+          </div>
+        </form>`);
+      const form = document.getElementById('prompt-form');
+      let done = false;
+      form.querySelector('[data-close]').addEventListener('click', () => { done = true; closeModal(); resolve(null); });
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        done = true;
+        const v = new FormData(form).get('val');
+        closeModal();
+        resolve(v == null ? null : String(v).trim());
+      });
+    });
+  }
+
   function setupHandlers() {
     // Dashboard stat cards
     document.querySelectorAll('.stat-card').forEach((card) => {
@@ -173,6 +200,9 @@ const App = (() => {
 
     // Theme toggle
     document.getElementById('theme-btn').addEventListener('click', cycleTheme);
+
+    // Habits manager
+    document.getElementById('habits-manage').addEventListener('click', showHabitsManager);
 
     // Dashboard live widgets (delegated)
     document.getElementById('view-dashboard').addEventListener('click', onDashClick);
@@ -466,6 +496,12 @@ const App = (() => {
       const n = Meals.addIngredientsToShopping(Number(btn.dataset.mealShop));
       renderAll();
       toast(n ? `נוספו ${n} מצרכים לקניות` : 'אין מצרכים', n ? 'success' : 'error');
+    } else if (btn.id === 'setup-dismiss') {
+      DB.setSetting('setupDismissed', true);
+      renderSetupCard();
+    } else if (btn.dataset.setup) {
+      const map = { 'setup-photo': 'settings', 'setup-music': 'settings', 'setup-maint': 'maintenance', 'setup-events': 'events' };
+      setView(map[btn.dataset.setup] || 'settings');
     } else if (btn.dataset.view && (btn.classList.contains('goal-mini') || btn.classList.contains('link-btn'))) {
       setView(btn.dataset.view);
     }
@@ -914,8 +950,9 @@ const App = (() => {
     if (btn.dataset.savingsAdd) {
       haptic(); Savings.deposit(btn.dataset.savingsAdd, btn.dataset.amt); renderAll(); toast('הופקד ✓', 'success');
     } else if (btn.dataset.savingsCustom) {
-      const v = prompt('כמה להפקיד? (₪)');
-      if (v && !isNaN(Number(v))) { Savings.deposit(btn.dataset.savingsCustom, Number(v)); renderAll(); toast('הופקד ✓', 'success'); }
+      const id = btn.dataset.savingsCustom;
+      const v = await promptDialog({ title: 'הפקדה לחיסכון', label: 'כמה להפקיד? (₪)', type: 'number', placeholder: '100', okText: 'הפקד' });
+      if (v && !isNaN(Number(v))) { Savings.deposit(id, Number(v)); renderAll(); toast('הופקד ✓', 'success'); }
     } else if (btn.dataset.savingsDel) {
       const ok = await confirmDialog({ title: 'מחיקת יעד', message: 'למחוק את יעד החיסכון?', okText: 'מחק', icon: '🐷' });
       if (!ok) return;
@@ -1049,6 +1086,7 @@ const App = (() => {
     if (window.Weather) Weather.paint();
     if (window.Jewish) Jewish.paint();
     if (window.Beitar) Beitar.paint();
+    renderSetupCard();
     renderMonthlyGoal();
     if (window.Schedule) Schedule.renderToday(document.getElementById('dash-schedule'));
     renderDashMeal();
@@ -1060,6 +1098,63 @@ const App = (() => {
     renderDashMeds();
     renderDashEvents();
     renderDashBudget();
+  }
+
+  function renderSetupCard() {
+    const el = document.getElementById('setup-card');
+    if (!el) return;
+    if (DB.getSettings().setupDismissed) { el.hidden = true; return; }
+    const s = DB.getSettings();
+    const steps = [];
+    if (!s.familyPhoto) steps.push({ icon: '🖼️', label: 'הוסף תמונה משפחתית', action: 'setup-photo' });
+    if (!s.playlistUrl) steps.push({ icon: '🎵', label: 'חבר פלייליסט', action: 'setup-music' });
+    if (window.Maintenance && Maintenance.list().some((it) => !it.lastDone)) steps.push({ icon: '🔧', label: 'עדכן תאריך טיפול רכב', action: 'setup-maint' });
+    if (window.Events && !Events.list().some((e) => e.type === 'birthday')) steps.push({ icon: '🎂', label: 'הוסף ימי הולדת', action: 'setup-events' });
+    if (!steps.length) { el.hidden = true; return; }
+    el.hidden = false;
+    el.innerHTML =
+      `<div class="setup-head"><span>✨ בוא נסיים להקים — ${steps.length} צעדים</span><button class="setup-dismiss" id="setup-dismiss">דלג</button></div>` +
+      `<div class="setup-steps">${steps.map((st) => `<button class="setup-step" data-setup="${st.action}"><span class="setup-ico">${st.icon}</span>${st.label}</button>`).join('')}</div>`;
+  }
+
+  function showHabitsManager() {
+    const render = () => {
+      const list = Habits.all();
+      openModal('ניהול הרגלים', `
+        <div id="habits-manager">
+          ${list.length ? list.map((h) => `
+            <div class="dash-item">
+              <span class="dash-item-title">${h.emoji} ${esc(h.name)}${h.type === 'count' ? ` <span class="muted">· יעד ${h.goal}</span>` : ''}</span>
+              <button class="icon-btn" data-habit-del="${h.id}" title="מחק">🗑</button>
+            </div>`).join('') : '<div class="dash-empty">אין הרגלים</div>'}
+          <form id="habit-add-form" style="margin-top:16px;">
+            <div class="form-row">
+              <div class="form-group"><label>הרגל חדש</label><input name="name" placeholder="לדוגמה: מדיטציה" required></div>
+              <div class="form-group"><label>אימוג׳י</label><input name="emoji" value="⭐" maxlength="2"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>סוג</label><select name="type"><option value="check">סימון יומי</option><option value="count">ספירה (יעד)</option></select></div>
+              <div class="form-group"><label>יעד (לספירה)</label><input name="goal" type="number" min="1" value="1"></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="primary-btn">+ הוסף הרגל</button></div>
+          </form>
+        </div>`);
+      const mgr = document.getElementById('habits-manager');
+      mgr.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-habit-del]');
+        if (!b) return;
+        Habits.remove(b.dataset.habitDel);
+        render(); renderDashHabits();
+      });
+      document.getElementById('habit-add-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const d = Object.fromEntries(new FormData(e.target));
+        if (!d.name.trim()) return;
+        Habits.add(d.name.trim(), d.emoji || '⭐', d.type, Number(d.goal) || 1);
+        render(); renderDashHabits(); toast('הרגל נוסף', 'success');
+      });
+    };
+    render();
   }
 
   function renderMonthlyGoal() {
