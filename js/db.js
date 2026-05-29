@@ -9,6 +9,7 @@ const DB = (() => {
     expenses: 'expenses',
     budgets: 'budgets',
     family: 'family',
+    events: 'events',
     settings: 'settings'
   };
 

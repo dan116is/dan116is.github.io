@@ -27,6 +27,22 @@ const Calendar = (() => {
     return map;
   }
 
+  // Map of YYYY-MM-DD -> [events] for the currently viewed month (handles
+  // yearly-recurring birthdays by projecting onto the viewed year).
+  function eventsByDay() {
+    const map = {};
+    if (typeof Events === 'undefined') return map;
+    for (const ev of Events.list()) {
+      if (!ev.date) continue;
+      const parts = ev.date.split('-').map(Number);
+      let key;
+      if (ev.type === 'birthday') key = `${viewYear}-${pad(parts[1])}-${pad(parts[2])}`;
+      else key = ev.date;
+      (map[key] = map[key] || []).push(ev);
+    }
+    return map;
+  }
+
   function render() {
     ensure();
     const grid = document.getElementById('cal-grid');
@@ -37,6 +53,7 @@ const Calendar = (() => {
     const startDow = new Date(viewYear, viewMonth, 1).getDay();
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
     const byDay = tasksByDay();
+    const evDay = eventsByDay();
     const todayKey = ymd(new Date());
     const weekdays = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 
@@ -45,10 +62,12 @@ const Calendar = (() => {
     for (let day = 1; day <= daysInMonth; day++) {
       const key = `${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`;
       const has = byDay[key] && byDay[key].length;
+      const hasEv = evDay[key];
       const cls = ['cal-day'];
       if (key === todayKey) cls.push('today');
       if (key === selectedKey) cls.push('selected');
-      cells += `<button class="${cls.join(' ')}" data-cal-day="${key}">${day}<div class="cal-dots">${has ? '<span class="cal-dot"></span>' : ''}</div></button>`;
+      const dots = `${has ? '<span class="cal-dot"></span>' : ''}${hasEv ? '<span class="cal-dot event"></span>' : ''}`;
+      cells += `<button class="${cls.join(' ')}" data-cal-day="${key}">${day}<div class="cal-dots">${dots}</div></button>`;
     }
     grid.innerHTML =
       `<div class="cal-weekdays">${weekdays.map((w) => `<span>${w}</span>`).join('')}</div>` +
@@ -65,17 +84,26 @@ const Calendar = (() => {
     const d = new Date(selectedKey + 'T00:00:00');
     head.textContent = d.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
     const items = (byDay[selectedKey] || []).slice().sort((a, b) => Number(a.done) - Number(b.done));
-    if (!items.length) {
-      el.innerHTML = `<div class="dash-empty">אין משימות ליום זה</div>`;
+    const evMap = eventsByDay();
+    const evItems = evMap[selectedKey] || [];
+    if (!items.length && !evItems.length) {
+      el.innerHTML = `<div class="dash-empty">אין משימות או אירועים ליום זה</div>`;
       return;
     }
-    el.innerHTML = items.map((t) => `
+    const evHtml = evItems.map((ev) => `
+      <div class="dash-item">
+        <div class="event-emoji sm">${Events.icon(ev)}</div>
+        <span class="dash-item-title">${esc(ev.title)}</span>
+        <span class="tag warning">${ev.type === 'birthday' ? 'יום הולדת' : 'אירוע'}</span>
+      </div>`).join('');
+    const taskHtml = items.map((t) => `
       <div class="dash-item ${t.done ? 'done' : ''}">
         <button class="item-check ${t.done ? 'checked' : ''}" data-task-toggle="${t.id}" aria-label="סמן"></button>
         <span class="dash-item-title">${esc(t.title)}</span>
         ${t.priority && t.priority !== 'רגילה' ? `<span class="tag ${t.priority === 'גבוהה' ? 'danger' : ''}">${esc(t.priority)}</span>` : ''}
         ${t.forWhom ? `<span class="tag">${esc(t.forWhom)}</span>` : ''}
       </div>`).join('');
+    el.innerHTML = evHtml + taskHtml;
   }
 
   return { render, prev, next, select, selected };

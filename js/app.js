@@ -1,6 +1,6 @@
 // Main app controller: routing, modals, event delegation, dashboard.
 const App = (() => {
-  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'budget', 'settings'];
+  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'events', 'budget', 'settings'];
   let currentView = 'dashboard';
   let medFilter = 'all';
   let taskFilter = 'all';
@@ -34,18 +34,31 @@ const App = (() => {
   function setView(name) {
     if (!views.includes(name)) name = 'dashboard';
     currentView = name;
+    closeMore();
     document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
     document.getElementById('view-' + name).classList.add('active');
-    document.querySelectorAll('.nav-btn').forEach((b) => {
+    const inBar = ['dashboard', 'calendar', 'shopping', 'budget'];
+    document.querySelectorAll('.nav-btn[data-view]').forEach((b) => {
       b.classList.toggle('active', b.dataset.view === name);
     });
+    const moreBtn = document.getElementById('nav-more-btn');
+    if (moreBtn) moreBtn.classList.toggle('active', !inBar.includes(name));
     document.getElementById('app-content').scrollTop = 0;
     history.replaceState(null, '', '#' + name);
     renderCurrentView();
   }
 
+  function openMore() { document.getElementById('more-sheet').classList.remove('hidden'); }
+  function closeMore() { document.getElementById('more-sheet').classList.add('hidden'); }
+
   function setupNav() {
-    document.querySelectorAll('.nav-btn').forEach((btn) => {
+    document.querySelectorAll('.nav-btn[data-view]').forEach((btn) => {
+      btn.addEventListener('click', () => { haptic(8); setView(btn.dataset.view); });
+    });
+    document.getElementById('nav-more-btn').addEventListener('click', () => { haptic(8); openMore(); });
+    const sheet = document.getElementById('more-sheet');
+    sheet.querySelector('.more-backdrop').addEventListener('click', closeMore);
+    sheet.querySelectorAll('.more-item').forEach((btn) => {
       btn.addEventListener('click', () => { haptic(8); setView(btn.dataset.view); });
     });
     window.addEventListener('hashchange', () => {
@@ -246,6 +259,10 @@ const App = (() => {
     document.getElementById('add-expense-btn').addEventListener('click', () => showExpenseForm());
     document.getElementById('expense-list').addEventListener('click', onExpenseListClick);
 
+    // Events view
+    document.getElementById('add-event-btn').addEventListener('click', () => showEventForm());
+    document.getElementById('event-list').addEventListener('click', onEventListClick);
+
     // Settings view
     document.getElementById('family-add-btn').addEventListener('click', addFamilyFromInput);
     document.getElementById('family-input').addEventListener('keypress', (e) => {
@@ -309,6 +326,8 @@ const App = (() => {
       showTaskForm();
     } else if (action === 'add-med') {
       showMedForm();
+    } else if (action === 'add-event') {
+      showEventForm();
     }
   }
 
@@ -332,6 +351,9 @@ const App = (() => {
       Medications.takeDose(btn.dataset.medTake);
       renderAll();
       toast('סומן כנלקח', 'success');
+    } else if (btn.dataset.wkDay) {
+      haptic(8);
+      if (window.Calendar) { Calendar.select(btn.dataset.wkDay); setView('calendar'); }
     } else if (btn.classList.contains('link-btn') && btn.dataset.view) {
       setView(btn.dataset.view);
     }
@@ -529,6 +551,37 @@ const App = (() => {
     }
   }
 
+  // ----- Events handlers -----
+  function showEventForm(existing) {
+    openModal(existing ? 'ערוך אירוע' : 'אירוע / יום הולדת', Events.openForm(existing));
+    const form = document.getElementById('event-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      if (existing) Events.update(existing.id, data);
+      else Events.add(data);
+      closeModal();
+      renderAll();
+      toast(existing ? 'עודכן' : 'נוסף', 'success');
+    });
+  }
+
+  async function onEventListClick(e) {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.eventEdit) {
+      const ev = DB.findById(DB.KEYS.events, t.dataset.eventEdit);
+      if (ev) showEventForm(ev);
+    } else if (t.dataset.eventDel) {
+      const ok = await confirmDialog({ title: 'מחיקת אירוע', message: 'למחוק את האירוע?', okText: 'מחק', icon: '🎂' });
+      if (!ok) return;
+      Events.remove(t.dataset.eventDel);
+      renderAll();
+      toast('נמחק', 'success');
+    }
+  }
+
   function renderBudget() {
     const mKey = document.getElementById('budget-month').value || Budget.monthKey();
     Budget.renderSummary(mKey);
@@ -597,12 +650,73 @@ const App = (() => {
 
     document.getElementById('stat-budget').textContent = Budget.format(Budget.totalForMonth(Budget.monthKey()));
 
+    renderWeekStrip();
+    renderGlance();
     if (window.Weather) Weather.paint();
     if (window.Beitar) Beitar.paint();
     renderDashTasks();
     renderDashShopping();
     renderDashMeds();
+    renderDashEvents();
     renderDashBudget();
+  }
+
+  function dkey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function renderWeekStrip() {
+    const el = document.getElementById('week-strip');
+    if (!el) return;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayKey = dkey(today);
+    const tasks = Tasks.list().filter((t) => !t.done && t.dueDate);
+    const names = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+    let html = '';
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today); d.setDate(d.getDate() + i);
+      const key = dkey(d);
+      const count = tasks.filter((t) => t.dueDate === key).length;
+      html += `<button class="wk-day ${key === todayKey ? 'today' : ''}" data-wk-day="${key}">
+        <span class="wk-name">${names[d.getDay()]}</span>
+        <span class="wk-num">${d.getDate()}</span>
+        <span class="wk-dot">${count ? '<i></i>' : ''}</span>
+      </button>`;
+    }
+    el.innerHTML = html;
+  }
+
+  function renderGlance() {
+    const el = document.getElementById('glance');
+    if (!el) return;
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const tasksToday = Tasks.list().filter((t) => !t.done && (t.dueDate === todayKey)).length;
+    const overdue = Tasks.overdueCount();
+    const shop = Shopping.activeCount();
+    const ev = window.Events ? Events.upcoming(7)[0] : null;
+    const parts = [];
+    if (overdue > 0) parts.push(`<span class="g-pill danger">⏰ ${overdue} באיחור</span>`);
+    parts.push(`<span class="g-pill">📋 ${tasksToday} משימות היום</span>`);
+    if (shop > 0) parts.push(`<span class="g-pill">🛒 ${shop} בקניות</span>`);
+    if (ev) parts.push(`<span class="g-pill accent">${Events.icon(ev.ev)} ${esc(ev.ev.title)} · ${Events.countdownText(ev.d)}</span>`);
+    el.innerHTML = parts.join('');
+  }
+
+  function renderDashEvents() {
+    const widget = document.getElementById('dash-events-widget');
+    const el = document.getElementById('dash-events');
+    if (!widget || !window.Events) return;
+    const items = Events.upcoming(45);
+    if (!items.length) { widget.hidden = true; return; }
+    widget.hidden = false;
+    el.innerHTML = items.slice(0, 4).map(({ ev, d }) => {
+      const age = Events.ageTurning(ev);
+      return `<div class="dash-item ${d <= 7 ? 'danger' : ''}">
+        <div class="event-emoji sm">${Events.icon(ev)}</div>
+        <span class="dash-item-title">${esc(ev.title)}${age != null ? ` <span class="muted">· ${age}</span>` : ''}</span>
+        <span class="tag ${d <= 7 ? 'warning' : ''}">${Events.countdownText(d)}</span>
+      </div>`;
+    }).join('');
   }
 
   function greetingText(d) {
@@ -699,6 +813,7 @@ const App = (() => {
     else if (currentView === 'shopping') Shopping.render(document.getElementById('shop-list'));
     else if (currentView === 'tasks') Tasks.render(document.getElementById('task-list'), taskFilter);
     else if (currentView === 'calendar') Calendar.render();
+    else if (currentView === 'events') Events.render(document.getElementById('event-list'));
     else if (currentView === 'budget') renderBudget();
     else if (currentView === 'settings') {
       Settings.renderFamily();

@@ -36,6 +36,12 @@
         <button class="smart-go" id="smart-add" aria-label="הוסף">↵</button>
       </div>
 
+      <!-- Week strip -->
+      <div class="week-strip" id="week-strip"></div>
+
+      <!-- Today at a glance -->
+      <div class="glance" id="glance"></div>
+
       <!-- Weather + clothing -->
       <div class="weather-card" id="weather-card">
         <div class="weather-skeleton">טוען מזג אוויר…</div>
@@ -100,6 +106,15 @@
         <div id="dash-meds" class="dash-list"></div>
       </div>
 
+      <!-- Upcoming events & birthdays -->
+      <div class="dash-widget" id="dash-events-widget" hidden>
+        <div class="dash-widget-head">
+          <h3><span class="widget-ico events">🎂</span> אירועים מתקרבים</h3>
+          <button class="link-btn" data-view="events">הכל ›</button>
+        </div>
+        <div id="dash-events" class="dash-list"></div>
+      </div>
+
       <!-- Budget -->
       <div class="dash-widget">
         <div class="dash-widget-head">
@@ -112,10 +127,10 @@
       <div class="quick-actions">
         <h3>פעולות מהירות</h3>
         <div class="quick-actions-grid">
-          <button class="quick-btn" data-action="add-shopping">+ פריט לקנייה</button>
-          <button class="quick-btn" data-action="add-expense">+ הוצאה</button>
-          <button class="quick-btn" data-action="add-task">+ משימה</button>
-          <button class="quick-btn" data-action="add-med">+ תרופה</button>
+          <button class="quick-btn" data-action="add-shopping">🛒 פריט לקנייה</button>
+          <button class="quick-btn" data-action="add-expense">💰 הוצאה</button>
+          <button class="quick-btn" data-action="add-task">📋 משימה</button>
+          <button class="quick-btn" data-action="add-event">🎂 אירוע</button>
         </div>
       </div>
     </section>
@@ -224,6 +239,15 @@
       <div id="cal-day-list" class="dash-list"></div>
     </section>
 
+    <!-- Events & birthdays -->
+    <section id="view-events" class="view">
+      <div class="view-toolbar">
+        <h2>אירועים וימי הולדת</h2>
+        <button class="primary-btn" id="add-event-btn">+ הוסף</button>
+      </div>
+      <div id="event-list" class="card-list"></div>
+    </section>
+
     <!-- Settings -->
     <section id="view-settings" class="view">
       <div class="view-toolbar">
@@ -300,7 +324,7 @@
         <h3>אזור מסוכן</h3>
         <button class="danger-btn" id="reset-btn">מחק את כל הנתונים</button>
       </div>
-      <div class="app-version">גרסה 1.1.0 · נבנה במיוחד עבורך</div>
+      <div class="app-version">גרסה 2.0 · משפחת ישראלי</div>
     </section>
   </main>
 
@@ -309,31 +333,36 @@
       <span class="nav-icon">🏠</span>
       <span class="nav-label">בית</span>
     </button>
-    <button class="nav-btn" data-view="shopping">
-      <span class="nav-icon">🛒</span>
-      <span class="nav-label">קניות</span>
-    </button>
-    <button class="nav-btn" data-view="tasks">
-      <span class="nav-icon">📋</span>
-      <span class="nav-label">משימות</span>
-    </button>
     <button class="nav-btn" data-view="calendar">
       <span class="nav-icon">📅</span>
       <span class="nav-label">לוח שנה</span>
+    </button>
+    <button class="nav-btn" data-view="shopping">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">קניות</span>
     </button>
     <button class="nav-btn" data-view="budget">
       <span class="nav-icon">💰</span>
       <span class="nav-label">תקציב</span>
     </button>
-    <button class="nav-btn" data-view="medications">
-      <span class="nav-icon">💊</span>
-      <span class="nav-label">תרופות</span>
-    </button>
-    <button class="nav-btn" data-view="settings">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-label">הגדרות</span>
+    <button class="nav-btn" id="nav-more-btn">
+      <span class="nav-icon">⋯</span>
+      <span class="nav-label">עוד</span>
     </button>
   </nav>
+
+  <!-- More sheet -->
+  <div id="more-sheet" class="more-sheet hidden">
+    <div class="more-backdrop"></div>
+    <div class="more-content">
+      <div class="more-grid">
+        <button class="more-item" data-view="tasks"><span class="more-ico" style="background:var(--c-tasks)">📋</span>משימות</button>
+        <button class="more-item" data-view="medications"><span class="more-ico" style="background:var(--c-meds)">💊</span>תרופות</button>
+        <button class="more-item" data-view="events"><span class="more-ico" style="background:var(--c-budget)">🎂</span>אירועים</button>
+        <button class="more-item" data-view="settings"><span class="more-ico" style="background:#8e8e93">⚙️</span>הגדרות</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal -->
   <div id="modal" class="modal hidden">
@@ -369,6 +398,7 @@
   <script src="js/weather.js"></script>
   <script src="js/beitar.js"></script>
   <script src="js/calendar.js"></script>
+  <script src="js/events.js"></script>
   <script src="js/quickadd.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/medications.js"></script>
