@@ -109,6 +109,14 @@
         <div id="dash-meds" class="dash-list"></div>
       </div>
 
+      <!-- Daily habits & water -->
+      <div class="dash-widget">
+        <div class="dash-widget-head">
+          <h3><span class="widget-ico habits">🔥</span> הרגלים יומיים</h3>
+        </div>
+        <div id="dash-habits" class="habits-grid"></div>
+      </div>
+
       <!-- Upcoming events & birthdays -->
       <div class="dash-widget" id="dash-events-widget" hidden>
         <div class="dash-widget-head">
@@ -135,6 +143,11 @@
           <button class="quick-btn" data-action="add-task">📋 משימה</button>
           <button class="quick-btn" data-action="add-event">🎂 אירוע</button>
         </div>
+        <a class="music-btn" id="music-btn" href="https://open.spotify.com" target="_blank" rel="noopener">
+          <span class="music-ico">🎵</span>
+          <span>פתח מוזיקה</span>
+          <span class="music-eq"><i></i><i></i><i></i><i></i></span>
+        </a>
       </div>
     </section>
 
@@ -403,6 +416,7 @@
   <script src="js/beitar.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/events.js"></script>
+  <script src="js/habits.js"></script>
   <script src="js/quickadd.js"></script>
   <script src="js/ux.js"></script>
   <script src="js/notifications.js"></script>

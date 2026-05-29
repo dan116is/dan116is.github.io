@@ -1,10 +1,14 @@
 :root {
   /* iCloud-style light theme (default) */
-  --bg: #f5f5f7;
-  --bg-grad: radial-gradient(1100px 520px at 100% -8%, rgba(94,92,230,0.10), transparent 60%),
-             radial-gradient(900px 480px at -8% 0%, rgba(10,132,255,0.10), transparent 55%);
-  --bg-elev: #ffffff;
-  --bg-elev-2: #eff0f3;
+  --bg: #eef1f8;
+  --bg-grad:
+    radial-gradient(900px 520px at 100% -8%, rgba(94,92,230,0.22), transparent 60%),
+    radial-gradient(820px 480px at -8% 4%, rgba(10,132,255,0.20), transparent 55%),
+    radial-gradient(700px 600px at 50% 110%, rgba(255,55,95,0.14), transparent 60%);
+  --glass: rgba(255,255,255,0.62);
+  --glass-strong: rgba(255,255,255,0.78);
+  --bg-elev: rgba(255,255,255,0.72);
+  --bg-elev-2: rgba(120,130,160,0.10);
   --text: #1d1d1f;
   --text-muted: #6e6e73;
   --primary: #007aff;
@@ -13,12 +17,12 @@
   --success: #34c759;
   --warning: #ff9f0a;
   --danger: #ff3b30;
-  --border: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.14);
-  --radius: 22px;
-  --radius-sm: 14px;
-  --shadow: 0 12px 34px rgba(0,0,0,0.10);
-  --shadow-sm: 0 4px 16px rgba(0,0,0,0.06);
+  --border: rgba(255,255,255,0.55);
+  --border-strong: rgba(0,0,0,0.10);
+  --radius: 24px;
+  --radius-sm: 15px;
+  --shadow: 0 16px 40px rgba(40,50,90,0.14);
+  --shadow-sm: 0 8px 24px rgba(40,50,90,0.10);
   /* section accents (Apple palette) */
   --c-meds: #5e5ce6;
   --c-shopping: #34c759;
@@ -34,30 +38,38 @@
    (no data-theme attribute), via the OS preference. */
 :root[data-theme="dark"],
 :root[data-theme="dark"] body {
-  --bg: #000000;
-  --bg-grad: radial-gradient(1100px 520px at 100% -8%, rgba(94,92,230,0.20), transparent 60%),
-             radial-gradient(900px 480px at -8% 0%, rgba(10,132,255,0.16), transparent 55%);
-  --bg-elev: #1c1c1e;
-  --bg-elev-2: #2c2c2e;
+  --bg: #07080d;
+  --bg-grad:
+    radial-gradient(900px 520px at 100% -8%, rgba(94,92,230,0.38), transparent 60%),
+    radial-gradient(820px 480px at -8% 4%, rgba(10,132,255,0.30), transparent 55%),
+    radial-gradient(700px 600px at 50% 110%, rgba(255,55,95,0.22), transparent 60%);
+  --glass: rgba(28,30,42,0.55);
+  --glass-strong: rgba(28,30,42,0.74);
+  --bg-elev: rgba(30,33,48,0.58);
+  --bg-elev-2: rgba(255,255,255,0.08);
   --text: #f5f5f7;
-  --text-muted: #98989d;
-  --border: rgba(255,255,255,0.10);
-  --border-strong: rgba(255,255,255,0.18);
-  --shadow: 0 12px 34px rgba(0,0,0,0.5);
-  --shadow-sm: 0 4px 16px rgba(0,0,0,0.4);
+  --text-muted: #9aa0ad;
+  --border: rgba(255,255,255,0.12);
+  --border-strong: rgba(255,255,255,0.20);
+  --shadow: 0 18px 46px rgba(0,0,0,0.6);
+  --shadow-sm: 0 8px 26px rgba(0,0,0,0.5);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="dark"]) {
-    --bg: #000000;
-    --bg-grad: radial-gradient(1100px 520px at 100% -8%, rgba(94,92,230,0.20), transparent 60%),
-               radial-gradient(900px 480px at -8% 0%, rgba(10,132,255,0.16), transparent 55%);
-    --bg-elev: #1c1c1e;
-    --bg-elev-2: #2c2c2e;
+    --bg: #07080d;
+    --bg-grad:
+      radial-gradient(900px 520px at 100% -8%, rgba(94,92,230,0.38), transparent 60%),
+      radial-gradient(820px 480px at -8% 4%, rgba(10,132,255,0.30), transparent 55%),
+      radial-gradient(700px 600px at 50% 110%, rgba(255,55,95,0.22), transparent 60%);
+    --glass: rgba(28,30,42,0.55);
+    --glass-strong: rgba(28,30,42,0.74);
+    --bg-elev: rgba(30,33,48,0.58);
+    --bg-elev-2: rgba(255,255,255,0.08);
     --text: #f5f5f7;
-    --text-muted: #98989d;
-    --border: rgba(255,255,255,0.10);
-    --border-strong: rgba(255,255,255,0.18);
+    --text-muted: #9aa0ad;
+    --border: rgba(255,255,255,0.12);
+    --border-strong: rgba(255,255,255,0.20);
     --shadow: 0 12px 34px rgba(0,0,0,0.5);
     --shadow-sm: 0 4px 16px rgba(0,0,0,0.4);
   }
@@ -71,16 +83,58 @@ html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Heebo", "Assistant", "Segoe UI", Arial, sans-serif;
   background: var(--bg);
-  background-image: var(--bg-grad);
-  background-attachment: fixed;
   color: var(--text);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-body { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+body { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; position: relative; }
+
+/* Floating animated aurora background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20% -20% -20% -20%;
+  z-index: -1;
+  background: var(--bg-grad);
+  background-attachment: fixed;
+  animation: auroraFloat 22s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes auroraFloat {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-3%, 2%, 0) scale(1.08); }
+  100% { transform: translate3d(2%, -2%, 0) scale(1.04); }
+}
 ::selection { background: rgba(10,132,255,0.22); }
+
+/* Glass treatment for all elevated surfaces */
+.stat-card, .dash-widget, .smart-bar, .add-inline, .item-card, .budget-summary,
+.budget-trend, .cat-row, .settings-section, .cal-grid, .glance .g-pill, .toast,
+.theme-btn, .week-strip .wk-day, .modal-content, .more-content {
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+}
+.stat-card, .dash-widget, .budget-summary, .budget-trend, .cat-row,
+.settings-section, .cal-grid, .modal-content, .more-content,
+.smart-bar, .add-inline, .item-card, .week-strip .wk-day {
+  background: var(--glass);
+  border: 1px solid var(--border);
+}
+.stat-card::after, .dash-widget::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255,255,255,0.45), rgba(255,255,255,0) 45%);
+  pointer-events: none;
+  opacity: 0.7;
+}
+:root[data-theme="dark"] .stat-card::after,
+:root[data-theme="dark"] .dash-widget::after {
+  background: linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 45%);
+}
+.dash-widget { position: relative; overflow: hidden; }
 
 /* ---------- Header ---------- */
 .app-header {
@@ -690,6 +744,65 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .ptr-indicator.spin { animation: ptrSpin 0.7s linear infinite; }
 @keyframes ptrSpin { to { transform: translate(-50%, 70px) rotate(360deg); } }
 
+/* ---------- Floating cards on scroll-in ---------- */
+.dash-widget, .weather-card, .jewish-card, .beitar-card {
+  animation: floatIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- Weather sun times ---------- */
+.weather-sun {
+  display: flex; gap: 18px; margin-top: 12px;
+  font-size: 13px; font-weight: 700; opacity: 0.95;
+}
+
+/* ---------- Habits ---------- */
+.habits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 10px; }
+.habit-tile {
+  position: relative;
+  background: var(--bg-elev-2); border: 1px solid var(--border-strong); border-radius: 18px;
+  padding: 14px 8px 12px; cursor: pointer; font-family: inherit; color: var(--text);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.habit-tile:active { transform: scale(0.94); }
+.habit-tile.done {
+  background: var(--primary-grad); color: #fff; border-color: transparent;
+  box-shadow: 0 8px 22px rgba(10,132,255,0.4);
+}
+.habit-emoji { font-size: 26px; line-height: 1; }
+.habit-name { font-size: 12.5px; font-weight: 700; }
+.habit-sub { font-size: 11px; opacity: 0.8; font-weight: 600; }
+.habit-streak {
+  position: absolute; top: 6px; left: 6px;
+  font-size: 10.5px; font-weight: 800; background: rgba(255,159,10,0.22); color: var(--warning);
+  padding: 1px 6px; border-radius: 9px;
+}
+.habit-tile.done .habit-streak { background: rgba(255,255,255,0.25); color: #fff; }
+.widget-ico.habits { background: linear-gradient(135deg, #ff9f0a, #ff375f); }
+
+/* ---------- Music button ---------- */
+.music-btn {
+  display: flex; align-items: center; gap: 11px; margin-top: 12px; text-decoration: none;
+  background: linear-gradient(135deg, #1db954 0%, #1ed760 100%); color: #fff;
+  padding: 15px 18px; border-radius: var(--radius-sm); font-weight: 800; font-size: 15px;
+  box-shadow: 0 8px 22px rgba(29,185,84,0.4); transition: transform 0.15s ease;
+}
+.music-btn:active { transform: scale(0.97); }
+.music-ico { font-size: 20px; }
+.music-eq { margin-inline-start: auto; display: flex; align-items: flex-end; gap: 3px; height: 18px; }
+.music-eq i { width: 3px; background: rgba(255,255,255,0.9); border-radius: 2px; animation: eq 0.9s ease-in-out infinite; }
+.music-eq i:nth-child(1) { height: 8px; animation-delay: 0s; }
+.music-eq i:nth-child(2) { height: 16px; animation-delay: 0.2s; }
+.music-eq i:nth-child(3) { height: 6px; animation-delay: 0.4s; }
+.music-eq i:nth-child(4) { height: 13px; animation-delay: 0.1s; }
+@keyframes eq { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  body::before { animation: none !important; }
+  .music-eq i { animation: none !important; }
 }

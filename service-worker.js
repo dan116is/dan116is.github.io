@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habait-v9';
+const CACHE_NAME = 'habait-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const ASSETS = [
   './js/beitar.js',
   './js/calendar.js',
   './js/events.js',
+  './js/habits.js',
   './js/quickadd.js',
   './js/ux.js',
   './js/notifications.js',

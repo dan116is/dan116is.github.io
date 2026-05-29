@@ -93,6 +93,7 @@ const Weather = (() => {
         </div>
         <button class="weather-refresh" id="weather-refresh" aria-label="רענן">↻</button>
       </div>
+      ${(d.sunrise || d.sunset) ? `<div class="weather-sun"><span>🌅 ${d.sunrise}</span><span>🌇 ${d.sunset}</span></div>` : ''}
       <div class="weather-advice">
         <div class="advice-head">${d.advice.emoji} ${d.advice.head} — מה ללבוש היום</div>
         <ul>${d.advice.tips.map((t) => `<li>${t}</li>`).join('')}</ul>
@@ -112,7 +113,7 @@ const Weather = (() => {
     if (showLoading && el && !load()) el.innerHTML = `<div class="weather-skeleton">טוען מזג אוויר ל${L.name}…</div>`;
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${L.lat}&longitude=${L.lon}` +
       `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day` +
-      `&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max` +
+      `&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,sunrise,sunset` +
       `&timezone=auto&forecast_days=4`;
     try {
       const res = await fetch(url);
@@ -123,9 +124,12 @@ const Weather = (() => {
       const prob = j.daily.precipitation_probability_max ? j.daily.precipitation_probability_max[0] : 0;
       const wind = j.current.wind_speed_10m;
       const forecast = j.daily.time.map((t, i) => ({ date: t, min: j.daily.temperature_2m_min[i], max: j.daily.temperature_2m_max[i], code: j.daily.weather_code[i] }));
+      const fmt = (s) => { try { return new Date(s).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
       const data = {
         temp: j.current.temperature_2m, feels: j.current.apparent_temperature, code: j.current.weather_code,
-        min: minT, max: maxT, advice: clothing(minT, maxT, dayCode, prob, wind), forecast
+        min: minT, max: maxT, advice: clothing(minT, maxT, dayCode, prob, wind), forecast,
+        sunrise: j.daily.sunrise ? fmt(j.daily.sunrise[0]) : '',
+        sunset: j.daily.sunset ? fmt(j.daily.sunset[0]) : ''
       };
       store(data);
       if (card()) renderData(card(), data);
