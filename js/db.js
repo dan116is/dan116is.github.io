@@ -25,6 +25,7 @@ const DB = (() => {
   function write(key, value) {
     try {
       localStorage.setItem(PREFIX + key, JSON.stringify(value));
+      if (key !== KEYS.settings && typeof Sync !== 'undefined' && Sync.onLocalChange) Sync.onLocalChange();
       return true;
     } catch (e) {
       console.error('DB write error', key, e);

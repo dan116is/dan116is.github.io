@@ -257,6 +257,23 @@
         </div>
       </div>
       <div class="settings-section">
+        <h3>🔄 סנכרון משפחתי</h3>
+        <p class="hint">סנכרון בזמן אמת בין כל המכשירים במשפחה (כל אחד בחשבון נפרד). הדבק קונפיג של Firebase, בחרו <b>קוד משפחה</b> משותף וזהה בכל הטלפונים, והפעל.</p>
+        <div class="settings-field">
+          <label>קוד משפחה (זהה לכולם)</label>
+          <input type="text" id="set-family-code" placeholder="לדוגמה: israeli-2026" autocomplete="off">
+        </div>
+        <div class="settings-field">
+          <label>קונפיג Firebase</label>
+          <textarea id="set-fb-config" rows="5" placeholder="הדבק כאן את ה-firebaseConfig מקונסולת Firebase"></textarea>
+        </div>
+        <div class="settings-actions">
+          <button class="primary-btn" id="sync-enable-btn">הפעל סנכרון</button>
+          <button class="ghost-btn" id="sync-disable-btn">כבה</button>
+        </div>
+        <p class="hint" id="sync-status" style="margin-top:10px;"></p>
+      </div>
+      <div class="settings-section">
         <h3>בני משפחה</h3>
         <p class="hint">מי במשפחה שלך? משתמש במשימות וברשימות.</p>
         <div id="family-list"></div>
@@ -348,6 +365,7 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="js/db.js"></script>
+  <script src="js/sync.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/beitar.js"></script>
   <script src="js/calendar.js"></script>
