@@ -72,6 +72,10 @@ const App = (() => {
     if (moreBtn) moreBtn.classList.toggle('active', !inBar.includes(name));
     document.getElementById('app-content').scrollTop = 0;
     history.replaceState(null, '', '#' + name);
+    // Edit button only on dashboard; leaving the dashboard exits edit mode.
+    const editBtn = document.getElementById('dash-edit-btn');
+    if (editBtn) editBtn.style.display = (name === 'dashboard') ? '' : 'none';
+    if (name !== 'dashboard' && window.DashEdit && DashEdit.isEditing()) DashEdit.exit();
     renderCurrentView();
   }
 
@@ -200,6 +204,10 @@ const App = (() => {
 
     // Theme toggle
     document.getElementById('theme-btn').addEventListener('click', cycleTheme);
+
+    // Dashboard edit mode (drag to reorder, tap to resize)
+    const editBtn = document.getElementById('dash-edit-btn');
+    if (editBtn) editBtn.addEventListener('click', () => { haptic(8); if (window.DashEdit) DashEdit.toggle(); });
 
     // Habits manager
     document.getElementById('habits-manage').addEventListener('click', showHabitsManager);
