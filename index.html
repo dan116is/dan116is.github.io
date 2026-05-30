@@ -23,43 +23,31 @@
 
   <main id="app-content">
     <!-- Dashboard -->
-    <section id="view-dashboard" class="view active">
+      <section id="view-dashboard" class="view active">
       <div class="welcome">
         <h2 id="greeting">שלום!</h2>
         <p class="welcome-sub" id="today-date"></p>
       </div>
 
-      <!-- Smart quick-add -->
       <div class="smart-bar">
         <button class="smart-mic" id="smart-mic" aria-label="קלט קולי">🎤</button>
         <input type="text" id="smart-input" placeholder="הוסף משהו… &quot;חלב וביצים&quot;, &quot;תזכיר מחר רופא&quot;" autocomplete="off">
         <button class="smart-go" id="smart-add" aria-label="הוסף">↵</button>
       </div>
 
-      <!-- Setup guide -->
-      <div class="setup-card" id="setup-card" hidden></div>
+      <div class="setup-card" id="setup-card" data-widget="setup" hidden></div>
+      <div class="week-strip" id="week-strip" data-widget="week"></div>
+      <div class="glance" id="glance" data-widget="glance"></div>
+      <div class="monthly-goal" id="monthly-goal" data-widget="monthly"></div>
 
-      <!-- Week strip -->
-      <div class="week-strip" id="week-strip"></div>
-
-      <!-- Today at a glance -->
-      <div class="glance" id="glance"></div>
-
-      <!-- Goal of the month -->
-      <div class="monthly-goal" id="monthly-goal"></div>
-
-      <!-- Weather + clothing -->
-      <div class="weather-card" id="weather-card">
+      <div class="weather-card" id="weather-card" data-widget="weather">
         <div class="weather-skeleton">טוען מזג אוויר…</div>
       </div>
 
-      <!-- Jewish calendar / Shabbat -->
-      <div class="jewish-card" id="jewish-card"></div>
+      <div class="jewish-card" id="jewish-card" data-widget="jewish"></div>
+      <div class="beitar-card" id="beitar-card" data-widget="beitar"></div>
 
-      <!-- Beitar Jerusalem -->
-      <div class="beitar-card" id="beitar-card"></div>
-
-      <div class="quick-stats">
+      <div class="quick-stats" data-widget="stats">
         <div class="stat-card" data-target="medications">
           <div class="stat-icon">💊</div>
           <div class="stat-value" id="stat-meds">0</div>
@@ -84,8 +72,7 @@
         </div>
       </div>
 
-      <!-- Today's tasks -->
-      <div class="dash-widget">
+      <div class="dash-widget" data-widget="tasks">
         <div class="dash-widget-head">
           <h3><span class="widget-ico tasks">📋</span> משימות היום</h3>
           <button class="link-btn" data-view="tasks">הכל ›</button>
@@ -93,8 +80,7 @@
         <div id="dash-tasks" class="dash-list"></div>
       </div>
 
-      <!-- Shopping -->
-      <div class="dash-widget">
+      <div class="dash-widget" data-widget="shopping">
         <div class="dash-widget-head">
           <h3><span class="widget-ico shopping">🛒</span> רשימת קניות</h3>
           <button class="link-btn" data-view="shopping">הכל ›</button>
@@ -106,17 +92,7 @@
         <div id="dash-shopping" class="dash-list"></div>
       </div>
 
-      <!-- Medications needing attention -->
-      <div class="dash-widget" id="dash-meds-widget" hidden>
-        <div class="dash-widget-head">
-          <h3><span class="widget-ico meds">💊</span> תרופות לתשומת לב</h3>
-          <button class="link-btn" data-view="medications">הכל ›</button>
-        </div>
-        <div id="dash-meds" class="dash-list"></div>
-      </div>
-
-      <!-- Today's schedule -->
-      <div class="dash-widget">
+      <div class="dash-widget" data-widget="schedule">
         <div class="dash-widget-head">
           <h3><span class="widget-ico sched">🗓️</span> הלו״ז של היום</h3>
           <button class="link-btn" data-view="schedule">השבוע ›</button>
@@ -124,8 +100,15 @@
         <div id="dash-schedule" class="dash-list"></div>
       </div>
 
-      <!-- Tonight's dinner -->
-      <div class="dash-widget" id="dash-meal-widget" hidden>
+      <div class="dash-widget" id="dash-meds-widget" data-widget="meds" hidden>
+        <div class="dash-widget-head">
+          <h3><span class="widget-ico meds">💊</span> תרופות לתשומת לב</h3>
+          <button class="link-btn" data-view="medications">הכל ›</button>
+        </div>
+        <div id="dash-meds" class="dash-list"></div>
+      </div>
+
+      <div class="dash-widget" id="dash-meal-widget" data-widget="meal" hidden>
         <div class="dash-widget-head">
           <h3><span class="widget-ico meals">🍽️</span> ארוחת הערב</h3>
           <button class="link-btn" data-view="meals">השבוע ›</button>
@@ -133,8 +116,7 @@
         <div id="dash-meal"></div>
       </div>
 
-      <!-- Maintenance due soon -->
-      <div class="dash-widget" id="dash-maint-widget" hidden>
+      <div class="dash-widget" id="dash-maint-widget" data-widget="maint" hidden>
         <div class="dash-widget-head">
           <h3><span class="widget-ico maint">🔧</span> תחזוקה מתקרבת</h3>
           <button class="link-btn" data-view="maintenance">הכל ›</button>
@@ -142,8 +124,7 @@
         <div id="dash-maint" class="dash-list"></div>
       </div>
 
-      <!-- Daily habits & water -->
-      <div class="dash-widget">
+      <div class="dash-widget" data-widget="habits">
         <div class="dash-widget-head">
           <h3><span class="widget-ico habits">🔥</span> הרגלים יומיים</h3>
           <button class="link-btn" id="habits-manage">נהל</button>
@@ -151,8 +132,7 @@
         <div id="dash-habits" class="habits-grid"></div>
       </div>
 
-      <!-- Family goals snapshot -->
-      <div class="dash-widget">
+      <div class="dash-widget" data-widget="goals">
         <div class="dash-widget-head">
           <h3><span class="widget-ico goals">🎯</span> יעדי המשפחה</h3>
           <button class="link-btn" data-view="goals">הכל ›</button>
@@ -160,17 +140,7 @@
         <div id="dash-goals" class="goals-mini"></div>
       </div>
 
-      <!-- Upcoming events & birthdays -->
-      <div class="dash-widget" id="dash-events-widget" hidden>
-        <div class="dash-widget-head">
-          <h3><span class="widget-ico events">🎂</span> אירועים מתקרבים</h3>
-          <button class="link-btn" data-view="events">הכל ›</button>
-        </div>
-        <div id="dash-events" class="dash-list"></div>
-      </div>
-
-      <!-- Budget -->
-      <div class="dash-widget">
+      <div class="dash-widget" data-widget="budget">
         <div class="dash-widget-head">
           <h3><span class="widget-ico budget">💰</span> תקציב החודש</h3>
           <button class="link-btn" data-view="budget">פירוט ›</button>
@@ -178,7 +148,7 @@
         <div id="dash-budget"></div>
       </div>
 
-      <div class="quick-actions">
+      <div class="quick-actions" data-widget="actions">
         <h3>פעולות מהירות</h3>
         <div class="quick-actions-grid">
           <button class="quick-btn" data-action="add-shopping">🛒 פריט לקנייה</button>
@@ -192,43 +162,6 @@
           <span class="music-eq"><i></i><i></i><i></i><i></i></span>
         </a>
       </div>
-    </section>
-
-    <!-- Medications -->
-    <section id="view-medications" class="view">
-      <div class="view-toolbar">
-        <h2>תרופות</h2>
-        <button class="primary-btn" id="add-med-btn">+ הוסף תרופה</button>
-      </div>
-      <div class="filters">
-        <button class="filter-btn active" data-filter="all">הכל</button>
-        <button class="filter-btn" data-filter="expiring">תוקף קרוב</button>
-        <button class="filter-btn" data-filter="low">מלאי נמוך</button>
-      </div>
-      <div id="med-list" class="card-list"></div>
-    </section>
-
-    <!-- Shopping -->
-    <section id="view-shopping" class="view">
-      <div class="view-toolbar">
-        <h2>רשימת קניות</h2>
-        <div class="toolbar-actions">
-          <button class="ghost-btn" id="clear-bought-btn">נקה שנקנו</button>
-        </div>
-      </div>
-      <div class="add-inline">
-        <input type="text" id="shop-input" placeholder="הוסף פריט (למשל: חלב 2 ליטר)" autocomplete="off">
-        <select id="shop-category">
-          <option value="מזון">מזון</option>
-          <option value="ירקות ופירות">ירקות ופירות</option>
-          <option value="ניקיון">ניקיון</option>
-          <option value="טיפוח">טיפוח</option>
-          <option value="תרופות">תרופות</option>
-          <option value="אחר">אחר</option>
-        </select>
-        <button class="primary-btn" id="shop-add-btn">הוסף</button>
-      </div>
-      <div id="shop-list" class="card-list grouped"></div>
     </section>
 
     <!-- Tasks -->
@@ -364,6 +297,11 @@
     <section id="view-settings" class="view">
       <div class="view-toolbar">
         <h2>הגדרות</h2>
+      </div>
+      <div class="settings-section">
+        <h3>🧩 התאמת הדשבורד</h3>
+        <p class="hint">בחר מה מוצג במסך הבית ובאיזה סדר.</p>
+        <div id="dash-customize"></div>
       </div>
       <div class="settings-section">
         <h3>התאמה אישית</h3>

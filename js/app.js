@@ -245,6 +245,15 @@ const App = (() => {
       applyTheme(e.target.value);
     });
 
+    // Dashboard customize controls
+    document.getElementById('dash-customize').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn || !window.DashLayout) return;
+      if (btn.dataset.custToggle) { haptic(); DashLayout.toggle(btn.dataset.custToggle); renderDashCustomize(); }
+      else if (btn.dataset.custUp) { haptic(8); DashLayout.move(btn.dataset.custUp, -1); renderDashCustomize(); }
+      else if (btn.dataset.custDown) { haptic(8); DashLayout.move(btn.dataset.custDown, 1); renderDashCustomize(); }
+    });
+
     // Family sync
     if (window.Sync) {
       Sync.onStatus((state, msg) => {
@@ -1061,9 +1070,33 @@ const App = (() => {
     document.getElementById('set-water-goal').value = waterGoal;
     const mb = document.getElementById('music-btn');
     if (mb && s.playlistUrl) mb.href = s.playlistUrl;
+    renderDashCustomize();
+  }
+
+  function renderDashCustomize() {
+    const el = document.getElementById('dash-customize');
+    if (!el || !window.DashLayout) return;
+    const order = DashLayout.orderedIds();
+    const meta = {};
+    DashLayout.meta().forEach((w) => { meta[w.id] = w; });
+    el.innerHTML = order.map((id, idx) => {
+      const w = meta[id];
+      if (!w) return '';
+      const hidden = DashLayout.isHidden(id);
+      return `<div class="cust-row ${hidden ? 'off' : ''}">
+        <span class="cust-emoji">${w.emoji}</span>
+        <span class="cust-label">${w.label}</span>
+        <div class="cust-actions">
+          <button class="cust-btn" data-cust-up="${id}" ${idx === 0 ? 'disabled' : ''} aria-label="למעלה">▲</button>
+          <button class="cust-btn" data-cust-down="${id}" ${idx === order.length - 1 ? 'disabled' : ''} aria-label="למטה">▼</button>
+          <button class="cust-toggle ${hidden ? '' : 'on'}" data-cust-toggle="${id}" aria-label="הצג/הסתר"><span></span></button>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   function renderDashboard() {
+    if (window.DashLayout) DashLayout.apply();
     const today = new Date();
     document.getElementById('greeting').textContent = `${greetingText(today)}, ${ownerName()}`;
     document.getElementById('today-date').textContent =
