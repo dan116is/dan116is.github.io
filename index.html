@@ -164,6 +164,44 @@
       </div>
     </section>
 
+    <!-- Medications -->
+    <section id="view-medications" class="view">
+      <div class="view-toolbar">
+        <h2>תרופות</h2>
+        <button class="primary-btn" id="add-med-btn">+ הוסף תרופה</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">הכל</button>
+        <button class="filter-btn" data-filter="expiring">תוקף קרוב</button>
+        <button class="filter-btn" data-filter="low">מלאי נמוך</button>
+      </div>
+      <div id="med-list" class="card-list"></div>
+    </section>
+
+    <!-- Shopping -->
+    <section id="view-shopping" class="view">
+      <div class="view-toolbar">
+        <h2>רשימת קניות</h2>
+        <div class="toolbar-actions">
+          <button class="ghost-btn" id="clear-bought-btn">נקה שנקנו</button>
+        </div>
+      </div>
+      <div class="add-inline">
+        <input type="text" id="shop-input" placeholder="הוסף פריט (למשל: חלב 2 ליטר)" autocomplete="off">
+        <select id="shop-category">
+          <option value="מזון">מזון</option>
+          <option value="ירקות ופירות">ירקות ופירות</option>
+          <option value="ניקיון">ניקיון</option>
+          <option value="טיפוח">טיפוח</option>
+          <option value="תרופות">תרופות</option>
+          <option value="אחר">אחר</option>
+        </select>
+        <button class="primary-btn" id="shop-add-btn">הוסף</button>
+      </div>
+      <div id="shop-list" class="card-list grouped"></div>
+    </section>
+
+
     <!-- Tasks -->
     <section id="view-tasks" class="view">
       <div class="view-toolbar">
