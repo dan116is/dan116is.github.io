@@ -1087,39 +1087,32 @@ body::before { animation-duration: 42s; }
 #view-dashboard.active > .size-half .dash-widget-head h3 { font-size: 14px; }
 #view-dashboard.active > .size-half.weather-card .weather-forecast { display: none; }
 
-/* edit mode */
+/* edit mode: per-cube control bar (tap-based, reliable on touch) */
 #view-dashboard.editing > [data-widget] {
   position: relative;
-  cursor: grab;
-  outline: 2px dashed var(--border-strong);
+  outline: 2px dashed var(--primary);
   outline-offset: 2px;
   border-radius: var(--radius);
-  animation: wobble 0.4s ease-in-out infinite alternate;
-  /* critical for touch drag: stop the browser from scrolling during the gesture */
-  touch-action: none;
-  -webkit-user-select: none;
-  user-select: none;
 }
-/* inner controls shouldn't swallow the drag in edit mode */
-#view-dashboard.editing > [data-widget] * { pointer-events: none; }
-#view-dashboard.editing > [data-widget].user-hidden { display: block !important; opacity: 0.4; }
-@keyframes wobble { from { transform: rotate(-0.5deg); } to { transform: rotate(0.5deg); } }
-#view-dashboard.editing > [data-widget].dragging {
-  animation: none;
-  transform: scale(1.04);
-  z-index: 50;
-  box-shadow: 0 24px 60px rgba(10,120,180,0.35);
-  outline-color: var(--primary);
-  opacity: 0.96;
+#view-dashboard.editing > [data-widget].user-hidden { display: block !important; opacity: 0.45; }
+/* reveal content-hidden cubes while editing so they can be re-shown */
+#view-dashboard.editing > [data-widget][hidden] { display: block !important; opacity: 0.55; }
+
+.edit-bar {
+  position: absolute; top: 6px; inset-inline-start: 6px; z-index: 4;
+  display: flex; gap: 5px; flex-wrap: wrap;
+  background: color-mix(in srgb, var(--glass-strong) 92%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  padding: 5px; border-radius: 12px; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-strong);
 }
-/* small "size" hint badge in edit mode */
-#view-dashboard.editing > [data-widget]::after {
-  content: '↔ הקש לשינוי גודל · גרור לסידור';
-  position: absolute; top: 6px; inset-inline-start: 8px;
-  background: var(--primary); color: #fff; font-size: 10px; font-weight: 700;
-  padding: 2px 8px; border-radius: 8px; pointer-events: none; z-index: 2; opacity: 0.92;
+.edit-ctl {
+  border: none; background: var(--primary); color: #fff;
+  font-family: inherit; font-size: 12px; font-weight: 800;
+  padding: 7px 10px; border-radius: 8px; cursor: pointer; line-height: 1;
 }
-#view-dashboard.editing > [data-widget].dragging::after { content: '✋ מסדר…'; }
+.edit-ctl:active { transform: scale(0.9); }
+.edit-ctl.is-off { background: var(--text-muted); }
 
 #dash-edit-btn.active { background: var(--primary); color: #fff; }
 
