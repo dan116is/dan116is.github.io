@@ -16,6 +16,7 @@
   <header class="app-header">
     <h1 id="page-title">משפחת ישראלי</h1>
     <div class="header-actions">
+      <button id="dash-edit-btn" class="theme-btn" aria-label="עריכת דשבורד">✏️</button>
       <button id="theme-btn" class="theme-btn" aria-label="ערכת נושא">🌗</button>
       <button id="install-btn" class="install-btn hidden" aria-label="התקן">התקן</button>
     </div>
@@ -138,6 +139,14 @@
           <button class="link-btn" data-view="goals">הכל ›</button>
         </div>
         <div id="dash-goals" class="goals-mini"></div>
+      </div>
+
+      <div class="dash-widget" id="dash-events-widget" data-widget="events" hidden>
+        <div class="dash-widget-head">
+          <h3><span class="widget-ico events">🎂</span> אירועים מתקרבים</h3>
+          <button class="link-btn" data-view="events">הכל ›</button>
+        </div>
+        <div id="dash-events" class="dash-list"></div>
       </div>
 
       <div class="dash-widget" data-widget="budget">
