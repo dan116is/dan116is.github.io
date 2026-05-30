@@ -31,16 +31,18 @@ const DashEdit = (() => {
   function attach() {
     const v = view();
     v.addEventListener('pointerdown', onDown);
-    v.addEventListener('pointermove', onMove);
-    v.addEventListener('pointerup', onUp);
-    v.addEventListener('pointercancel', onUp);
+    // move/up on document so a captured pointer keeps reporting even if the
+    // finger leaves the originating cube.
+    document.addEventListener('pointermove', onMove, { passive: false });
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onUp);
   }
   function detach() {
     const v = view();
     v.removeEventListener('pointerdown', onDown);
-    v.removeEventListener('pointermove', onMove);
-    v.removeEventListener('pointerup', onUp);
-    v.removeEventListener('pointercancel', onUp);
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    document.removeEventListener('pointercancel', onUp);
   }
 
   function onDown(e) {
@@ -50,6 +52,10 @@ const DashEdit = (() => {
     const w = e.target.closest('[data-widget]');
     if (!w) return;
     dragEl = w; startX = e.clientX; startY = e.clientY; moved = false; pointerId = e.pointerId;
+    // Capture on the cube itself so we keep receiving move/up even if the
+    // finger drifts off it. touch-action:none (CSS) stops the browser from
+    // stealing the gesture for scrolling.
+    try { w.setPointerCapture(e.pointerId); } catch (err) {}
   }
 
   function onMove(e) {
@@ -60,7 +66,6 @@ const DashEdit = (() => {
       moved = true;
       dragEl.classList.add('dragging');
       haptic(12);
-      try { view().setPointerCapture(pointerId); } catch (err) {}
     }
     e.preventDefault();
     // Live reorder: find the widget under the finger and insert relative to it.
@@ -79,7 +84,7 @@ const DashEdit = (() => {
   function onUp(e) {
     if (!editing || !dragEl) return;
     const el = dragEl; dragEl = null;
-    try { view().releasePointerCapture(pointerId); } catch (err) {}
+    try { el.releasePointerCapture(pointerId); } catch (err) {}
     if (moved) {
       el.classList.remove('dragging');
       persistOrder();

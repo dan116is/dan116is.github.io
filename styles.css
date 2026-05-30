@@ -1095,7 +1095,13 @@ body::before { animation-duration: 42s; }
   outline-offset: 2px;
   border-radius: var(--radius);
   animation: wobble 0.4s ease-in-out infinite alternate;
+  /* critical for touch drag: stop the browser from scrolling during the gesture */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
+/* inner controls shouldn't swallow the drag in edit mode */
+#view-dashboard.editing > [data-widget] * { pointer-events: none; }
 #view-dashboard.editing > [data-widget].user-hidden { display: block !important; opacity: 0.4; }
 @keyframes wobble { from { transform: rotate(-0.5deg); } to { transform: rotate(0.5deg); } }
 #view-dashboard.editing > [data-widget].dragging {
