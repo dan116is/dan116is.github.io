@@ -72,6 +72,9 @@ const App = (() => {
     if (moreBtn) moreBtn.classList.toggle('active', !inBar.includes(name));
     document.getElementById('app-content').scrollTop = 0;
     history.replaceState(null, '', '#' + name);
+    var _eb = document.getElementById('dash-edit-btn');
+    if (_eb) _eb.style.display = (name === 'dashboard') ? '' : 'none';
+    if (name !== 'dashboard' && window.DashEdit && DashEdit.isEditing()) DashEdit.exit();
     // Edit button only on dashboard; leaving the dashboard exits edit mode.
     const editBtn = document.getElementById('dash-edit-btn');
     if (editBtn) editBtn.style.display = (name === 'dashboard') ? '' : 'none';
