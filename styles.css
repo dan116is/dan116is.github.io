@@ -1119,3 +1119,44 @@ body::before { animation-duration: 42s; }
 @media (prefers-reduced-motion: reduce) {
   #view-dashboard.editing > [data-widget] { animation: none !important; }
 }
+
+/* ---------- Voice task button ---------- */
+.voice-task-btn {
+  width: 100%;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 14px;
+  padding: 13px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  background: var(--primary-grad);
+  box-shadow: 0 8px 20px rgba(10,158,214,0.35);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.voice-task-btn:active { transform: scale(0.98); filter: brightness(0.97); }
+.voice-task-btn.listening {
+  background: linear-gradient(135deg, #ff5b6e, #f0263c);
+  animation: vtPulse 1.1s ease-in-out infinite;
+}
+@keyframes vtPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242,38,60,0.5); }
+  50% { box-shadow: 0 0 0 12px rgba(242,38,60,0); }
+}
+.voice-task-input {
+  width: 100%;
+  display: none;
+  margin-bottom: 10px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--primary);
+  color: var(--text);
+  padding: 13px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+}
+.voice-task-input.show { display: block; }
+.voice-task-input::placeholder { color: var(--text-muted); }
+.voice-task-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(10,158,214,0.2); }
