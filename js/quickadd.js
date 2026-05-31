@@ -91,6 +91,56 @@ const QuickAdd = (() => {
     return { kind: 'shopping', msg: `נוסף לקניות: ${items.join(', ')}` };
   }
 
+  // Split a mixed utterance into segments and route each on its own.
+  // Segments break on: newlines, periods, and connector words that start a new
+  // intent ("וגם", "גם", "ו" before an action verb, "תזכיר", "תוסיף הוצאה"...).
+  // A shopping segment keeps its internal commas (parseShopping handles them).
+  function segment(text) {
+    let s = ' ' + String(text || '').trim() + ' ';
+    // Break on commas, newlines, periods, and connector words. Each resulting
+    // segment is classified on its own; a pure shopping list still works
+    // because every comma-separated item classifies as shopping.
+    const triggers = ['תזכיר לי', 'תזכיר', 'תזכורת', 'משימה', 'לקבוע', 'תור ל', 'פגישה',
+      'הוצאה', 'שילמתי', 'הוצאתי', 'עלה לי',
+      'תוסיף לקניות', 'צריך לקנות', 'לקנות', 'תוסיף', 'הוסף', 'קנה', 'תקנה'];
+    s = s.replace(/[\n.;,]+/g, '||');
+    s = s.replace(/\s+וגם\s+/g, '||').replace(/\s+גם\s+/g, '||').replace(/\s+אחר כך\s+/g, '||').replace(/\s+ואז\s+/g, '||');
+    for (const t of triggers) {
+      s = s.replace(new RegExp('\\s+ו(' + t + ')', 'g'), '||$1');
+    }
+    return s.split('||').map((x) => x.trim()).filter((x) => x.length > 1);
+  }
+
+  // Smart one-button handler: figures out task vs shopping vs expense per
+  // segment and routes each. Returns { added:{task,shopping,expense}, parts:[], msg }.
+  function handleSmart(text) {
+    const segs = segment(text);
+    const added = { task: 0, shopping: 0, expense: 0 };
+    const parts = [];
+    for (const seg of segs) {
+      const intent = classify(seg);
+      if (intent === 'expense') {
+        const e = parseExpense(seg);
+        Budget.add({ title: e.title, amount: e.amount, category: 'אחר', date: new Date().toISOString().slice(0, 10) });
+        added.expense++; parts.push('💰 ' + (e.title && e.title !== 'הוצאה' ? e.title + ' ' : '') + Budget.format(e.amount));
+      } else if (intent === 'task') {
+        const t = parseTask(seg);
+        Tasks.add({ title: t.title, dueDate: t.dueDate || '', notes: t.time ? `בשעה ${t.time}` : '' });
+        added.task++; parts.push('📋 ' + t.title + (t.dueDate ? ' (' + t.dueDate + ')' : ''));
+      } else {
+        const items = parseShopping(seg);
+        for (const it of items) { Shopping.add(it, 'אחר'); added.shopping++; parts.push('🛒 ' + it); }
+      }
+    }
+    const total = added.task + added.shopping + added.expense;
+    if (!total) return null;
+    const bits = [];
+    if (added.task) bits.push(`${added.task} משימות`);
+    if (added.shopping) bits.push(`${added.shopping} לקניות`);
+    if (added.expense) bits.push(`${added.expense} הוצאות`);
+    return { added, parts, msg: 'נוסף: ' + bits.join(' · ') };
+  }
+
   function voiceSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
 
   // Add one task per line / sentence. Each line is date-parsed on its own.
@@ -124,6 +174,6 @@ const QuickAdd = (() => {
     } catch (e) { return false; }
   }
 
-  return { handle, parseDate, voiceSupported, startVoice, addTasksFromText };
+  return { handle, handleSmart, segment, parseDate, voiceSupported, startVoice, addTasksFromText };
 })();
 if (typeof window !== "undefined") window.QuickAdd = QuickAdd;
