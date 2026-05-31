@@ -553,7 +553,7 @@ const App = (() => {
     const input = document.getElementById('smart-input');
     const text = input.value.trim();
     if (!text) return;
-    const res = QuickAdd.handle(text);
+    const res = QuickAdd.handleSmart(text);
     if (res) {
       input.value = '';
       haptic();
@@ -584,10 +584,11 @@ const App = (() => {
   function commitVoiceTasks(text) {
     const t = (text || '').trim();
     if (!t) return;
-    const n = QuickAdd.addTasksFromText(t);
+    const res = QuickAdd.handleSmart(t);
     haptic();
     renderAll();
-    if (n > 0) toast(n === 1 ? 'משימה נוספה ✓' : `${n} משימות נוספו ✓`, 'success');
+    if (res) toast(res.msg + ' ✓', 'success');
+    else toast('לא הצלחתי להבין — נסה שוב', 'error');
   }
 
   function setupVoiceTasks() {
@@ -615,7 +616,7 @@ const App = (() => {
           (state) => {
             if (state !== 'listening') {
               btn.classList.remove('listening');
-              btn.textContent = '🎤 הוסף משימות בדיבור';
+              btn.textContent = '🎤 דבר — אני אסדר לבד';
             }
           }
         );
