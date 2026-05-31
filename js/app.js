@@ -204,6 +204,7 @@ const App = (() => {
       if (e.key === 'Enter') runSmartAdd();
     });
     setupSmartMic();
+    setupVoiceTasks();
 
     // Theme toggle
     document.getElementById('theme-btn').addEventListener('click', cycleTheme);
@@ -573,6 +574,58 @@ const App = (() => {
         (text) => { input.value = text; runSmartAdd(); },
         (state) => { mic.classList.toggle('listening', state === 'listening'); }
       );
+    });
+  }
+
+  // ----- Voice / dictation tasks -----
+  // Works everywhere: where the Web Speech API exists we use it; otherwise
+  // (e.g. iPhone Safari) we focus a text field so the keyboard's built-in
+  // dictation mic can be used. Either way, the text becomes one task per line.
+  function commitVoiceTasks(text) {
+    const t = (text || '').trim();
+    if (!t) return;
+    const n = QuickAdd.addTasksFromText(t);
+    haptic();
+    renderAll();
+    if (n > 0) toast(n === 1 ? 'משימה נוספה ✓' : `${n} משימות נוספו ✓`, 'success');
+  }
+
+  function setupVoiceTasks() {
+    const btn = document.getElementById('voice-task-btn');
+    const input = document.getElementById('voice-task-input');
+    if (!btn || !input) return;
+
+    // Submit handlers for the dictation/typing field.
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); const v = input.value; input.value = ''; input.classList.remove('show'); commitVoiceTasks(v); }
+    });
+    input.addEventListener('blur', () => {
+      const v = input.value; input.value = '';
+      input.classList.remove('show');
+      if (v.trim()) commitVoiceTasks(v);
+    });
+
+    btn.addEventListener('click', () => {
+      haptic();
+      if (QuickAdd.voiceSupported()) {
+        btn.classList.add('listening');
+        btn.textContent = '🔴 מקשיב… דבר עכשיו';
+        QuickAdd.startVoice(
+          (text) => { commitVoiceTasks(text); },
+          (state) => {
+            if (state !== 'listening') {
+              btn.classList.remove('listening');
+              btn.textContent = '🎤 הוסף משימות בדיבור';
+            }
+          }
+        );
+      } else {
+        // iPhone / unsupported: reveal the field and focus it; the user taps
+        // the microphone on their keyboard to dictate.
+        input.classList.add('show');
+        input.focus();
+        toast('הקש על אייקון המיקרופון 🎤 במקלדת ודבר', '');
+      }
     });
   }
 

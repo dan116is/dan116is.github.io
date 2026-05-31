@@ -93,6 +93,22 @@ const QuickAdd = (() => {
 
   function voiceSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
 
+  // Add one task per line / sentence. Each line is date-parsed on its own.
+  // Returns the number of tasks added.
+  function addTasksFromText(text) {
+    const lines = String(text || '')
+      .split(/[\n.;]+|,| ו(?=\S)| ואז | אחר כך /)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 1);
+    let n = 0;
+    for (const line of lines) {
+      const t = parseTask(line);
+      Tasks.add({ title: t.title, dueDate: t.dueDate || '', notes: t.time ? `בשעה ${t.time}` : '' });
+      n++;
+    }
+    return n;
+  }
+
   function startVoice(onText, onState) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return false;
@@ -108,6 +124,6 @@ const QuickAdd = (() => {
     } catch (e) { return false; }
   }
 
-  return { handle, parseDate, voiceSupported, startVoice };
+  return { handle, parseDate, voiceSupported, startVoice, addTasksFromText };
 })();
 if (typeof window !== "undefined") window.QuickAdd = QuickAdd;
