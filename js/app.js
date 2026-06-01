@@ -212,6 +212,7 @@ const App = (() => {
     });
     setupSmartMic();
     setupVoiceTasks();
+    setupCapture();
 
     // Theme toggle
     document.getElementById('theme-btn').addEventListener('click', cycleTheme);
@@ -609,6 +610,51 @@ const App = (() => {
     renderAll();
     if (res) toast(res.msg + ' ✓', 'success');
     else toast('לא הצלחתי להבין — נסה שוב', 'error');
+  }
+
+  // ----- Global capture (the floating + button, available everywhere) -----
+  function openCapture() {
+    document.getElementById('capture').classList.remove('hidden');
+    setTimeout(() => { const i = document.getElementById('capture-input'); if (i) i.focus(); }, 120);
+  }
+  function closeCapture() {
+    document.getElementById('capture').classList.add('hidden');
+    const i = document.getElementById('capture-input'); if (i) i.value = '';
+  }
+  function runCapture() {
+    const input = document.getElementById('capture-input');
+    const text = (input.value || '').trim();
+    if (!text) return;
+    const res = QuickAdd.handleSmart(text);
+    haptic();
+    closeCapture();
+    renderAll();
+    toast(res ? res.msg + ' ✓' : 'לא הצלחתי להבין — נסה שוב', res ? 'success' : 'error');
+  }
+  function setupCapture() {
+    const fab = document.getElementById('fab');
+    const sheet = document.getElementById('capture');
+    if (!fab || !sheet) return;
+    fab.addEventListener('click', () => { haptic(); openCapture(); });
+    sheet.querySelector('.capture-backdrop').addEventListener('click', closeCapture);
+    document.getElementById('capture-go').addEventListener('click', runCapture);
+    document.getElementById('capture-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); runCapture(); }
+    });
+    const mic = document.getElementById('capture-mic');
+    if (!QuickAdd.voiceSupported()) {
+      // iPhone: no Web Speech — keep the field; the keyboard mic handles dictation.
+      mic.addEventListener('click', () => { document.getElementById('capture-input').focus(); toast('הקש על אייקון המיקרופון 🎤 במקלדת', ''); });
+    } else {
+      mic.addEventListener('click', () => {
+        haptic();
+        mic.classList.add('listening');
+        QuickAdd.startVoice(
+          (text) => { const i = document.getElementById('capture-input'); i.value = text; runCapture(); },
+          (state) => { if (state !== 'listening') mic.classList.remove('listening'); }
+        );
+      });
+    }
   }
 
   function setupVoiceTasks() {

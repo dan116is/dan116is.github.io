@@ -488,6 +488,23 @@
     </div>
   </div>
 
+  <!-- Global capture FAB: add anything from anywhere -->
+  <button id="fab" class="fab" aria-label="הוסף">＋</button>
+
+  <!-- Capture sheet -->
+  <div id="capture" class="capture hidden">
+    <div class="capture-backdrop"></div>
+    <div class="capture-sheet">
+      <div class="capture-title">מה תרצה להוסיף?</div>
+      <div class="capture-bar">
+        <button class="capture-mic" id="capture-mic" aria-label="דבר">🎤</button>
+        <input type="text" id="capture-input" placeholder="דבר או כתוב — אני אסדר לבד" autocomplete="off" enterkeyhint="done">
+        <button class="capture-go" id="capture-go" aria-label="הוסף">↵</button>
+      </div>
+      <div class="capture-hint">לדוגמה: "חלב וביצים", "תזכיר מחר רופא", "שילמתי 200 ארנונה"</div>
+    </div>
+  </div>
+
   <!-- Modal -->
   <div id="modal" class="modal hidden">
     <div class="modal-backdrop"></div>
