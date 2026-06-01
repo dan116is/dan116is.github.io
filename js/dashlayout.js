@@ -28,9 +28,23 @@ const DashLayout = (() => {
 
   function defaultOrder() { return WIDGETS.map((w) => w.id); }
 
+  // Clean-by-default: a calm home shows the assistant essentials only. Heavier
+  // widgets/tiles start hidden (re-enable any of them via edit mode ✏️).
+  function defaultHidden() {
+    return {
+      stats: true, tasks: true, shopping: true, schedule: true, meds: true,
+      meal: true, maint: true, habits: true, goals: true, events: true,
+      budget: true, beitar: true, jewish: true, actions: true
+      // visible by default: assistant, week, glance, monthly, weather
+    };
+  }
+
   function cfg() {
     const c = DB.getSettings().dashLayout || {};
-    return { order: c.order || defaultOrder(), hidden: c.hidden || {}, sizes: c.sizes || {} };
+    // First run (no saved layout): apply the clean default. Once the user edits,
+    // their saved `hidden` map is respected as-is.
+    const hidden = c.hidden || defaultHidden();
+    return { order: c.order || defaultOrder(), hidden, sizes: c.sizes || {} };
   }
   function save(c) { DB.setSetting('dashLayout', c); }
 
