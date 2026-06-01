@@ -12,6 +12,7 @@ const App = (() => {
     if (window.Habits) Habits.ensureSeed();
     if (window.Goals) Goals.ensureSeed();
     if (window.Maintenance) Maintenance.ensureSeed();
+    if (window.FoodBrain) FoodBrain.ensureSeed();
     applyFamilyPhoto();
     if (window.Autopilot) Autopilot.run();
     setupNav();

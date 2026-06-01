@@ -129,7 +129,10 @@ const QuickAdd = (() => {
         added.task++; parts.push('📋 ' + t.title + (t.dueDate ? ' (' + t.dueDate + ')' : ''));
       } else {
         const items = parseShopping(seg);
-        for (const it of items) { Shopping.add(it, 'אחר'); added.shopping++; parts.push('🛒 ' + it); }
+        for (const it of items) {
+          const cat = (window.FoodBrain && FoodBrain.categoryOf(it) !== 'אחר') ? FoodBrain.categoryOf(it) : 'אחר';
+          Shopping.add(it, cat); added.shopping++; parts.push('🛒 ' + it);
+        }
       }
     }
     const total = added.task + added.shopping + added.expense;
