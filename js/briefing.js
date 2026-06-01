@@ -106,6 +106,20 @@ const Briefing = (() => {
         <div class="brief-did-head">🤖 מה עשיתי בשבילך</div>
         ${did.map((e) => `<div class="brief-did-row"><span>${e.icon}</span><span>${esc(e.text)}</span></div>`).join('')}
       </div>` : '';
+    const ins = window.Agents ? Agents.insights(4) : [];
+    const agentsHtml = ins.length ? `
+      <div class="brief-agents">
+        <div class="brief-agents-head">🧠 הצוות החכם שלך</div>
+        ${ins.map((i, idx) => `
+          <div class="agent-row">
+            <span class="agent-ico">${i.icon}</span>
+            <span class="agent-body">
+              <span class="agent-title">${esc(i.title)}</span>
+              ${i.sub ? `<span class="agent-sub">${esc(i.sub)}</span>` : ''}
+            </span>
+            ${i.action ? `<button class="agent-do" data-agent-idx="${idx}">${esc(i.action.label)}</button>` : ''}
+          </div>`).join('')}
+      </div>` : '';
     container.innerHTML = `
       <div class="brief-hero">
         <div class="brief-greet">${esc(greeting(ownerName || 'דניאל'))}</div>
@@ -113,6 +127,7 @@ const Briefing = (() => {
         <div class="brief-summary">${esc(summaryLine())}</div>
       </div>
       ${didHtml}
+      ${agentsHtml}
       ${sugCount ? `<button class="brief-assistant" data-brief="assistant">✨ ${sugCount} הצעות חכמות בשבילך — לפתוח</button>` : ''}
       <div class="brief-stream">
         ${cards.map((c) => `

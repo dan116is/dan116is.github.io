@@ -476,7 +476,11 @@ const App = (() => {
   function onDashClick(e) {
     const btn = e.target.closest('button');
     if (!btn) return;
-    if (btn.dataset.ayes) {
+    if (btn.dataset.agentIdx != null) {
+      const ins = window.Agents ? Agents.last()[Number(btn.dataset.agentIdx)] : null;
+      if (ins && ins.action) onAgentAction(ins.action);
+      return;
+    } else if (btn.dataset.ayes) {
       try { onAssistantAccept(JSON.parse(btn.dataset.ayes)); } catch (err) {}
       return;
     } else if (btn.dataset.ano) {
@@ -1306,6 +1310,18 @@ const App = (() => {
     else if (s.kind === 'habit') { Habits.bump(s.id, 1); toast('סומן ✓', 'success'); }
     else if (s.kind === 'eventGift') { Shopping.add('מתנה ל' + s.title, 'אחר'); toast('נוסף תזכורת מתנה ✓', 'success'); }
     if (window.Assistant) Assistant.dismiss(s.sig);
+    renderAll();
+  }
+
+  // Handle a one-tap action emitted by an AI agent insight.
+  function onAgentAction(a) {
+    haptic();
+    if (a.kind === 'view') { setView(a.view); return; }
+    if (a.kind === 'maintDone') { Maintenance.markDone(a.id); toast('עודכן — מועד הבא נקבע ✓', 'success'); }
+    else if (a.kind === 'addShopping') {
+      (a.items || []).forEach((it) => Shopping.add(it.name, it.cat || 'אחר'));
+      toast('נוסף לקניות ✓', 'success');
+    }
     renderAll();
   }
 
