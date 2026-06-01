@@ -11,6 +11,7 @@ const Shopping = (() => {
   function add(name, category = 'מזון', qty = '') {
     const trimmed = name.trim();
     if (!trimmed) return null;
+    if (typeof Assistant !== 'undefined' && Assistant.learnShopping) Assistant.learnShopping(trimmed, category);
     return DB.add(KEY, {
       name: trimmed,
       category: category || 'אחר',
