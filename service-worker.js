@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habait-v24';
+const CACHE_NAME = 'habait-v25';
 const ASSETS = [
   './',
   './index.html',
@@ -40,6 +40,10 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS).catch(() => {}))
   );
   self.skipWaiting();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
