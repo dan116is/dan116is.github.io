@@ -1226,3 +1226,15 @@ body::before { animation-duration: 42s; }
 .brief-title { font-size: 15px; font-weight: 700; }
 .brief-sub { font-size: 13px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brief-chev { color: var(--text-muted); font-size: 22px; flex-shrink: 0; }
+
+/* ---------- Autopilot "what I did" ---------- */
+.brief-did {
+  background: color-mix(in srgb, var(--success) 12%, var(--glass));
+  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
+  border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px;
+  backdrop-filter: saturate(180%) blur(22px); -webkit-backdrop-filter: saturate(180%) blur(22px);
+  animation: floatIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+.brief-did-head { font-size: 13px; font-weight: 800; color: var(--success); margin-bottom: 7px; }
+.brief-did-row { display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px; font-weight: 500; padding: 3px 0; }
+.brief-did-row span:first-child { flex-shrink: 0; }
