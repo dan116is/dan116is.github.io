@@ -1576,13 +1576,32 @@ const App = (() => {
   }
 
   function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch((err) => {
-          console.warn('SW register failed', err);
+    if (!('serviceWorker' in navigator)) return;
+    let reloaded = false;
+    // When the new SW takes control, reload once so the fresh assets show.
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded) return;
+      reloaded = true;
+      location.reload();
+    });
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').then((reg) => {
+        // Check for updates immediately and whenever the app regains focus.
+        reg.update();
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update(); });
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', () => {
+            // A new version finished installing while an old one controls the
+            // page → tell it to activate now; controllerchange will reload.
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+              try { sw.postMessage('skipWaiting'); } catch (e) {}
+            }
+          });
         });
-      });
-    }
+      }).catch((err) => console.warn('SW register failed', err));
+    });
   }
 
   return { init, setView, toast, refresh: renderAll };
