@@ -468,6 +468,12 @@ const App = (() => {
   function onDashClick(e) {
     const btn = e.target.closest('button');
     if (!btn) return;
+    if (btn.dataset.ayes) {
+      try { onAssistantAccept(JSON.parse(btn.dataset.ayes)); } catch (err) {}
+      return;
+    } else if (btn.dataset.ano) {
+      haptic(); if (window.Assistant) Assistant.dismiss(btn.dataset.ano); renderAssistant(); return;
+    }
     if (btn.id === 'weather-refresh') {
       haptic();
       if (window.Weather) Weather.refresh(true);
@@ -1185,6 +1191,7 @@ const App = (() => {
     if (window.Jewish) Jewish.paint();
     if (window.Beitar) Beitar.paint();
     renderSetupCard();
+    renderAssistant();
     renderMonthlyGoal();
     if (window.Schedule) Schedule.renderToday(document.getElementById('dash-schedule'));
     renderDashMeal();
@@ -1213,6 +1220,36 @@ const App = (() => {
     el.innerHTML =
       `<div class="setup-head"><span>✨ בוא נסיים להקים — ${steps.length} צעדים</span><button class="setup-dismiss" id="setup-dismiss">דלג</button></div>` +
       `<div class="setup-steps">${steps.map((st) => `<button class="setup-step" data-setup="${st.action}"><span class="setup-ico">${st.icon}</span>${st.label}</button>`).join('')}</div>`;
+  }
+
+  function renderAssistant() {
+    const el = document.getElementById('assistant-card');
+    if (!el || !window.Assistant) return;
+    const sugs = Assistant.suggestions().slice(0, 5);
+    if (!sugs.length) { el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    el.innerHTML =
+      `<div class="assistant-head"><span class="assistant-title">✨ בשבילך עכשיו</span></div>` +
+      sugs.map((s) => `
+        <div class="assistant-row" data-asig="${escapeAttr(s.sig)}">
+          <span class="assistant-ico">${s.icon}</span>
+          <span class="assistant-text">${esc(s.text)}</span>
+          <span class="assistant-actions">
+            <button class="assistant-yes" data-ayes='${escapeAttr(JSON.stringify(s))}' aria-label="כן">✓</button>
+            <button class="assistant-no" data-ano="${escapeAttr(s.sig)}" aria-label="לא">✕</button>
+          </span>
+        </div>`).join('');
+  }
+
+  function onAssistantAccept(s) {
+    haptic();
+    if (s.kind === 'shopAdd') { Shopping.add(s.name, s.cat || 'אחר'); toast('נוסף לקניות ✓', 'success'); }
+    else if (s.kind === 'view') { setView(s.view); return; }
+    else if (s.kind === 'maintDone') { Maintenance.markDone(s.id); toast('עודכן — מועד הבא נקבע ✓', 'success'); }
+    else if (s.kind === 'habit') { Habits.bump(s.id, 1); toast('סומן ✓', 'success'); }
+    else if (s.kind === 'eventGift') { Shopping.add('מתנה ל' + s.title, 'אחר'); toast('נוסף תזכורת מתנה ✓', 'success'); }
+    if (window.Assistant) Assistant.dismiss(s.sig);
+    renderAll();
   }
 
   function showHabitsManager() {

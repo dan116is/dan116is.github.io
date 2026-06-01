@@ -4,6 +4,7 @@
 // (meds/meal/maint/events) still respect that.
 const DashLayout = (() => {
   const WIDGETS = [
+    { id: 'assistant', label: 'עוזר חכם', emoji: '✨' },
     { id: 'week', label: 'רצועת שבוע', emoji: '📆' },
     { id: 'glance', label: 'מבט על היום', emoji: '👀' },
     { id: 'monthly', label: 'היעד שלי לחודש', emoji: '🏆' },
