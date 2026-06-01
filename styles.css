@@ -1191,3 +1191,38 @@ body::before { animation-duration: 42s; }
 .assistant-yes { background: var(--primary-grad); color: #fff; }
 .assistant-no { background: var(--bg-elev-2); color: var(--text-muted); }
 .assistant-yes:active, .assistant-no:active { transform: scale(0.9); }
+
+/* ---------- "Today" briefing (top of home) ---------- */
+.briefing { margin-bottom: 16px; }
+.brief-hero { padding: 4px 4px 14px; }
+.brief-greet { font-size: 27px; font-weight: 800; letter-spacing: -0.6px; }
+.brief-date { font-size: 13.5px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+.brief-summary { font-size: 14.5px; font-weight: 600; margin-top: 8px; color: var(--primary); }
+
+.brief-assistant {
+  width: 100%; margin-bottom: 12px; border: none; cursor: pointer; font-family: inherit;
+  background: var(--primary-grad); color: #fff; font-size: 14px; font-weight: 800;
+  padding: 13px 15px; border-radius: 16px; box-shadow: 0 10px 24px rgba(10,158,214,0.32);
+  text-align: start;
+}
+.brief-assistant:active { transform: scale(0.98); }
+
+.brief-stream { display: flex; flex-direction: column; gap: 9px; }
+.brief-card {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: start;
+  background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px; cursor: pointer; font-family: inherit; color: var(--text);
+  box-shadow: var(--shadow-sm); backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  animation: floatIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+  transition: transform 0.15s ease;
+}
+.brief-card:active { transform: scale(0.985); }
+.brief-ico {
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: 13px; display: grid; place-items: center;
+  font-size: 22px; background: var(--bg-elev-2);
+}
+.brief-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.brief-title { font-size: 15px; font-weight: 700; }
+.brief-sub { font-size: 13px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brief-chev { color: var(--text-muted); font-size: 22px; flex-shrink: 0; }

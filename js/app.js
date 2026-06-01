@@ -473,6 +473,13 @@ const App = (() => {
       return;
     } else if (btn.dataset.ano) {
       haptic(); if (window.Assistant) Assistant.dismiss(btn.dataset.ano); renderAssistant(); return;
+    } else if (btn.dataset.briefView) {
+      haptic(8); setView(btn.dataset.briefView); return;
+    } else if (btn.dataset.brief === 'assistant') {
+      haptic(8);
+      const card = document.getElementById('assistant-card');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
     }
     if (btn.id === 'weather-refresh') {
       haptic();
@@ -1168,10 +1175,7 @@ const App = (() => {
 
   function renderDashboard() {
     if (window.DashLayout) DashLayout.apply();
-    const today = new Date();
-    document.getElementById('greeting').textContent = `${greetingText(today)}, ${ownerName()}`;
-    document.getElementById('today-date').textContent =
-      today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    if (window.Briefing) Briefing.render(document.getElementById('briefing'), ownerName());
 
     document.getElementById('stat-meds').textContent = Medications.activeCount();
     const medAlerts = Medications.alertCount();
