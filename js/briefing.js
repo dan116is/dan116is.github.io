@@ -100,12 +100,19 @@ const Briefing = (() => {
     const dateStr = today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
     const cards = stream();
     const sugCount = window.Assistant ? Assistant.suggestions().length : 0;
+    const did = window.Autopilot ? Autopilot.recentLog(4) : [];
+    const didHtml = did.length ? `
+      <div class="brief-did">
+        <div class="brief-did-head">🤖 מה עשיתי בשבילך</div>
+        ${did.map((e) => `<div class="brief-did-row"><span>${e.icon}</span><span>${esc(e.text)}</span></div>`).join('')}
+      </div>` : '';
     container.innerHTML = `
       <div class="brief-hero">
         <div class="brief-greet">${esc(greeting(ownerName || 'דניאל'))}</div>
         <div class="brief-date">${esc(dateStr)}</div>
         <div class="brief-summary">${esc(summaryLine())}</div>
       </div>
+      ${didHtml}
       ${sugCount ? `<button class="brief-assistant" data-brief="assistant">✨ ${sugCount} הצעות חכמות בשבילך — לפתוח</button>` : ''}
       <div class="brief-stream">
         ${cards.map((c) => `

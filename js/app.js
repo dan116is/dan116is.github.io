@@ -13,6 +13,7 @@ const App = (() => {
     if (window.Goals) Goals.ensureSeed();
     if (window.Maintenance) Maintenance.ensureSeed();
     applyFamilyPhoto();
+    if (window.Autopilot) Autopilot.run();
     setupNav();
     setupModal();
     setupHandlers();
@@ -28,7 +29,12 @@ const App = (() => {
     setupUX();
     setInterval(renderAll, 60 * 1000);
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) { if (window.Weather) Weather.paint(); if (window.Jewish) Jewish.paint(); }
+      if (!document.hidden) {
+        if (window.Autopilot) Autopilot.run();
+        if (window.Weather) Weather.paint();
+        if (window.Jewish) Jewish.paint();
+        renderDashboard();
+      }
     });
   }
 
