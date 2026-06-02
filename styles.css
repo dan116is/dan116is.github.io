@@ -1227,6 +1227,56 @@ body::before { animation-duration: 42s; }
 .brief-sub { font-size: 13px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brief-chev { color: var(--text-muted); font-size: 22px; flex-shrink: 0; }
 
+/* ---------- Weekly review (📊 סיכום שבועי) ---------- */
+.wk-hero { padding: 4px 4px 16px; }
+.wk-range { font-size: 13.5px; color: var(--text-muted); font-weight: 600; }
+.wk-insight { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; margin-top: 6px; line-height: 1.35; }
+
+.wk-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+}
+.wk-stat {
+  display: flex; flex-direction: column; gap: 2px; align-items: flex-start;
+  background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px; box-shadow: var(--shadow-sm);
+  backdrop-filter: saturate(180%) blur(22px); -webkit-backdrop-filter: saturate(180%) blur(22px);
+  animation: floatIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+.wk-stat-ico {
+  width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center;
+  font-size: 19px; background: var(--bg-elev-2); margin-bottom: 4px;
+}
+.wk-stat.done .wk-stat-ico { background: color-mix(in srgb, var(--success) 22%, var(--bg-elev-2)); }
+.wk-stat.open .wk-stat-ico { background: color-mix(in srgb, var(--primary) 22%, var(--bg-elev-2)); }
+.wk-stat-val { font-size: 26px; font-weight: 800; letter-spacing: -0.8px; line-height: 1; }
+.wk-stat-label { font-size: 13px; font-weight: 700; }
+.wk-stat-sub { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+
+.wk-section {
+  background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm);
+  backdrop-filter: saturate(180%) blur(22px); -webkit-backdrop-filter: saturate(180%) blur(22px);
+  animation: floatIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+.wk-section-head { font-size: 14px; font-weight: 800; margin-bottom: 10px; }
+
+.wk-budget-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.wk-budget-spent { font-size: 24px; font-weight: 800; letter-spacing: -0.6px; }
+.wk-budget-spent.over { color: var(--danger); }
+.wk-budget-of { font-size: 13.5px; color: var(--text-muted); font-weight: 600; }
+.wk-budget-note { font-size: 12.5px; color: var(--text-muted); font-weight: 600; margin-top: 6px; }
+.goal-bar-fill.over { background: var(--danger); }
+
+.wk-habit-row { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+.wk-streak { font-size: 13px; color: var(--text-muted); font-weight: 700; }
+
+.wk-event-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 14px; }
+.wk-event-row + .wk-event-row { border-top: 1px solid var(--border); }
+.wk-event-ico { font-size: 18px; flex-shrink: 0; }
+.wk-event-title { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wk-event-when { font-size: 12.5px; color: var(--text-muted); font-weight: 700; flex-shrink: 0; }
+.wk-empty { font-size: 13.5px; color: var(--text-muted); font-weight: 600; }
+
 /* ---------- Autopilot "what I did" ---------- */
 .brief-did {
   background: color-mix(in srgb, var(--success) 12%, var(--glass));
