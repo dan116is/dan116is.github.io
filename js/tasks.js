@@ -43,9 +43,37 @@ const Tasks = (() => {
     return d.toISOString().slice(0, 10);
   }
 
-  function add(data) { return DB.add(KEY, { done: false, priority: 'רגילה', ...data }); }
+  function add(data) {
+    const items = list();
+    const order = items.length ? Math.min(...items.map((t) => t.order ?? 0)) - 1 : 0;
+    return DB.add(KEY, { done: false, priority: 'רגילה', tags: [], subtasks: [], order, ...data });
+  }
   function update(id, patch) { return DB.update(KEY, id, patch); }
   function remove(id) { DB.remove(KEY, id); }
+
+  // All tags currently in use (for filtering/autocomplete).
+  function allTags() {
+    const set = new Set();
+    list().forEach((t) => (t.tags || []).forEach((g) => set.add(g)));
+    return Array.from(set);
+  }
+
+  // Subtask helpers.
+  function toggleSub(taskId, subId) {
+    const t = DB.findById(KEY, taskId);
+    if (!t || !t.subtasks) return;
+    const subs = t.subtasks.map((s) => s.id === subId ? { ...s, done: !s.done } : s);
+    DB.update(KEY, taskId, { subtasks: subs });
+  }
+
+  // Manual reorder: set explicit order values from an ordered id list.
+  function reorder(ids) {
+    const items = list();
+    ids.forEach((id, i) => {
+      const t = items.find((x) => x.id === id);
+      if (t) DB.update(KEY, id, { order: i });
+    });
+  }
   function toggle(id) {
     const t = DB.findById(KEY, id);
     if (!t) return;
@@ -72,7 +100,7 @@ const Tasks = (() => {
     }
   }
 
-  function render(container, filter = 'all') {
+  function render(container, filter = 'all', tagFilter = '') {
     const all = list();
     const today = todayKey();
     const weekEnd = new Date();
@@ -86,13 +114,25 @@ const Tasks = (() => {
     else if (filter === 'done') filtered = all.filter((t) => t.done);
     else filtered = all.filter((t) => !t.done);
 
+    if (tagFilter) filtered = filtered.filter((t) => (t.tags || []).includes(tagFilter));
+
+    const manual = !filter || filter === 'all';
     filtered = filtered.slice().sort((a, b) => {
       if (a.done !== b.done) return Number(a.done) - Number(b.done);
+      // In the default "all" view, honor manual drag order first.
+      if (manual && (a.order != null || b.order != null)) return (a.order ?? 0) - (b.order ?? 0);
       const ad = a.dueDate || '9999-12-31';
       const bd = b.dueDate || '9999-12-31';
       if (ad !== bd) return ad < bd ? -1 : 1;
       return PRIORITIES.indexOf(b.priority || 'רגילה') - PRIORITIES.indexOf(a.priority || 'רגילה');
     });
+
+    // Tag filter chips at the top.
+    const tags = allTags();
+    const chipsHtml = tags.length ? `<div class="tag-filter">
+      <button class="tagchip ${!tagFilter ? 'active' : ''}" data-tagfilter="">הכל</button>
+      ${tags.map((g) => `<button class="tagchip ${tagFilter === g ? 'active' : ''}" data-tagfilter="${escape(g)}">#${escape(g)}</button>`).join('')}
+    </div>` : '';
 
     if (filtered.length === 0) {
       const messages = {
@@ -102,11 +142,11 @@ const Tasks = (() => {
         done: 'עדיין לא השלמת משימות',
         all: 'אין משימות פתוחות. הוסף משימה ראשונה!'
       };
-      container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>${messages[filter] || messages.all}</p></div>`;
+      container.innerHTML = chipsHtml + `<div class="empty-state"><div class="icon">📋</div><p>${messages[filter] || messages.all}</p></div>`;
       return;
     }
 
-    container.innerHTML = filtered.map((t) => {
+    container.innerHTML = chipsHtml + `<div class="task-sortable" data-sortable="${manual && !tagFilter ? '1' : ''}">` + filtered.map((t) => {
       const isOverdue = !t.done && t.dueDate && t.dueDate < today;
       const isToday = !t.done && t.dueDate === today;
       const dueText = t.dueDate
@@ -118,21 +158,34 @@ const Tasks = (() => {
       if (t.priority && t.priority !== 'רגילה') tags.push(`<span class="tag ${t.priority === 'גבוהה' ? 'danger' : ''}">${t.priority}</span>`);
       if (t.repeat) tags.push(`<span class="tag">🔁 ${repeatLabel(t.repeat)}</span>`);
       if (t.forWhom) tags.push(`<span class="tag">${escape(t.forWhom)}</span>`);
+      (t.tags || []).forEach((g) => tags.push(`<span class="tag tag-hash">#${escape(g)}</span>`));
+
+      const subs = t.subtasks || [];
+      const doneSubs = subs.filter((s) => s.done).length;
+      const subsHtml = subs.length ? `
+        <div class="subtasks">
+          ${subs.map((s) => `
+            <div class="subtask ${s.done ? 'done' : ''}">
+              <button class="subcheck ${s.done ? 'checked' : ''}" data-sub-toggle="${t.id}:${s.id}" aria-label="סמן"></button>
+              <span>${escape(s.text)}</span>
+            </div>`).join('')}
+        </div>` : '';
 
       return `
-        <div class="item-card ${t.done ? 'done' : ''} ${cardClass}">
+        <div class="item-card ${t.done ? 'done' : ''} ${cardClass}" data-task-id="${t.id}">
           <button class="item-check ${t.done ? 'checked' : ''}" data-task-toggle="${t.id}" aria-label="סמן"></button>
           <div class="item-main">
-            <div class="item-title">${escape(t.title)}</div>
+            <div class="item-title">${escape(t.title)}${subs.length ? ` <span class="sub-count">${doneSubs}/${subs.length}</span>` : ''}</div>
             ${t.notes ? `<div class="item-sub" style="margin-top:4px;">${escape(t.notes)}</div>` : ''}
             ${tags.length ? `<div class="item-sub">${tags.join('')}</div>` : ''}
+            ${subsHtml}
           </div>
           <div class="item-actions">
             <button class="icon-btn" data-task-edit="${t.id}" title="ערוך">✎</button>
             <button class="icon-btn" data-task-del="${t.id}" title="מחק">🗑</button>
           </div>
         </div>`;
-    }).join('');
+    }).join('') + `</div>`;
   }
 
   function formatDate(s) {
@@ -179,6 +232,14 @@ const Tasks = (() => {
           </div>
         </div>
         <div class="form-group">
+          <label>תגיות 🏷️ (מופרדות בפסיק)</label>
+          <input name="tags" value="${escape((existing?.tags || []).join(', '))}" placeholder="עבודה, בית, דחוף">
+        </div>
+        <div class="form-group">
+          <label>תת-משימות ☑️ (שורה לכל אחת)</label>
+          <textarea name="subtasks" rows="3" placeholder="להתקשר&#10;לשלוח מייל&#10;לאשר">${escape((existing?.subtasks || []).map((s) => s.text).join('\n'))}</textarea>
+        </div>
+        <div class="form-group">
           <label>הערות</label>
           <textarea name="notes" rows="2">${escape(existing?.notes || '')}</textarea>
         </div>
@@ -189,6 +250,19 @@ const Tasks = (() => {
       </form>`;
   }
 
-  return { list, activeCount, overdueCount, add, update, remove, toggle, checkAlerts, render, openForm, REPEATS, repeatLabel, nextDate };
+  // Convert raw form fields (comma tags, newline subtasks) into model shapes.
+  function parseFormData(data, existing) {
+    const out = { ...data };
+    out.tags = String(data.tags || '').split(',').map((s) => s.trim()).filter(Boolean);
+    const lines = String(data.subtasks || '').split('\n').map((s) => s.trim()).filter(Boolean);
+    const prev = (existing && existing.subtasks) || [];
+    out.subtasks = lines.map((text, i) => {
+      const old = prev.find((p) => p.text === text);
+      return { id: (old && old.id) || (Date.now().toString(36) + i), text, done: old ? old.done : false };
+    });
+    return out;
+  }
+
+  return { list, activeCount, overdueCount, add, update, remove, toggle, toggleSub, reorder, allTags, checkAlerts, render, openForm, parseFormData, REPEATS, repeatLabel, nextDate };
 })();
 if (typeof window !== "undefined") window.Tasks = Tasks;

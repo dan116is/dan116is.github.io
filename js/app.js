@@ -4,6 +4,7 @@ const App = (() => {
   let currentView = 'dashboard';
   let medFilter = 'all';
   let taskFilter = 'all';
+  let taskTag = '';
   let installPromptEvent = null;
 
   function init() {
@@ -234,6 +235,9 @@ const App = (() => {
     // Calendar view
     document.getElementById('cal-prev').addEventListener('click', () => { haptic(8); Calendar.prev(); });
     document.getElementById('cal-next').addEventListener('click', () => { haptic(8); Calendar.next(); });
+    document.querySelectorAll('[data-cal-mode]').forEach((b) => {
+      b.addEventListener('click', () => { haptic(8); Calendar.setMode(b.dataset.calMode); });
+    });
     document.getElementById('cal-grid').addEventListener('click', (e) => {
       const day = e.target.closest('[data-cal-day]');
       if (day) { haptic(8); Calendar.select(day.dataset.calDay); return; }
@@ -329,7 +333,7 @@ const App = (() => {
         document.querySelectorAll('#view-tasks .filter-btn').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         taskFilter = btn.dataset.taskFilter;
-        Tasks.render(document.getElementById('task-list'), taskFilter);
+        Tasks.render(document.getElementById('task-list'), taskFilter, taskTag);
       });
     });
     document.getElementById('task-list').addEventListener('click', onTaskListClick);
@@ -825,7 +829,7 @@ const App = (() => {
     form.querySelector('[data-close]').addEventListener('click', closeModal);
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(form));
+      const data = Tasks.parseFormData(Object.fromEntries(new FormData(form)), existing);
       if (existing) Tasks.update(existing.id, data);
       else Tasks.add(data);
       closeModal();
@@ -837,7 +841,18 @@ const App = (() => {
   async function onTaskListClick(e) {
     const t = e.target.closest('button');
     if (!t) return;
-    if (t.dataset.taskToggle) {
+    if (t.dataset.tagfilter !== undefined) {
+      haptic(8); taskTag = t.dataset.tagfilter;
+      Tasks.render(document.getElementById('task-list'), taskFilter, taskTag);
+      return;
+    } else if (t.dataset.subToggle) {
+      haptic();
+      const [tid, sid] = t.dataset.subToggle.split(':');
+      Tasks.toggleSub(tid, sid);
+      Tasks.render(document.getElementById('task-list'), taskFilter, taskTag);
+      renderDashboard();
+      return;
+    } else if (t.dataset.taskToggle) {
       haptic();
       Tasks.toggle(t.dataset.taskToggle);
       renderAll();
@@ -852,6 +867,47 @@ const App = (() => {
       renderAll();
       toast('נמחק', 'success');
     }
+  }
+
+  // Drag-to-reorder tasks in the default list (pointer-based, touch + mouse).
+  function setupTaskDrag() {
+    const wrap = document.querySelector('#task-list .task-sortable[data-sortable="1"]');
+    if (!wrap || wrap._dragOn) return;
+    wrap._dragOn = true;
+    let drag = null, startY = 0, moved = false, pid = null;
+    wrap.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button')) return;
+      const card = e.target.closest('.item-card');
+      if (!card) return;
+      drag = card; startY = e.clientY; moved = false; pid = e.pointerId;
+    });
+    wrap.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      if (!moved && Math.abs(e.clientY - startY) < 8) return;
+      if (!moved) { moved = true; drag.classList.add('dragging'); haptic(10); try { wrap.setPointerCapture(pid); } catch (x) {} }
+      e.preventDefault();
+      drag.style.pointerEvents = 'none';
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      drag.style.pointerEvents = '';
+      const tgt = under && under.closest && under.closest('.item-card');
+      if (tgt && tgt !== drag && tgt.parentNode === drag.parentNode) {
+        const r = tgt.getBoundingClientRect();
+        drag.parentNode.insertBefore(drag, (e.clientY < r.top + r.height / 2) ? tgt : tgt.nextSibling);
+      }
+    });
+    function end() {
+      if (!drag) return;
+      const card = drag; drag = null;
+      try { wrap.releasePointerCapture(pid); } catch (x) {}
+      if (moved) {
+        card.classList.remove('dragging');
+        const ids = Array.from(wrap.querySelectorAll('.item-card')).map((c) => c.dataset.taskId);
+        Tasks.reorder(ids);
+        haptic(8);
+      }
+    }
+    wrap.addEventListener('pointerup', end);
+    wrap.addEventListener('pointercancel', end);
   }
 
   // ----- Budget handlers -----
@@ -1637,7 +1693,7 @@ const App = (() => {
     if (currentView === 'dashboard') renderDashboard();
     else if (currentView === 'medications') Medications.render(document.getElementById('med-list'), medFilter);
     else if (currentView === 'shopping') Shopping.render(document.getElementById('shop-list'));
-    else if (currentView === 'tasks') Tasks.render(document.getElementById('task-list'), taskFilter);
+    else if (currentView === 'tasks') { Tasks.render(document.getElementById('task-list'), taskFilter, taskTag); setupTaskDrag(); }
     else if (currentView === 'calendar') Calendar.render();
     else if (currentView === 'events') Events.render(document.getElementById('event-list'));
     else if (currentView === 'goals') Goals.render(document.getElementById('goals-list'));
