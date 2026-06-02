@@ -485,6 +485,14 @@ const App = (() => {
       return;
     } else if (btn.dataset.ano) {
       haptic(); if (window.Assistant) Assistant.dismiss(btn.dataset.ano); renderAssistant(); return;
+    } else if (btn.dataset.quick) {
+      haptic(8);
+      const q = btn.dataset.quick;
+      if (q === 'focus') { if (window.Focus) Focus.begin(25, ''); toast('פוקוס התחיל ⏱️ 25 דק׳', 'success'); }
+      else if (q === 'task') showTaskForm();
+      else if (q === 'shop') { setView('shopping'); setTimeout(() => { const i = document.getElementById('shop-input'); if (i) i.focus(); }, 200); }
+      else if (q === 'expense') showExpenseForm();
+      return;
     } else if (btn.dataset.briefView) {
       haptic(8); setView(btn.dataset.briefView); return;
     } else if (btn.dataset.brief === 'assistant') {
