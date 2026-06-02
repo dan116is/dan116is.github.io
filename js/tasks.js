@@ -1,6 +1,25 @@
 const Tasks = (() => {
   const KEY = DB.KEYS.tasks;
   const PRIORITIES = ['נמוכה', 'רגילה', 'גבוהה'];
+  const REPEATS = [
+    { id: '', label: 'לא חוזר' },
+    { id: 'daily', label: 'כל יום' },
+    { id: 'weekly', label: 'כל שבוע' },
+    { id: 'monthly', label: 'כל חודש' }
+  ];
+
+  function repeatLabel(id) { const r = REPEATS.find((x) => x.id === id); return r ? r.label : ''; }
+
+  // Given a YYYY-MM-DD and a repeat id, return the next occurrence date.
+  function nextDate(dateStr, repeat) {
+    const base = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
+    if (repeat === 'daily') base.setDate(base.getDate() + 1);
+    else if (repeat === 'weekly') base.setDate(base.getDate() + 7);
+    else if (repeat === 'monthly') base.setMonth(base.getMonth() + 1);
+    else return null;
+    const p = (n) => String(n).padStart(2, '0');
+    return `${base.getFullYear()}-${p(base.getMonth() + 1)}-${p(base.getDate())}`;
+  }
 
   function list() { return DB.list(KEY); }
 
@@ -30,7 +49,13 @@ const Tasks = (() => {
   function toggle(id) {
     const t = DB.findById(KEY, id);
     if (!t) return;
+    const willComplete = !t.done;
     DB.update(KEY, id, { done: !t.done, doneAt: !t.done ? Date.now() : null });
+    // Completing a recurring task spawns its next occurrence automatically.
+    if (willComplete && t.repeat) {
+      const nd = nextDate(t.dueDate || todayKey(), t.repeat);
+      if (nd) add({ title: t.title, dueDate: nd, priority: t.priority, forWhom: t.forWhom, notes: t.notes, repeat: t.repeat });
+    }
   }
 
   function checkAlerts(notify) {
@@ -91,6 +116,7 @@ const Tasks = (() => {
       const tags = [];
       if (dueText) tags.push(`<span class="tag ${isOverdue ? 'danger' : isToday ? 'warning' : ''}">${dueText}</span>`);
       if (t.priority && t.priority !== 'רגילה') tags.push(`<span class="tag ${t.priority === 'גבוהה' ? 'danger' : ''}">${t.priority}</span>`);
+      if (t.repeat) tags.push(`<span class="tag">🔁 ${repeatLabel(t.repeat)}</span>`);
       if (t.forWhom) tags.push(`<span class="tag">${escape(t.forWhom)}</span>`);
 
       return `
@@ -142,9 +168,15 @@ const Tasks = (() => {
             <select name="priority">${priorityOpts}</select>
           </div>
         </div>
-        <div class="form-group">
-          <label>עבור</label>
-          <select name="forWhom">${familyOpts}</select>
+        <div class="form-row">
+          <div class="form-group">
+            <label>חזרה 🔁</label>
+            <select name="repeat">${REPEATS.map((r) => `<option value="${r.id}" ${(existing?.repeat || '') === r.id ? 'selected' : ''}>${r.label}</option>`).join('')}</select>
+          </div>
+          <div class="form-group">
+            <label>עבור</label>
+            <select name="forWhom">${familyOpts}</select>
+          </div>
         </div>
         <div class="form-group">
           <label>הערות</label>
@@ -157,6 +189,6 @@ const Tasks = (() => {
       </form>`;
   }
 
-  return { list, activeCount, overdueCount, add, update, remove, toggle, checkAlerts, render, openForm };
+  return { list, activeCount, overdueCount, add, update, remove, toggle, checkAlerts, render, openForm, REPEATS, repeatLabel, nextDate };
 })();
 if (typeof window !== "undefined") window.Tasks = Tasks;

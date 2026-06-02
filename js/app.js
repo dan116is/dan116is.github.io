@@ -659,6 +659,31 @@ const App = (() => {
         );
       });
     }
+    // Focus timer entry from the capture sheet + the live bar stop button.
+    const focusBtn = document.getElementById('capture-focus');
+    if (focusBtn) focusBtn.addEventListener('click', () => { closeCapture(); showFocusForm(); });
+    const fbar = document.getElementById('focus-bar');
+    if (fbar) fbar.addEventListener('click', (e) => { if (e.target.closest('#focus-stop')) { haptic(); Focus.stop(); } });
+    if (window.Focus) Focus.init();
+  }
+
+  function showFocusForm() {
+    openModal('טיימר פוקוס', Focus.chooseForm());
+    const form = document.getElementById('focus-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.querySelectorAll('[data-focus-min]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const lbl = (form.querySelector('[name="label"]').value || '').trim();
+        Focus.begin(Number(b.dataset.focusMin), lbl);
+        closeModal(); haptic(); toast('פוקוס התחיל ⏱️', 'success');
+      });
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const lbl = (form.querySelector('[name="label"]').value || '').trim();
+      Focus.begin(25, lbl);
+      closeModal(); haptic(); toast('פוקוס התחיל ⏱️', 'success');
+    });
   }
 
   function setupVoiceTasks() {
