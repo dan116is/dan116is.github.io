@@ -3,7 +3,7 @@
 // fast and fully offline-capable when sync is off. Data for all collections
 // is mirrored to families/{familyCode}; last-write-wins on the whole payload.
 const Sync = (() => {
-  const COLLECTIONS = ['meds', 'shopping', 'tasks', 'expenses', 'budgets', 'family', 'events', 'goals', 'schedule', 'maintenance', 'meals', 'growth', 'stars', 'savings'];
+  const COLLECTIONS = ['meds', 'shopping', 'tasks', 'expenses', 'budgets', 'family', 'events', 'goals', 'schedule', 'maintenance', 'meals', 'growth', 'stars', 'savings', 'activity'];
   const SDK = '10.12.2';
   let app = null, db = null, unsub = null, enabled = false;
   let applyingRemote = false, pushTimer = null;
@@ -55,11 +55,29 @@ const Sync = (() => {
     for (const k of COLLECTIONS) p[k] = DB.list(k);
     return p;
   }
+  // The activity feed is append-only and written independently by every
+  // device, so a plain last-write-wins would drop the other person's events.
+  // Merge by id (keep both sides), sort by ts, cap the size.
+  function mergeActivity(remote) {
+    const local = DB.list('activity');
+    const map = {};
+    for (const e of local) if (e && e.id) map[e.id] = e;
+    for (const e of remote) if (e && e.id && !map[e.id]) map[e.id] = e;
+    return Object.values(map).sort((a, b) => (a.ts || 0) - (b.ts || 0)).slice(-80);
+  }
+
   function applyPayload(p) {
     applyingRemote = true;
-    try { for (const k of COLLECTIONS) if (Array.isArray(p[k])) DB.save(k, p[k]); }
-    finally { applyingRemote = false; }
+    try {
+      for (const k of COLLECTIONS) {
+        if (!Array.isArray(p[k])) continue;
+        if (k === 'activity') DB.save(k, mergeActivity(p[k]));
+        else DB.save(k, p[k]);
+      }
+    } finally { applyingRemote = false; }
     if (window.App && App.refresh) App.refresh();
+    // After a remote change, surface "what's new in the family" right away.
+    if (window.App && App.showActivityBanner) { try { App.showActivityBanner(); } catch (e) {} }
   }
 
   async function enable() {

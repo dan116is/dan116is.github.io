@@ -522,6 +522,24 @@
     </div>
   </div>
 
+  <!-- Conversation (Talk) overlay: voice & text first -->
+  <div id="talk" class="talk hidden">
+    <div class="talk-backdrop"></div>
+    <div class="talk-sheet">
+      <div class="talk-head">
+        <span class="talk-title">דבר איתי</span>
+        <button class="close-btn" id="talk-close" aria-label="סגור">×</button>
+      </div>
+      <div class="talk-transcript" id="talk-transcript"></div>
+      <button class="talk-mic" id="talk-mic" aria-label="דבר">🎤</button>
+      <div class="talk-hint" id="talk-hint">לחץ על המיקרופון ודבר — או כתוב למטה</div>
+      <div class="talk-bar">
+        <input type="text" id="talk-input" placeholder="כתוב כאן… &quot;מה יש לי היום&quot;, &quot;תמחק חלב&quot;" autocomplete="off" enterkeyhint="send">
+        <button class="talk-go" id="talk-go" aria-label="שלח">↵</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal -->
   <div id="modal" class="modal hidden">
     <div class="modal-backdrop"></div>
@@ -552,6 +570,7 @@
   <div id="toast" class="toast hidden"></div>
 
   <script src="js/db.js"></script>
+  <script src="js/activity.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/jewish.js"></script>
@@ -567,6 +586,7 @@
   <script src="js/stars.js"></script>
   <script src="js/savings.js"></script>
   <script src="js/quickadd.js"></script>
+  <script src="js/nlu.js"></script>
   <script src="js/focus.js"></script>
   <script src="js/ux.js"></script>
   <script src="js/notifications.js"></script>

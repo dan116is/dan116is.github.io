@@ -12,21 +12,29 @@ const Shopping = (() => {
     const trimmed = name.trim();
     if (!trimmed) return null;
     if (typeof Assistant !== 'undefined' && Assistant.learnShopping) Assistant.learnShopping(trimmed, category);
-    return DB.add(KEY, {
+    const created = DB.add(KEY, {
       name: trimmed,
       category: category || 'אחר',
       qty,
       bought: false
     });
+    if (typeof Activity !== 'undefined' && created) Activity.record('נוסף לקניות: ' + trimmed, '🛒');
+    return created;
   }
 
   function toggle(id) {
     const it = DB.findById(KEY, id);
     if (!it) return;
-    DB.update(KEY, id, { bought: !it.bought, boughtAt: !it.bought ? Date.now() : null });
+    const willBuy = !it.bought;
+    DB.update(KEY, id, { bought: willBuy, boughtAt: willBuy ? Date.now() : null });
+    if (willBuy && typeof Activity !== 'undefined') Activity.record('נקנה: ' + it.name, '✅');
   }
 
-  function remove(id) { DB.remove(KEY, id); }
+  function remove(id) {
+    const it = DB.findById(KEY, id);
+    DB.remove(KEY, id);
+    if (typeof Activity !== 'undefined' && it) Activity.record('הוסר מהקניות: ' + it.name, '🗑️');
+  }
 
   function clearBought() {
     const remaining = list().filter((i) => !i.bought);

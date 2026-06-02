@@ -3,7 +3,15 @@ const Events = (() => {
   const KEY = DB.KEYS.events;
 
   function list() { return DB.list(KEY); }
-  function add(data) { return DB.add(KEY, { type: 'event', ...data }); }
+  function add(data) {
+    const created = DB.add(KEY, { type: 'event', ...data });
+    if (typeof Activity !== 'undefined' && created) {
+      const icon = created.type === 'birthday' ? '🎂' : '📅';
+      const label = created.type === 'birthday' ? 'נוסף יום הולדת: ' : 'נוסף אירוע: ';
+      Activity.record(label + (created.title || ''), icon);
+    }
+    return created;
+  }
   function update(id, patch) { return DB.update(KEY, id, patch); }
   function remove(id) { DB.remove(KEY, id); }
 
