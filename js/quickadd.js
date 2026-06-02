@@ -82,7 +82,7 @@ const QuickAdd = (() => {
     }
     if (intent === 'task') {
       const t = parseTask(text);
-      Tasks.add({ title: t.title, dueDate: t.dueDate || '', notes: t.time ? `בשעה ${t.time}` : '' });
+      Tasks.add({ title: t.title, dueDate: t.dueDate || '', dueTime: t.time || '' });
       return { kind: 'task', msg: `משימה נוספה: ${t.title}${t.dueDate ? ' · ' + t.dueDate : ''}${t.time ? ' ' + t.time : ''}` };
     }
     const items = parseShopping(text);
@@ -125,7 +125,7 @@ const QuickAdd = (() => {
         added.expense++; parts.push('💰 ' + (e.title && e.title !== 'הוצאה' ? e.title + ' ' : '') + Budget.format(e.amount));
       } else if (intent === 'task') {
         const t = parseTask(seg);
-        Tasks.add({ title: t.title, dueDate: t.dueDate || '', notes: t.time ? `בשעה ${t.time}` : '' });
+        Tasks.add({ title: t.title, dueDate: t.dueDate || '', dueTime: t.time || '' });
         added.task++; parts.push('📋 ' + t.title + (t.dueDate ? ' (' + t.dueDate + ')' : ''));
       } else {
         const items = parseShopping(seg);
@@ -156,7 +156,7 @@ const QuickAdd = (() => {
     let n = 0;
     for (const line of lines) {
       const t = parseTask(line);
-      Tasks.add({ title: t.title, dueDate: t.dueDate || '', notes: t.time ? `בשעה ${t.time}` : '' });
+      Tasks.add({ title: t.title, dueDate: t.dueDate || '', dueTime: t.time || '' });
       n++;
     }
     return n;

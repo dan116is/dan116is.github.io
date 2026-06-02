@@ -88,10 +88,21 @@ const Tasks = (() => {
 
   function checkAlerts(notify) {
     const today = todayKey();
-    const hour = new Date().getHours();
-    if (hour < 8 || hour > 22) return;
+    const now = new Date();
+    const hour = now.getHours();
+    const nowMin = hour * 60 + now.getMinutes();
     for (const t of list()) {
       if (t.done) continue;
+      // Timed task: alert within a 5-minute window of its time.
+      if (t.dueDate === today && t.dueTime) {
+        const [h, m] = t.dueTime.split(':').map(Number);
+        const dueMin = h * 60 + m;
+        if (nowMin >= dueMin && nowMin < dueMin + 5) {
+          notify('⏰ ' + t.title, { body: `הגיע הזמן (${t.dueTime})`, tag: 'task-time-' + t.id });
+        }
+        continue;
+      }
+      if (hour < 8 || hour > 22) continue;
       if (t.dueDate === today) {
         notify('משימה להיום', { body: t.title, tag: 'task-' + t.id });
       } else if (t.dueDate && t.dueDate < today) {
@@ -124,6 +135,8 @@ const Tasks = (() => {
       const ad = a.dueDate || '9999-12-31';
       const bd = b.dueDate || '9999-12-31';
       if (ad !== bd) return ad < bd ? -1 : 1;
+      const at = a.dueTime || '99:99', bt = b.dueTime || '99:99';
+      if (at !== bt) return at < bt ? -1 : 1;
       return PRIORITIES.indexOf(b.priority || 'רגילה') - PRIORITIES.indexOf(a.priority || 'רגילה');
     });
 
@@ -149,9 +162,10 @@ const Tasks = (() => {
     container.innerHTML = chipsHtml + `<div class="task-sortable" data-sortable="${manual && !tagFilter ? '1' : ''}">` + filtered.map((t) => {
       const isOverdue = !t.done && t.dueDate && t.dueDate < today;
       const isToday = !t.done && t.dueDate === today;
+      const tm = t.dueTime ? ' · ' + t.dueTime : '';
       const dueText = t.dueDate
-        ? (isOverdue ? `באיחור · ${formatDate(t.dueDate)}` : isToday ? 'היום' : formatDate(t.dueDate))
-        : '';
+        ? (isOverdue ? `באיחור · ${formatDate(t.dueDate)}${tm}` : isToday ? `היום${tm}` : `${formatDate(t.dueDate)}${tm}`)
+        : (t.dueTime ? t.dueTime : '');
       const cardClass = isOverdue ? 'danger' : isToday ? 'warning' : '';
       const tags = [];
       if (dueText) tags.push(`<span class="tag ${isOverdue ? 'danger' : isToday ? 'warning' : ''}">${dueText}</span>`);
@@ -217,19 +231,23 @@ const Tasks = (() => {
             <input name="dueDate" type="date" value="${existing?.dueDate || ''}">
           </div>
           <div class="form-group">
-            <label>עדיפות</label>
-            <select name="priority">${priorityOpts}</select>
+            <label>שעה 🕐</label>
+            <input name="dueTime" type="time" value="${existing?.dueTime || ''}">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
+            <label>עדיפות</label>
+            <select name="priority">${priorityOpts}</select>
+          </div>
+          <div class="form-group">
             <label>חזרה 🔁</label>
             <select name="repeat">${REPEATS.map((r) => `<option value="${r.id}" ${(existing?.repeat || '') === r.id ? 'selected' : ''}>${r.label}</option>`).join('')}</select>
           </div>
-          <div class="form-group">
-            <label>עבור</label>
-            <select name="forWhom">${familyOpts}</select>
-          </div>
+        </div>
+        <div class="form-group">
+          <label>עבור</label>
+          <select name="forWhom">${familyOpts}</select>
         </div>
         <div class="form-group">
           <label>תגיות 🏷️ (מופרדות בפסיק)</label>
