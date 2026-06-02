@@ -4,6 +4,34 @@ const Meals = (() => {
   const KEY = DB.KEYS.meals;
   const DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
+  // Small built-in recipe book: dish name (or keyword) -> typical ingredients.
+  // Used so "מחר שקשוקה" can auto-fill the shopping list. Matched by includes().
+  const RECIPES = [
+    { match: ['שקשוקה'], items: ['ביצים', 'עגבניות', 'פלפל', 'בצל', 'רסק עגבניות'] },
+    { match: ['פסטה', 'ספגטי'], items: ['פסטה', 'רסק עגבניות', 'שום', 'בצל'] },
+    { match: ['סלט'], items: ['עגבניות', 'מלפפונים', 'בצל', 'לימון'] },
+    { match: ['שניצל'], items: ['חזה עוף', 'ביצים', 'פירורי לחם'] },
+    { match: ['עוף', 'פרגיות'], items: ['עוף', 'תפוחי אדמה', 'בצל'] },
+    { match: ['אורז'], items: ['אורז', 'בצל'] },
+    { match: ['חביתה', 'ביצים'], items: ['ביצים', 'גבינה'] },
+    { match: ['פנקייק', 'פנקייקים'], items: ['קמח', 'ביצים', 'חלב', 'אבקת אפייה'] },
+    { match: ['פיצה'], items: ['בצק פיצה', 'רסק עגבניות', 'גבינה צהובה'] },
+    { match: ['המבורגר', 'קציצות'], items: ['בשר טחון', 'בצל', 'לחמניות', 'ביצים'] },
+    { match: ['מרק'], items: ['ירקות למרק', 'בצל', 'גזר', 'תפוחי אדמה'] },
+    { match: ['טוסט', 'טוסטים'], items: ['לחם', 'גבינה צהובה'] },
+    { match: ['דג', 'סלמון'], items: ['דג', 'לימון'] },
+    { match: ['חומוס'], items: ['חומוס גרגרים', 'טחינה', 'לימון'] }
+  ];
+
+  // Find ingredients for a dish title; returns [] if unknown.
+  function ingredientsFor(title) {
+    const t = String(title || '').toLowerCase();
+    for (const r of RECIPES) {
+      if (r.match.some((m) => t.includes(m))) return r.items.slice();
+    }
+    return [];
+  }
+
   function all() { return DB.list(KEY); }
   function forDay(dow) { return all().find((m) => Number(m.day) === dow) || null; }
 
@@ -70,6 +98,6 @@ const Meals = (() => {
       </form>`;
   }
 
-  return { DAYS, all, forDay, setMeal, clearDay, addIngredientsToShopping, todayMeal, render, openForm };
+  return { DAYS, RECIPES, ingredientsFor, all, forDay, setMeal, clearDay, addIngredientsToShopping, todayMeal, render, openForm };
 })();
 if (typeof window !== "undefined") window.Meals = Meals;

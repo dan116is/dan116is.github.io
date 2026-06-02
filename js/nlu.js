@@ -37,6 +37,69 @@ const NLU = (() => {
       || /^(מה|כמה)\b/.test(t);
   }
 
+  // ---- Meal planning intent ----
+  // A day word + a dish (known recipe) or an explicit meal verb means: plan a
+  // meal for that day AND add its ingredients to shopping.
+  const DOW = { 'ראשון': 0, 'שני': 1, 'שלישי': 2, 'רביעי': 3, 'חמישי': 4, 'שישי': 5, 'שבת': 6 };
+  function dayFromText(t) {
+    if (/מחרתיים/.test(t)) { const d = new Date(); d.setDate(d.getDate() + 2); return d.getDay(); }
+    if (/מחר/.test(t)) { const d = new Date(); d.setDate(d.getDate() + 1); return d.getDay(); }
+    if (/היום|הערב|לארוחת ערב/.test(t)) return new Date().getDay();
+    // Hebrew \b is unreliable; match day words by plain inclusion, longest first
+    // ('ראשון'/'שלישי'/'רביעי' before 'שני'/'שבת' to avoid partial hits).
+    const order = ['ראשון', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שני', 'שבת'];
+    for (const name of order) {
+      if (t.includes('יום ' + name) || t.includes('ביום ' + name) || t.includes('ב' + name) || t.includes(name)) return DOW[name];
+    }
+    return null;
+  }
+  function isMeal(t) {
+    if (typeof Meals === 'undefined') return false;
+    const day = dayFromText(t);
+    if (day === null) return false;
+    // Known dish?
+    if (Meals.ingredientsFor(t).length) return true;
+    // Explicit meal verbs/nouns.
+    return /(ארוחה|ארוחת|נאכל|לאכול|לבשל|מבשל|אבשל|תכין|להכין|לארוחת ערב|לארוחת צהריים)/.test(t);
+  }
+  function dishFromText(t) {
+    // Strip day words + meal fillers to leave the dish name. Work token-by-token
+    // so we never chop a day name out of the MIDDLE of a dish (e.g. "שניצל"
+    // contains "שני"). Drop tokens that are day words or fillers.
+    const dayWords = new Set(['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת',
+      'יום', 'ביום', 'מחר', 'מחרתיים', 'היום', 'הערב']);
+    const fillers = new Set(['נאכל', 'לאכול', 'לבשל', 'מבשל', 'אבשל', 'תכין', 'להכין',
+      'לארוחת', 'ארוחת', 'ארוחה', 'ערב', 'צהריים', 'של', 'את', 'ה', 'יהיה', 'נעשה',
+      'עושים', 'בא', 'לי', 'בערב']);
+    const kept = norm(t).split(' ').filter((w) => w && !dayWords.has(w) && !fillers.has(w));
+    return kept.join(' ').trim();
+  }
+  function doMeal(text) {
+    const t = norm(text);
+    const day = dayFromText(t);
+    const dish = dishFromText(t) || 'ארוחה';
+    const dayName = Meals.DAYS[day];
+    const ingredients = Meals.ingredientsFor(dish.length ? dish : t);
+    // Save the planned dinner for that day (keep existing ingredients text).
+    Meals.setMeal(day, dish, ingredients.join(', '));
+    // Add ingredients to shopping (skip ones already on the list).
+    let added = [];
+    if (window.Shopping) {
+      const have = new Set(Shopping.list().filter((i) => !i.bought).map((i) => norm(i.name).toLowerCase()));
+      for (const it of ingredients) {
+        if (!have.has(norm(it).toLowerCase())) {
+          const cat = (window.FoodBrain && FoodBrain.categoryOf(it) !== 'אחר') ? FoodBrain.categoryOf(it) : 'מזון';
+          Shopping.add(it, cat); added.push(it);
+        }
+      }
+    }
+    let reply = `📅 ${dayName}: ${dish}`;
+    if (added.length) reply += ` · הוספתי לקניות: ${fmtList(added)}`;
+    else if (ingredients.length) reply += ` · כל המצרכים כבר ברשימה`;
+    else reply += ` · (לא מכיר מתכון — הוספתי רק לתפריט)`;
+    return { kind: 'meal', day, dish, added, reply };
+  }
+
   // ---- Actions ----
   function doComplete(text) {
     const target = extractTarget(text, ['סיימתי', 'סיימת', 'בוצע', 'עשיתי', 'גמרתי', 'תסמן', 'לסמן', 'סמן', 'ששילמתי', 'שילמתי', 'קניתי', 'את', 'ש']);
@@ -133,6 +196,7 @@ const NLU = (() => {
     if (isQuery(t)) return doQuery(t);
     if (isComplete(t)) return doComplete(t);
     if (isDelete(t)) return doDelete(t);
+    if (isMeal(t)) return doMeal(t);
 
     // Add — delegate to the existing smart classifier.
     if (window.QuickAdd) {
