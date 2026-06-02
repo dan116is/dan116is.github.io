@@ -29,6 +29,8 @@ const App = (() => {
     if (window.Sync) Sync.start();
     Notifier.start();
     setupUX();
+    // Surface "what's new in the family" since this device last looked.
+    showActivityBanner();
     setInterval(renderAll, 60 * 1000);
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
@@ -214,6 +216,7 @@ const App = (() => {
     setupSmartMic();
     setupVoiceTasks();
     setupCapture();
+    setupTalk();
 
     // Theme toggle
     document.getElementById('theme-btn').addEventListener('click', cycleTheme);
@@ -480,6 +483,12 @@ const App = (() => {
   function onDashClick(e) {
     const btn = e.target.closest('button');
     if (!btn) return;
+    if (btn.dataset.actSeen != null) {
+      haptic();
+      if (typeof Activity !== 'undefined') Activity.markAllSeen();
+      renderDashboard();
+      return;
+    }
     if (btn.dataset.agentIdx != null) {
       const ins = window.Agents ? Agents.last()[Number(btn.dataset.agentIdx)] : null;
       if (ins && ins.action) onAgentAction(ins.action);
@@ -601,18 +610,10 @@ const App = (() => {
     }
   }
 
-  function setupSmartMic() {
-    const mic = document.getElementById('smart-mic');
-    if (!QuickAdd.voiceSupported()) { mic.style.display = 'none'; return; }
-    mic.addEventListener('click', () => {
-      haptic();
-      const input = document.getElementById('smart-input');
-      QuickAdd.startVoice(
-        (text) => { input.value = text; runSmartAdd(); },
-        (state) => { mic.classList.toggle('listening', state === 'listening'); }
-      );
-    });
-  }
+  // The dashboard mic now opens the conversation (Talk) overlay instead of
+  // doing a one-shot quick-add — setupTalk() owns the #smart-mic click. We keep
+  // the mic visible everywhere because the overlay has a typed fallback too.
+  function setupSmartMic() { /* handled by setupTalk() */ }
 
   // ----- Voice / dictation tasks -----
   // Works everywhere: where the Web Speech API exists we use it; otherwise
@@ -677,6 +678,145 @@ const App = (() => {
     const fbar = document.getElementById('focus-bar');
     if (fbar) fbar.addEventListener('click', (e) => { if (e.target.closest('#focus-stop')) { haptic(); Focus.stop(); } });
     if (window.Focus) Focus.init();
+  }
+
+  // ----- Conversation (Talk) overlay -----
+  // A natural, two-way conversation: speak or type a request, get a short
+  // Hebrew reply. Routes everything through NLU (complete / delete / query /
+  // add) and reads answers aloud when the input came from voice.
+  let talkSpeaking = false;
+  function talkEsc(s) { return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  function openTalk() {
+    const el = document.getElementById('talk');
+    if (!el) return;
+    el.classList.remove('hidden');
+    const input = document.getElementById('talk-input');
+    setTimeout(() => { if (input) input.focus(); }, 120);
+  }
+  function closeTalk() {
+    const el = document.getElementById('talk');
+    if (!el) return;
+    el.classList.add('hidden');
+    const mic = document.getElementById('talk-mic');
+    if (mic) mic.classList.remove('listening');
+    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+  }
+
+  function talkAppend(role, text) {
+    const box = document.getElementById('talk-transcript');
+    if (!box) return;
+    const row = document.createElement('div');
+    row.className = 'talk-msg ' + (role === 'user' ? 'me' : 'bot');
+    row.innerHTML = `<span class="talk-bubble">${talkEsc(text)}</span>`;
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function talkSpeak(text) {
+    try {
+      if (!window.speechSynthesis || !text) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'he-IL';
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  // Run one utterance through the NLU and show + (optionally) speak the reply.
+  function talkSubmit(text, fromVoice) {
+    const t = (text || '').trim();
+    if (!t) return;
+    talkAppend('user', t);
+    let res = null;
+    try { res = window.NLU ? NLU.run(t) : null; }
+    catch (e) { res = null; }
+    const reply = (res && res.reply) ? res.reply : 'לא הצלחתי להבין — אפשר לנסות אחרת?';
+    talkAppend('bot', reply);
+    if (fromVoice) talkSpeak(reply);
+    haptic();
+    renderAll();
+  }
+
+  function setupTalk() {
+    const overlay = document.getElementById('talk');
+    if (!overlay) return;
+
+    // Open from the dashboard mic: the conversation overlay is richer than the
+    // plain quick-add mic (it understands queries / complete / delete too).
+    const smartMic = document.getElementById('smart-mic');
+    if (smartMic) {
+      smartMic.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        haptic();
+        openTalk();
+      }, true);
+    }
+
+    // Close: explicit button + tapping the backdrop.
+    const closeBtn = document.getElementById('talk-close');
+    if (closeBtn) closeBtn.addEventListener('click', () => { haptic(); closeTalk(); });
+    const backdrop = overlay.querySelector('.talk-backdrop');
+    if (backdrop) backdrop.addEventListener('click', closeTalk);
+
+    // Text submit: Enter or the send button.
+    const input = document.getElementById('talk-input');
+    const go = document.getElementById('talk-go');
+    const sendTyped = () => {
+      if (!input) return;
+      const v = input.value;
+      input.value = '';
+      talkSubmit(v, false);
+    };
+    if (go) go.addEventListener('click', sendTyped);
+    if (input) input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); sendTyped(); }
+    });
+
+    // Voice input via the Web Speech API; on unsupported browsers (e.g. iOS
+    // Safari) fall back to focusing the text field so the keyboard mic works.
+    const mic = document.getElementById('talk-mic');
+    const hint = document.getElementById('talk-hint');
+    if (mic) {
+      if (!QuickAdd.voiceSupported()) {
+        mic.addEventListener('click', () => {
+          if (input) input.focus();
+          if (hint) hint.textContent = 'הקש על אייקון המיקרופון 🎤 במקלדת ודבר';
+        });
+      } else {
+        mic.addEventListener('click', () => {
+          haptic();
+          mic.classList.add('listening');
+          if (hint) hint.textContent = 'מקשיב… דבר עכשיו';
+          QuickAdd.startVoice(
+            (text) => { talkSubmit(text, true); },
+            (state) => {
+              if (state !== 'listening') {
+                mic.classList.remove('listening');
+                if (hint) hint.textContent = 'לחץ על המיקרופון ודבר — או כתוב למטה';
+              }
+            }
+          );
+        });
+      }
+    }
+  }
+
+  // ----- Family activity banner -----
+  // Surface "what's new in the family" since this device last looked. Called on
+  // app open and after a remote sync change. The banner itself is rendered by
+  // Briefing.render (so it survives re-renders); here we just refresh + toast.
+  function showActivityBanner() {
+    if (typeof Activity === 'undefined') return;
+    try {
+      const unseen = Activity.unseen();
+      renderDashboard();
+      if (unseen && unseen.length) {
+        const latest = unseen[0];
+        toast(`🔔 ${latest.who}: ${latest.text}`, '');
+      }
+    } catch (e) {}
   }
 
   function showFocusForm() {
@@ -1767,7 +1907,7 @@ const App = (() => {
     });
   }
 
-  return { init, setView, toast, refresh: renderAll };
+  return { init, setView, toast, refresh: renderAll, showActivityBanner };
 })();
 
 document.addEventListener('DOMContentLoaded', App.init);

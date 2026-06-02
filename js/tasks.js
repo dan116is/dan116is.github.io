@@ -46,10 +46,16 @@ const Tasks = (() => {
   function add(data) {
     const items = list();
     const order = items.length ? Math.min(...items.map((t) => t.order ?? 0)) - 1 : 0;
-    return DB.add(KEY, { done: false, priority: 'רגילה', tags: [], subtasks: [], order, ...data });
+    const created = DB.add(KEY, { done: false, priority: 'רגילה', tags: [], subtasks: [], order, ...data });
+    if (typeof Activity !== 'undefined' && created) Activity.record('נוספה משימה: ' + created.title, '📋');
+    return created;
   }
   function update(id, patch) { return DB.update(KEY, id, patch); }
-  function remove(id) { DB.remove(KEY, id); }
+  function remove(id) {
+    const t = DB.findById(KEY, id);
+    DB.remove(KEY, id);
+    if (typeof Activity !== 'undefined' && t) Activity.record('נמחקה משימה: ' + t.title, '🗑️');
+  }
 
   // All tags currently in use (for filtering/autocomplete).
   function allTags() {
@@ -79,6 +85,7 @@ const Tasks = (() => {
     if (!t) return;
     const willComplete = !t.done;
     DB.update(KEY, id, { done: !t.done, doneAt: !t.done ? Date.now() : null });
+    if (willComplete && typeof Activity !== 'undefined') Activity.record('הושלמה משימה: ' + t.title, '✅');
     // Completing a recurring task spawns its next occurrence automatically.
     if (willComplete && t.repeat) {
       const nd = nextDate(t.dueDate || todayKey(), t.repeat);

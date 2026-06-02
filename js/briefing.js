@@ -94,6 +94,35 @@ const Briefing = (() => {
     return cards.sort((a, b) => a.rank - b.rank).slice(0, 6);
   }
 
+  // "🔔 מה חדש במשפחה" — unseen family activity since this device last looked.
+  // Tapping "הבנתי" marks everything seen (handled in App.onDashClick via
+  // data-act-seen). Self-authored events are pre-marked, so this only shows
+  // what *others* did.
+  function activityBannerHtml() {
+    if (typeof Activity === 'undefined') return '';
+    let unseen = [];
+    try { unseen = Activity.unseen() || []; } catch (e) { return ''; }
+    if (!unseen.length) return '';
+    const top = unseen.slice(0, 5);
+    const more = unseen.length - top.length;
+    return `
+      <div class="brief-activity">
+        <div class="brief-activity-head">
+          <span>🔔 מה חדש במשפחה</span>
+          <button class="brief-activity-seen" data-act-seen="1">הבנתי</button>
+        </div>
+        ${top.map((e) => `
+          <div class="brief-activity-row">
+            <span class="ba-ico">${esc(e.icon || '•')}</span>
+            <span class="ba-body">
+              <span class="ba-text">${esc(e.text)}</span>
+              <span class="ba-who">${esc(e.who || 'מישהו')}</span>
+            </span>
+          </div>`).join('')}
+        ${more > 0 ? `<div class="brief-activity-more">ועוד ${more}…</div>` : ''}
+      </div>`;
+  }
+
   function render(container, ownerName) {
     if (!container) return;
     const today = new Date();
@@ -121,6 +150,7 @@ const Briefing = (() => {
           </div>`).join('')}
       </div>` : '';
     container.innerHTML = `
+      ${activityBannerHtml()}
       <div class="brief-hero">
         <div class="brief-greet">${esc(greeting(ownerName || 'דניאל'))}</div>
         <div class="brief-date">${esc(dateStr)}</div>

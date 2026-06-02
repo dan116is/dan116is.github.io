@@ -17,6 +17,7 @@ const DB = (() => {
     growth: 'growth',
     stars: 'stars',
     savings: 'savings',
+    activity: 'activity',
     settings: 'settings'
   };
 

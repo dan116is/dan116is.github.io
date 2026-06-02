@@ -46,11 +46,16 @@ const Budget = (() => {
   }
 
   function add(data) {
-    return DB.add(KEY, {
+    const created = DB.add(KEY, {
       date: data.date || new Date().toISOString().slice(0, 10),
       category: data.category || 'אחר',
       ...data
     });
+    if (typeof Activity !== 'undefined' && created) {
+      const label = (created.title && created.title !== 'הוצאה') ? ' ' + created.title : (created.category ? ' ' + created.category : '');
+      Activity.record('נרשמה הוצאה: ' + format(created.amount) + label, '💰');
+    }
+    return created;
   }
 
   function update(id, patch) { return DB.update(KEY, id, patch); }
