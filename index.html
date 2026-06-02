@@ -522,17 +522,24 @@
     </div>
   </div>
 
-  <!-- Conversation (Talk) overlay: voice & text first -->
+  <!-- Conversation (Talk) overlay: a central mic with orbiting suggestions -->
   <div id="talk" class="talk hidden">
     <div class="talk-backdrop"></div>
     <div class="talk-sheet">
       <div class="talk-head">
-        <span class="talk-title">דבר איתי</span>
+        <span class="talk-title">דבר איתי — או הקש על הצעה</span>
         <button class="close-btn" id="talk-close" aria-label="סגור">×</button>
       </div>
+      <!-- Orbit stage: central mic with suggestion bubbles around it -->
+      <div class="talk-stage" id="talk-stage">
+        <div class="talk-orbit" id="talk-orbit"></div>
+        <button class="talk-mic" id="talk-mic" aria-label="דבר">
+          <span class="talk-mic-glow" aria-hidden="true"></span>
+          <span class="talk-mic-ico" aria-hidden="true">🎤</span>
+        </button>
+      </div>
+      <div class="talk-hint" id="talk-hint">לחץ על המיקרופון ודבר — או הקש על הצעה</div>
       <div class="talk-transcript" id="talk-transcript"></div>
-      <button class="talk-mic" id="talk-mic" aria-label="דבר">🎤</button>
-      <div class="talk-hint" id="talk-hint">לחץ על המיקרופון ודבר — או כתוב למטה</div>
       <div class="talk-bar">
         <input type="text" id="talk-input" placeholder="כתוב כאן… &quot;מה יש לי היום&quot;, &quot;תמחק חלב&quot;" autocomplete="off" enterkeyhint="send">
         <button class="talk-go" id="talk-go" aria-label="שלח">↵</button>
