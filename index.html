@@ -449,11 +449,19 @@
           <input type="file" id="import-file" accept=".json" hidden>
         </div>
       </div>
+      <div class="settings-section">
+        <h3>עדכון האפליקציה</h3>
+        <p class="hint">אם האפליקציה לא מתעדכנת בטלפון — לחץ כאן כדי לכפות עדכון לגרסה האחרונה.</p>
+        <div class="settings-actions">
+          <button class="primary-btn" id="force-update-btn">🔄 עדכן עכשיו</button>
+        </div>
+        <p class="hint" id="version-line">גרסה נטענת…</p>
+      </div>
       <div class="settings-section danger-zone">
         <h3>אזור מסוכן</h3>
         <button class="danger-btn" id="reset-btn">מחק את כל הנתונים</button>
       </div>
-      <div class="app-version">גרסה 2.0 · משפחת ישראלי</div>
+      <div class="app-version" id="app-version-foot">גרסה 2.0 · משפחת ישראלי</div>
     </section>
   </main>
 

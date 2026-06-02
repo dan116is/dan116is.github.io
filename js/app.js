@@ -462,6 +462,49 @@ const App = (() => {
       renderAll();
       toast('הכל נמחק', 'success');
     });
+    const fu = document.getElementById('force-update-btn');
+    if (fu) fu.addEventListener('click', forceUpdate);
+  }
+
+  // Build stamp — bump on every deploy so it's visible on screen. If the user
+  // sees this exact string, the newest app.js loaded; if not, it's a stale
+  // cache and "עדכן עכשיו" will clear it.
+  const APP_BUILD = 'v41 · 2 ביוני 2026';
+
+  // Show which version is actually running, and the real cached SW version.
+  function showVersion() {
+    const foot = document.getElementById('app-version-foot');
+    if (foot) foot.textContent = `גרסה ${APP_BUILD} · משפחת ישראלי`;
+    const line = document.getElementById('version-line');
+    if (!line) return;
+    line.textContent = `גרסה פעילה: ${APP_BUILD}`;
+    if (window.caches) {
+      caches.keys().then((keys) => {
+        const cache = keys.find((k) => k.startsWith('habait-')) || '—';
+        line.textContent = `גרסה פעילה: ${APP_BUILD}  ·  מטמון: ${cache}`;
+      }).catch(() => {});
+    }
+  }
+
+  // Nuke every cache + service worker and hard-reload. The reliable way to beat
+  // a stubborn PWA cache on the phone, in one tap.
+  async function forceUpdate() {
+    const btn = document.getElementById('force-update-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'מעדכן…'; }
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if (window.caches) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch (e) { /* best effort */ }
+    // Cache-busting reload so even the HTML itself is re-fetched.
+    const u = new URL(location.href);
+    u.searchParams.set('_u', Date.now());
+    location.replace(u.toString());
   }
 
   function handleQuickAction(action) {
@@ -1903,6 +1946,7 @@ const App = (() => {
       Settings.renderFamily();
       Settings.renderNotifStatus();
       renderPersonalization();
+      showVersion();
     }
   }
 
