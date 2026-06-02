@@ -687,12 +687,66 @@ const App = (() => {
   let talkSpeaking = false;
   function talkEsc(s) { return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
+  // Beginner-friendly Hebrew suggestions. We show a rotating subset of ~6 each
+  // time the screen opens, orbiting the central mic, to teach what can be said.
+  const TALK_SUGGESTIONS = [
+    'מה יש לי היום?',
+    'מחר שקשוקה',
+    'תזכיר לי מחר רופא',
+    'תוסיף חלב וביצים',
+    'כמה הוצאתי החודש?',
+    'מה ברשימת הקניות?',
+    'סיימתי את הכביסה',
+    'שילמתי 50 בסופר',
+    'מה הלו״ז של היום?',
+    'ביום שישי פסטה'
+  ];
+  let talkPoolStart = 0; // rotates the visible subset on each open
+
+  // Render ~6 suggestion bubbles on a ring around the central mic. Positions are
+  // computed with trig so they sit evenly around the circle; CSS makes them
+  // gently drift. Tapping one runs it through the same submit path as typing.
+  function renderTalkBubbles() {
+    const orbit = document.getElementById('talk-orbit');
+    if (!orbit) return;
+    orbit.innerHTML = '';
+    const count = 6;
+    const pool = TALK_SUGGESTIONS;
+    const picks = [];
+    for (let i = 0; i < count; i++) picks.push(pool[(talkPoolStart + i) % pool.length]);
+    talkPoolStart = (talkPoolStart + count) % pool.length; // rotate for next open
+    // Place around an ellipse; start at the top and go around clockwise. Radii
+    // are a fraction of the stage so it scales and never overflows 390px wide.
+    const rx = 38, ry = 41; // % offset from center along each axis
+    picks.forEach((text, i) => {
+      const ang = (-90 + (360 / count) * i) * Math.PI / 180;
+      const x = 50 + rx * Math.cos(ang);
+      const y = 50 + ry * Math.sin(ang);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'talk-bubble-chip';
+      b.style.left = x + '%';
+      b.style.top = y + '%';
+      b.style.setProperty('--d', (i * 0.45).toFixed(2) + 's'); // stagger drift
+      b.textContent = text;
+      b.addEventListener('click', () => {
+        haptic();
+        const input = document.getElementById('talk-input');
+        if (input) input.value = text;
+        talkSubmit(text, false);
+        if (input) input.value = '';
+      });
+      orbit.appendChild(b);
+    });
+  }
+
   function openTalk() {
     const el = document.getElementById('talk');
     if (!el) return;
     el.classList.remove('hidden');
-    const input = document.getElementById('talk-input');
-    setTimeout(() => { if (input) input.focus(); }, 120);
+    renderTalkBubbles();
+    const hint = document.getElementById('talk-hint');
+    if (hint) hint.textContent = 'לחץ על המיקרופון ודבר — או הקש על הצעה';
   }
   function closeTalk() {
     const el = document.getElementById('talk');
@@ -1907,7 +1961,7 @@ const App = (() => {
     });
   }
 
-  return { init, setView, toast, refresh: renderAll, showActivityBanner };
+  return { init, setView, toast, refresh: renderAll, showActivityBanner, openTalk, closeTalk };
 })();
 
 document.addEventListener('DOMContentLoaded', App.init);
