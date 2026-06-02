@@ -1,6 +1,6 @@
 // Monthly calendar view. Shows task dots per day; tap a day to see/add tasks.
 const Calendar = (() => {
-  let viewYear, viewMonth, selectedKey = null;
+  let viewYear, viewMonth, selectedKey = null, mode = 'month';
 
   function pad(n) { return String(n).padStart(2, '0'); }
   function ymd(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
@@ -14,8 +14,20 @@ const Calendar = (() => {
     }
   }
 
-  function prev() { ensure(); viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } render(); }
-  function next() { ensure(); viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } render(); }
+  function setMode(m) { mode = (m === 'week') ? 'week' : 'month'; render(); }
+
+  function prev() {
+    ensure();
+    if (mode === 'week') { const d = new Date(selectedKey + 'T00:00:00'); d.setDate(d.getDate() - 7); selectedKey = ymd(d); viewYear = d.getFullYear(); viewMonth = d.getMonth(); }
+    else { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } }
+    render();
+  }
+  function next() {
+    ensure();
+    if (mode === 'week') { const d = new Date(selectedKey + 'T00:00:00'); d.setDate(d.getDate() + 7); selectedKey = ymd(d); viewYear = d.getFullYear(); viewMonth = d.getMonth(); }
+    else { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } }
+    render();
+  }
   function select(key) { selectedKey = key; render(); }
   function selected() { ensure(); return selectedKey; }
 
@@ -48,30 +60,49 @@ const Calendar = (() => {
     const grid = document.getElementById('cal-grid');
     const titleEl = document.getElementById('cal-title');
     if (!grid || !titleEl) return;
-    titleEl.textContent = new Date(viewYear, viewMonth, 1).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+    // reflect active mode button
+    document.querySelectorAll('[data-cal-mode]').forEach((b) => b.classList.toggle('active', b.dataset.calMode === mode));
 
-    const startDow = new Date(viewYear, viewMonth, 1).getDay();
-    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
     const byDay = tasksByDay();
     const evDay = eventsByDay();
     const todayKey = ymd(new Date());
     const weekdays = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 
-    let cells = '';
-    for (let i = 0; i < startDow; i++) cells += '<div class="cal-day empty"></div>';
-    for (let day = 1; day <= daysInMonth; day++) {
-      const key = `${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`;
+    function cell(key, label, big) {
       const has = byDay[key] && byDay[key].length;
       const hasEv = evDay[key];
       const cls = ['cal-day'];
+      if (big) cls.push('cal-day-week');
       if (key === todayKey) cls.push('today');
       if (key === selectedKey) cls.push('selected');
       const dots = `${has ? '<span class="cal-dot"></span>' : ''}${hasEv ? '<span class="cal-dot event"></span>' : ''}`;
-      cells += `<button class="${cls.join(' ')}" data-cal-day="${key}">${day}<div class="cal-dots">${dots}</div></button>`;
+      return `<button class="${cls.join(' ')}" data-cal-day="${key}">${label}<div class="cal-dots">${dots}</div></button>`;
     }
-    grid.innerHTML =
-      `<div class="cal-weekdays">${weekdays.map((w) => `<span>${w}</span>`).join('')}</div>` +
-      `<div class="cal-days">${cells}</div>`;
+
+    if (mode === 'week') {
+      const sel = new Date(selectedKey + 'T00:00:00');
+      const start = new Date(sel); start.setDate(sel.getDate() - sel.getDay()); // Sunday
+      let cells = '';
+      const labels = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start); d.setDate(start.getDate() + i);
+        labels.push(weekdays[i] + ' ' + d.getDate());
+        cells += cell(ymd(d), `<span class="cal-wnum">${weekdays[i]}</span><span class="cal-wday">${d.getDate()}</span>`, true);
+      }
+      const end = new Date(start); end.setDate(start.getDate() + 6);
+      titleEl.textContent = `${start.getDate()}–${end.getDate()} ${end.toLocaleDateString('he-IL', { month: 'long' })}`;
+      grid.innerHTML = `<div class="cal-week">${cells}</div>`;
+    } else {
+      titleEl.textContent = new Date(viewYear, viewMonth, 1).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+      const startDow = new Date(viewYear, viewMonth, 1).getDay();
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      let cells = '';
+      for (let i = 0; i < startDow; i++) cells += '<div class="cal-day empty"></div>';
+      for (let day = 1; day <= daysInMonth; day++) cells += cell(`${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`, String(day), false);
+      grid.innerHTML =
+        `<div class="cal-weekdays">${weekdays.map((w) => `<span>${w}</span>`).join('')}</div>` +
+        `<div class="cal-days">${cells}</div>`;
+    }
 
     renderSelected(byDay);
   }
@@ -106,6 +137,6 @@ const Calendar = (() => {
     el.innerHTML = evHtml + taskHtml;
   }
 
-  return { render, prev, next, select, selected };
+  return { render, prev, next, select, selected, setMode };
 })();
 if (typeof window !== "undefined") window.Calendar = Calendar;

@@ -265,10 +265,14 @@
 
     <!-- Calendar -->
     <section id="view-calendar" class="view">
+      <div class="cal-modes">
+        <button class="cal-mode active" id="cal-mode-month" data-cal-mode="month">חודש</button>
+        <button class="cal-mode" id="cal-mode-week" data-cal-mode="week">שבוע</button>
+      </div>
       <div class="cal-head">
-        <button class="cal-nav-btn" id="cal-prev" aria-label="חודש קודם">›</button>
+        <button class="cal-nav-btn" id="cal-prev" aria-label="הקודם">›</button>
         <div class="cal-title" id="cal-title"></div>
-        <button class="cal-nav-btn" id="cal-next" aria-label="חודש הבא">‹</button>
+        <button class="cal-nav-btn" id="cal-next" aria-label="הבא">‹</button>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
       <div class="cal-head" style="margin-bottom:10px;">
