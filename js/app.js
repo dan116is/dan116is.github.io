@@ -1,6 +1,6 @@
 // Main app controller: routing, modals, event delegation, dashboard.
 const App = (() => {
-  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'events', 'goals', 'schedule', 'meals', 'maintenance', 'growth', 'stars', 'savings', 'budget', 'settings'];
+  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'calendar', 'events', 'goals', 'weekly', 'schedule', 'meals', 'maintenance', 'growth', 'stars', 'savings', 'budget', 'settings'];
   let currentView = 'dashboard';
   let medFilter = 'all';
   let taskFilter = 'all';
@@ -1697,6 +1697,7 @@ const App = (() => {
     else if (currentView === 'calendar') Calendar.render();
     else if (currentView === 'events') Events.render(document.getElementById('event-list'));
     else if (currentView === 'goals') Goals.render(document.getElementById('goals-list'));
+    else if (currentView === 'weekly') Weekly.render(document.getElementById('weekly-content'));
     else if (currentView === 'schedule') Schedule.render(document.getElementById('sched-board'));
     else if (currentView === 'meals') Meals.render(document.getElementById('meals-board'));
     else if (currentView === 'maintenance') Maintenance.render(document.getElementById('maint-list'));
