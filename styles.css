@@ -1333,3 +1333,23 @@ body::before { animation-duration: 42s; }
   color: var(--text); font-family: inherit; font-size: 15px; font-weight: 800; padding: 14px; cursor: pointer;
 }
 .focus-preset:active { transform: scale(0.95); background: color-mix(in srgb, var(--primary) 18%, transparent); }
+
+/* ---------- One-tap quick tiles (dashboard hero actions) ---------- */
+.quick-tiles {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  margin: 4px 0 18px;
+}
+.qtile {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 16px 6px; border: none; cursor: pointer; font-family: inherit;
+  border-radius: 20px; color: #fff;
+  box-shadow: var(--shadow-sm); transition: transform 0.15s ease, box-shadow 0.2s ease;
+  animation: floatIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+.qtile:active { transform: scale(0.93); }
+.qtile.focus { background: linear-gradient(150deg,#5e5ce6,#0a9ed6); }
+.qtile.task  { background: linear-gradient(150deg,#0a9ed6,#2bc4ef); }
+.qtile.shop  { background: linear-gradient(150deg,#16bfa0,#14b8a0); }
+.qtile.money { background: linear-gradient(150deg,#f5b14b,#f0883a); }
+.qt-ico { font-size: 25px; line-height: 1; }
+.qt-label { font-size: 12.5px; font-weight: 800; }

@@ -126,6 +126,12 @@ const Briefing = (() => {
         <div class="brief-date">${esc(dateStr)}</div>
         <div class="brief-summary">${esc(summaryLine())}</div>
       </div>
+      <div class="quick-tiles">
+        <button class="qtile focus" data-quick="focus"><span class="qt-ico">⏱️</span><span class="qt-label">פוקוס</span></button>
+        <button class="qtile task" data-quick="task"><span class="qt-ico">📋</span><span class="qt-label">משימה</span></button>
+        <button class="qtile shop" data-quick="shop"><span class="qt-ico">🛒</span><span class="qt-label">קנייה</span></button>
+        <button class="qtile money" data-quick="expense"><span class="qt-ico">💰</span><span class="qt-label">הוצאה</span></button>
+      </div>
       ${didHtml}
       ${agentsHtml}
       ${sugCount ? `<button class="brief-assistant" data-brief="assistant">✨ ${sugCount} הצעות חכמות בשבילך — לפתוח</button>` : ''}
