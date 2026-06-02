@@ -33,6 +33,10 @@ const Growth = (() => {
 
   function render(container) {
     const kids = children();
+    if (!kids.length) {
+      container.innerHTML = `<div class="empty-state"><div class="icon">📏</div><p>הוסף בני משפחה בהגדרות כדי לעקוב אחר גדילה.</p></div>`;
+      return;
+    }
     container.innerHTML = kids.map((name) => {
       const recs = forChild(name);
       const last = recs[recs.length - 1];
@@ -54,7 +58,7 @@ const Growth = (() => {
                 <div class="growth-row">
                   <span>${new Date(r.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
                   <span>${r.height ? r.height + ' ס״מ' : ''} ${r.weight ? '· ' + r.weight + ' ק״ג' : ''}</span>
-                  <button class="icon-btn" data-growth-del="${r.id}">🗑</button>
+                  <button class="icon-btn" data-growth-del="${r.id}" title="מחק" aria-label="מחק מדידה">🗑</button>
                 </div>`).join('')}
             </div>`
             : `<div class="dash-empty">אין מדידות עדיין</div>`}
