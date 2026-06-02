@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habait-v31';
+const CACHE_NAME = 'habait-v32';
 const ASSETS = [
   './',
   './index.html',
@@ -20,6 +20,7 @@ const ASSETS = [
   './js/stars.js',
   './js/savings.js',
   './js/quickadd.js',
+  './js/focus.js',
   './js/ux.js',
   './js/notifications.js',
   './js/medications.js',

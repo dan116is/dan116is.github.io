@@ -1304,3 +1304,32 @@ body::before { animation-duration: 42s; }
   border-radius: 11px; cursor: pointer;
 }
 .agent-do:active { transform: scale(0.92); }
+
+/* ---------- Focus timer ---------- */
+.focus-bar {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(150px + var(--safe-bot)); z-index: 85;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--glass-strong); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid var(--primary); border-radius: 999px; padding: 8px 8px 8px 16px;
+  box-shadow: var(--shadow); font-weight: 700; font-size: 14px;
+  animation: floatIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+}
+.focus-bar[hidden] { display: none; }
+.focus-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); animation: vtPulse 1.4s ease-in-out infinite; }
+.focus-label { color: var(--text-muted); font-size: 13px; }
+.focus-time { font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 800; min-width: 48px; text-align: center; }
+.focus-stop { width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--bg-elev-2); color: var(--text-muted); cursor: pointer; font-size: 13px; }
+.focus-stop:active { transform: scale(0.9); }
+.capture-focus {
+  width: 100%; margin-top: 12px; border: 1px solid var(--border-strong); border-radius: 14px;
+  background: var(--bg-elev-2); color: var(--text); font-family: inherit; font-size: 14px; font-weight: 700;
+  padding: 13px; cursor: pointer;
+}
+.capture-focus:active { transform: scale(0.98); }
+.focus-presets { display: flex; gap: 9px; }
+.focus-preset {
+  flex: 1; border: 1px solid var(--border-strong); border-radius: 13px; background: var(--bg-elev-2);
+  color: var(--text); font-family: inherit; font-size: 15px; font-weight: 800; padding: 14px; cursor: pointer;
+}
+.focus-preset:active { transform: scale(0.95); background: color-mix(in srgb, var(--primary) 18%, transparent); }
