@@ -26,15 +26,21 @@ const NLU = (() => {
   function fmtList(arr) { return arr.filter(Boolean).join(', '); }
 
   // ---- Intent detection ----
+  // A numbered payment ("שילמתי 200", "הוצאתי 50") is an EXPENSE, not a task
+  // completion — must be checked before isComplete so it routes correctly.
+  function isExpense(t) {
+    return /(שילמתי|הוצאתי|עלה לי|עלתה|שילמנו)/.test(t) && /\d/.test(t);
+  }
   function isComplete(t) {
-    return /(סיימתי|סיימת|בוצע|עשיתי|גמרתי|תסמן|לסמן|סמן|שילמתי|כבר קניתי|קניתי את)/.test(t);
+    // "קניתי חלב" / "קניתי" → mark bought (not only "קניתי את").
+    return /(סיימתי|סיימת|בוצע|עשיתי|גמרתי|תסמן|לסמן|סמן|כבר קניתי|קניתי)/.test(t);
   }
   function isDelete(t) {
-    return /(תמחק|למחוק|מחק|תוריד|להוריד|הסר|תסיר|להסיר|תבטל|לבטל)/.test(t);
+    return /(תמחק|למחוק|מחק|תוריד מהרשימה|הסר|תסיר|להסיר|תבטל|לבטל)/.test(t);
   }
   function isQuery(t) {
-    return /(מה יש|מה ברשימת|מה ברשימה|מה בקניות|מה צריך לקנות|כמה הוצאתי|כמה יצא|מה הלו|מה היום|מה יש לי|מה המשימות|מה נשאר|מה התקציב|כמה נשאר)/.test(t)
-      || /^(מה|כמה)\b/.test(t);
+    return /(מה יש|מה ברשימת|מה ברשימה|מה בקניות|מה צריך לקנות|כמה הוצאתי|כמה יצא|מה הלו|מה היום|מה יש לי|מה המשימות|מה נשאר|מה התקציב|כמה נשאר|מה מתוכנן|מה הסטטוס)/.test(t)
+      || /^מה\b/.test(t);
   }
 
   // ---- Meal planning intent ----
@@ -155,8 +161,9 @@ const NLU = (() => {
       if (!items.length) return { kind: 'query', reply: 'רשימת הקניות ריקה ✨' };
       return { kind: 'query', reply: `ברשימת הקניות (${items.length}): ${fmtList(items.map((i) => i.name))}` };
     }
-    // Budget / spending this month.
-    if (/(הוצאתי|הוצאות|תקציב|כסף|יצא|נשאר)/.test(t)) {
+    // Budget / spending this month (require explicit budget words so "מה נשאר
+    // לי לעשות" stays a tasks question, not a spending answer).
+    if (/(הוצאתי|הוצאות|תקציב|כסף|להוציא)/.test(t)) {
       if (!window.Budget) return { kind: 'query', reply: 'אין נתוני תקציב' };
       const mKey = Budget.monthKey();
       const total = Budget.totalForMonth(mKey);
@@ -219,10 +226,15 @@ const NLU = (() => {
     const t = norm(raw);
 
     // Smart instant-answer questions first (weather/meal/event/meds), then the
-    // generic query check, then complete & delete, then fall back to add.
+    // generic query check. A numbered payment is an expense (before isComplete,
+    // since "שילמתי" also reads as completion). Then complete & delete, then add.
     const sq = smartQuestion(t);
     if (sq) return sq;
     if (isQuery(t)) return doQuery(t);
+    if (isExpense(t) && window.QuickAdd) {
+      const res = QuickAdd.handleSmart(raw);
+      if (res) return { kind: 'add', added: res.added, reply: res.msg };
+    }
     if (isComplete(t)) return doComplete(t);
     if (isDelete(t)) return doDelete(t);
     if (isMeal(t)) return doMeal(t);

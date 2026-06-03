@@ -87,7 +87,7 @@ const QuickAdd = (() => {
 
   function parseShopping(text) {
     const t = text
-      .replace(/(תוסיף לי|תוסיפי|תוסיף|הוסף|צריך לקנות|צריך|קנה|תקנה|לקנות|לרשימה|לקניות)/g, '')
+      .replace(/(תוסיף לי|תוסיפי|תוסיף|הוסף|צריך לקנות|צריך|קנה|תקנה|לקנות|לרשימה|לקניות|נגמר לי|נגמר ה|נגמר|אין לי|חסר לי|נגמרו)/g, '')
       .replace(/\s+/g, ' ').trim();
     const parts = t.split(/\s*,\s*|\sו(?=\S)/).map((s) => s.trim()).filter(Boolean);
     return parts.length ? parts : (t ? [t] : []);
@@ -185,21 +185,47 @@ const QuickAdd = (() => {
     return n;
   }
 
+  // One active recognition at a time, kept on a ref so it can be stopped.
+  let _rec = null;
+  let _watchdog = null;
   function startVoice(onText, onState) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return false;
     try {
+      stopVoice(); // never run two recognitions at once
       const r = new SR();
-      r.lang = 'he-IL'; r.interimResults = false; r.maxAlternatives = 1;
+      _rec = r;
+      r.lang = 'he-IL'; r.interimResults = true; r.maxAlternatives = 1; r.continuous = false;
       r.onstart = () => onState && onState('listening');
-      r.onresult = (e) => { onText(e.results[0][0].transcript); };
-      r.onerror = () => onState && onState('error');
-      r.onend = () => onState && onState('idle');
+      r.onresult = (e) => {
+        let finalT = '', interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const seg = e.results[i];
+          if (seg.isFinal) finalT += seg[0].transcript; else interim += seg[0].transcript;
+        }
+        if (interim && onState) onState('interim', interim);
+        if (finalT) onText(finalT.trim());
+      };
+      r.onerror = (ev) => { onState && onState('error', ev && ev.error); };
+      r.onend = () => { clearTimeout(_watchdog); _rec = null; onState && onState('idle'); };
       r.start();
+      // Watchdog: if neither onend nor onerror fires (stalled engine / lost
+      // audio), force-reset so the mic never gets stuck "listening".
+      clearTimeout(_watchdog);
+      _watchdog = setTimeout(() => { if (_rec === r) { stopVoice(); onState && onState('idle'); } }, 12000);
       return true;
-    } catch (e) { return false; }
+    } catch (e) { _rec = null; return false; }
   }
+  // Stop listening immediately (user tapped stop / barge-in / closing screen).
+  function stopVoice() {
+    clearTimeout(_watchdog);
+    try {
+      if (_rec) { _rec.onresult = null; _rec.onend = null; try { _rec.abort(); } catch (e) { _rec.stop(); } }
+    } catch (e) {}
+    _rec = null;
+  }
+  function isListening() { return !!_rec; }
 
-  return { handle, handleSmart, segment, parseDate, voiceSupported, startVoice, addTasksFromText };
+  return { handle, handleSmart, segment, parseDate, voiceSupported, startVoice, stopVoice, isListening, addTasksFromText };
 })();
 if (typeof window !== "undefined") window.QuickAdd = QuickAdd;
