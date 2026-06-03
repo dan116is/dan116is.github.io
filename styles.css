@@ -1896,3 +1896,15 @@ body::after { opacity: 0.02; }
 @media (prefers-reduced-motion: reduce) {
   .talk-stage::before, .talk-stage::after, .talk-mic::before { animation: none !important; }
 }
+
+/* Orb states: thinking (amber pulse) + speaking (teal pulse) */
+.talk-mic.thinking {
+  background: radial-gradient(circle at 50% 36%, #ffe6b0 0%, #f5a623 46%, #c87f12 100%);
+  box-shadow: 0 0 42px rgba(245,166,35,0.55), inset 0 0 22px rgba(255,224,176,0.5);
+}
+.talk-mic.thinking .talk-mic-glow { background: radial-gradient(circle, rgba(245,166,35,0.5), transparent 70%); }
+.talk-mic.speaking {
+  background: radial-gradient(circle at 50% 36%, #c9fff0 0%, #16c8a0 46%, #0a8f72 100%);
+  box-shadow: 0 0 46px rgba(22,200,160,0.6), inset 0 0 22px rgba(201,255,240,0.5);
+}
+.talk-mic.speaking .talk-mic-glow { background: radial-gradient(circle, rgba(22,200,160,0.55), transparent 70%); animation-duration: 1.2s; }

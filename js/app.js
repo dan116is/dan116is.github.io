@@ -470,7 +470,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v50 · 3 ביוני 2026';
+  const APP_BUILD = 'v51 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -543,9 +543,9 @@ const App = (() => {
     } else if (btn.dataset.ano) {
       haptic(); if (window.Assistant) Assistant.dismiss(btn.dataset.ano); renderAssistant(); return;
     } else if (btn.id === 'dash-talk-mic') {
-      haptic(); openTalk(true); return;
+      haptic(); primeTTS(); openTalk(true); return;
     } else if (btn.dataset.talkChip != null) {
-      haptic();
+      haptic(); primeTTS();
       openTalk();
       talkSubmit(btn.dataset.talkChip, true);
       return;
@@ -735,7 +735,8 @@ const App = (() => {
   // A natural, two-way conversation: speak or type a request, get a short
   // Hebrew reply. Routes everything through NLU (complete / delete / query /
   // add) and reads answers aloud when the input came from voice.
-  let talkSpeaking = false;
+  let _voices = [];               // cached speech voices (loaded async)
+  let _ttsPrimed = false;         // iOS needs a gesture-primed utterance first
   function talkEsc(s) { return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
   // Beginner-friendly Hebrew suggestions. We show a rotating subset of ~6 each
@@ -813,49 +814,87 @@ const App = (() => {
     });
   }
 
+  // ----- Voice state machine for the talk orb -----
+  // States: idle · listening · thinking · speaking. The orb tap is a smart
+  // toggle: speaking→stop talking (barge-in), listening→stop listening,
+  // idle→start listening. This is the heart of "smart stop".
+  let talkState = 'idle';
+  const TALK_HINTS = {
+    idle: 'לחץ על המיקרופון ודבר — או הקש על הצעה',
+    listening: 'מקשיב… דבר עכשיו · הקש שוב לעצירה',
+    thinking: 'רגע, חושב…',
+    speaking: 'עונה לך… · הקש להפסקה'
+  };
+  function setTalkState(state, detail) {
+    talkState = state;
+    const mic = document.getElementById('talk-mic');
+    const hint = document.getElementById('talk-hint');
+    if (mic) {
+      mic.classList.toggle('listening', state === 'listening');
+      mic.classList.toggle('thinking', state === 'thinking');
+      mic.classList.toggle('speaking', state === 'speaking');
+    }
+    if (hint) hint.textContent = (state === 'interim' && detail) ? '“' + detail + '”' : (TALK_HINTS[state] || TALK_HINTS.idle);
+  }
+
   function openTalk(autoListen) {
     const el = document.getElementById('talk');
     if (!el) return;
+    const wasHidden = el.classList.contains('hidden');
     el.classList.remove('hidden');
-    renderTalkBubbles();
-    const hint = document.getElementById('talk-hint');
-    if (hint) hint.textContent = 'לחץ על המיקרופון ודבר — או הקש על הצעה';
-    if (autoListen) setTimeout(startTalkListening, 280);
+    if (wasHidden) { renderTalkBubbles(); setTalkState('idle'); }
+    clearTimeout(openTalk._t);
+    if (autoListen) openTalk._t = setTimeout(startTalkListening, 300);
   }
 
-  // Start listening through the talk orb: shows the listening state, captures
-  // speech, runs it through the NLU, then shows AND speaks the reply. Works the
-  // same whether triggered from the home mic or inside the overlay.
+  // The single smart entry point for tapping the orb.
+  function talkMicTap() {
+    if (talkState === 'speaking') { stopSpeaking(); return; }       // barge-in
+    if (talkState === 'listening' || QuickAdd.isListening()) { QuickAdd.stopVoice(); setTalkState('idle'); return; }
+    startTalkListening();
+  }
+
+  // Begin listening; show live interim text; on a final result run + speak.
   function startTalkListening() {
-    const mic = document.getElementById('talk-mic');
-    const hint = document.getElementById('talk-hint');
     const input = document.getElementById('talk-input');
-    if (!mic) return;
     if (!QuickAdd.voiceSupported()) {
       if (input) input.focus();
+      const hint = document.getElementById('talk-hint');
       if (hint) hint.textContent = 'הקש על אייקון המיקרופון 🎤 במקלדת ודבר';
       return;
     }
+    stopSpeaking();          // don't listen over our own voice
     haptic();
-    mic.classList.add('listening');
-    if (hint) hint.textContent = 'מקשיב… דבר עכשיו';
-    QuickAdd.startVoice(
-      (text) => { talkSubmit(text, true); },
-      (state) => {
-        if (state !== 'listening') {
-          mic.classList.remove('listening');
-          if (hint) hint.textContent = 'לחץ על המיקרופון ודבר — או הקש על הצעה';
+    setTalkState('listening');
+    const ok = QuickAdd.startVoice(
+      (text) => { setTalkState('thinking'); talkSubmit(text, true); },
+      (state, detail) => {
+        if (state === 'listening') setTalkState('listening');
+        else if (state === 'interim') setTalkState('interim', detail);
+        else if (state === 'error') {
+          const map = { 'not-allowed': 'אין הרשאת מיקרופון — אפשר להפעיל בהגדרות הדפדפן', 'no-speech': 'לא שמעתי — נסה שוב', 'audio-capture': 'לא נמצא מיקרופון' };
+          toast(map[detail] || 'לא הצלחתי להקשיב — נסה שוב', '');
+          setTalkState('idle');
+        } else if (state === 'idle') {
+          if (talkState === 'listening') setTalkState('idle'); // ended w/o result
         }
       }
     );
+    if (!ok) setTalkState('idle');
   }
+
+  function stopSpeaking() {
+    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    if (talkState === 'speaking') setTalkState('idle');
+  }
+
   function closeTalk() {
     const el = document.getElementById('talk');
     if (!el) return;
     el.classList.add('hidden');
-    const mic = document.getElementById('talk-mic');
-    if (mic) mic.classList.remove('listening');
-    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    QuickAdd.stopVoice();
+    stopSpeaking();
+    setTalkState('idle');
   }
 
   // ----- Dashboard talk hero: rotating "what you can say" chips under the
@@ -899,14 +938,23 @@ const App = (() => {
     try {
       if (!window.speechSynthesis || !text) return;
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'he-IL';
-      u.rate = 1.02; u.pitch = 1.0;
-      // Prefer a real Hebrew voice when the device offers one.
-      const voices = speechSynthesis.getVoices() || [];
-      const he = voices.find((v) => /he|iw/i.test(v.lang));
-      if (he) u.voice = he;
-      speechSynthesis.speak(u);
+      const speakNow = () => {
+        try {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'he-IL';
+          u.rate = 1.02; u.pitch = 1.0;
+          // Prefer a real Hebrew voice (cached; getVoices is empty on first call).
+          if (!_voices.length) _voices = speechSynthesis.getVoices() || [];
+          const he = _voices.find((v) => /he|iw/i.test(v.lang));
+          if (he) { try { u.voice = he; } catch (e) {} }
+          u.onstart = () => setTalkState('speaking');
+          u.onend = () => { if (talkState === 'speaking') setTalkState('idle'); };
+          u.onerror = () => { if (talkState === 'speaking') setTalkState('idle'); };
+          speechSynthesis.speak(u);
+        } catch (e) {}
+      };
+      // cancel() is async on Chrome/Safari; a tiny defer avoids a dropped reply.
+      setTimeout(speakNow, 60);
     } catch (e) {}
   }
 
@@ -961,17 +1009,28 @@ const App = (() => {
       if (e.key === 'Enter') { e.preventDefault(); sendTyped(); }
     });
 
-    // Voice input via the Web Speech API; on unsupported browsers (e.g. iOS
-    // Safari) fall back to focusing the text field so the keyboard mic works.
+    // The orb is a smart toggle: tap to talk, tap again to stop, tap to
+    // interrupt a reply. Also prime iOS speech (needs a user gesture once).
     const mic = document.getElementById('talk-mic');
-    if (mic) mic.addEventListener('click', () => startTalkListening());
+    if (mic) mic.addEventListener('click', () => { primeTTS(); talkMicTap(); });
 
-    // Warm up the speech voices so a Hebrew voice is ready for the first reply.
+    // Cache speech voices (load async) so a Hebrew voice is ready for replies.
     try {
       if (window.speechSynthesis) {
-        speechSynthesis.getVoices();
-        speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+        _voices = speechSynthesis.getVoices() || [];
+        speechSynthesis.onvoiceschanged = () => { _voices = speechSynthesis.getVoices() || []; };
       }
+    } catch (e) {}
+  }
+
+  // iOS blocks speechSynthesis unless first triggered from a user gesture; fire
+  // a near-silent utterance once inside a tap so later replies can speak.
+  function primeTTS() {
+    if (_ttsPrimed || !window.speechSynthesis) return;
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0; speechSynthesis.speak(u);
+      _ttsPrimed = true;
     } catch (e) {}
   }
 
