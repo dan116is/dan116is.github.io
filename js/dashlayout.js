@@ -15,7 +15,7 @@ const DashLayout = (() => {
     { id: 'tasks', label: 'משימות היום', emoji: '📋' },
     { id: 'shopping', label: 'רשימת קניות', emoji: '🛒' },
     { id: 'schedule', label: 'הלו״ז של היום', emoji: '🗓️' },
-    { id: 'meds', label: 'תרופות לתשומת לב', emoji: '💊' },
+    { id: 'meds', label: 'תרופות פעילות', emoji: '💊' },
     { id: 'meal', label: 'ארוחת הערב', emoji: '🍽️' },
     { id: 'maint', label: 'תחזוקה מתקרבת', emoji: '🔧' },
     { id: 'habits', label: 'הרגלים יומיים', emoji: '🔥' },
@@ -28,14 +28,15 @@ const DashLayout = (() => {
 
   function defaultOrder() { return WIDGETS.map((w) => w.id); }
 
-  // Clean-by-default: a calm home shows the assistant essentials only. Heavier
-  // widgets/tiles start hidden (re-enable any of them via edit mode ✏️).
+  // Data-entry widgets should be visible by default so information the family
+  // adds is reflected on the home screen immediately. Optional/noisy widgets
+  // still start hidden and can be re-enabled via edit mode ✏️.
   function defaultHidden() {
     return {
-      stats: true, tasks: true, shopping: true, schedule: true, meds: true,
-      meal: true, maint: true, habits: true, goals: true, events: true,
-      budget: true, beitar: true, jewish: true, actions: true
-      // visible by default: assistant, week, glance, monthly, weather
+      beitar: true, jewish: true, actions: true
+      // visible by default: assistant, week, glance, monthly, weather, stats,
+      // tasks, shopping, schedule, meds, meal, maint, habits, goals, events,
+      // budget
     };
   }
 

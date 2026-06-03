@@ -20,11 +20,12 @@ const Medications = (() => {
 
   function statusOf(med) {
     const dExp = daysUntil(med.expiryDate);
+    const stock = parseFloat(med.stock) || 0;
     const dStock = daysOfStockLeft(med);
     if (dExp < 0) return { level: 'danger', text: 'תוקף פג!' };
     if (dExp <= 3) return { level: 'danger', text: `תוקף בעוד ${dExp} ימים` };
+    if (stock <= 0) return { level: 'danger', text: 'אזל המלאי' };
     if (dExp <= DAYS_WARN_EXPIRY) return { level: 'warning', text: `תוקף בעוד ${dExp} ימים` };
-    if (dStock <= 0) return { level: 'danger', text: 'אזל המלאי' };
     if (dStock <= STOCK_WARN_DAYS) return { level: 'warning', text: `מלאי ל-${dStock} ימים` };
     return { level: 'success', text: 'תקין' };
   }

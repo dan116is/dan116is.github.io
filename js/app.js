@@ -1979,8 +1979,12 @@ const App = (() => {
     const overdue = Tasks.overdueCount();
     const shop = Shopping.activeCount();
     const ev = window.Events ? Events.upcoming(7)[0] : null;
+    const medAlerts = window.Medications ? Medications.alertCount() : 0;
+    const medTotal = window.Medications ? Medications.activeCount() : 0;
     const parts = [];
     if (overdue > 0) parts.push(`<span class="g-pill danger">⏰ ${overdue} באיחור</span>`);
+    if (medAlerts > 0) parts.push(`<span class="g-pill danger">💊 ${medAlerts} תרופות לתשומת לב</span>`);
+    else if (medTotal > 0) parts.push(`<span class="g-pill">💊 ${medTotal} תרופות תקינות</span>`);
     parts.push(`<span class="g-pill">📋 ${tasksToday} משימות היום</span>`);
     if (shop > 0) parts.push(`<span class="g-pill">🛒 ${shop} בקניות</span>`);
     if (ev) parts.push(`<span class="g-pill accent">${Events.icon(ev.ev)} ${esc(ev.ev.title)} · ${Events.countdownText(ev.d)}</span>`);
@@ -2060,18 +2064,28 @@ const App = (() => {
     const el = document.getElementById('dash-meds');
     const meds = Medications.list()
       .map((m) => ({ m, s: Medications.statusOf(m) }))
-      .filter((x) => x.s.level === 'warning' || x.s.level === 'danger');
+      .sort((a, b) => {
+        const weight = { danger: 0, warning: 1, success: 2 };
+        const aw = weight[a.s.level] ?? 3;
+        const bw = weight[b.s.level] ?? 3;
+        if (aw !== bw) return aw - bw;
+        return String(a.m.name || '').localeCompare(String(b.m.name || ''), 'he');
+      });
+    widget.hidden = false;
     if (!meds.length) {
-      widget.hidden = true;
+      el.innerHTML = `<div class="dash-empty">אין תרופות פעילות כרגע. הוסף תרופה ממסך התרופות 💊</div>`;
       return;
     }
-    widget.hidden = false;
-    el.innerHTML = meds.slice(0, 4).map(({ m, s }) => `
+    const shown = meds.slice(0, 4);
+    const more = meds.length - shown.length;
+    el.innerHTML = shown.map(({ m, s }) => `
       <div class="dash-item ${s.level}">
         <span class="dash-item-title">${esc(m.name)} ${m.dose ? `<span class="muted">${esc(m.dose)}</span>` : ''}</span>
+        ${m.forWhom ? `<span class="tag">${esc(m.forWhom)}</span>` : ''}
         <span class="tag ${s.level}">${s.text}</span>
         <button class="icon-btn" data-med-take="${m.id}" title="לקחתי מנה">✓</button>
-      </div>`).join('');
+      </div>`).join('') +
+      (more > 0 ? `<div class="dash-empty">ועוד ${more} תרופות…</div>` : '');
   }
 
   function renderDashBudget() {
