@@ -470,7 +470,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v48 · 3 ביוני 2026';
+  const APP_BUILD = 'v49 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -543,11 +543,11 @@ const App = (() => {
     } else if (btn.dataset.ano) {
       haptic(); if (window.Assistant) Assistant.dismiss(btn.dataset.ano); renderAssistant(); return;
     } else if (btn.id === 'dash-talk-mic') {
-      haptic(); openTalk(); return;
+      haptic(); openTalk(true); return;
     } else if (btn.dataset.talkChip != null) {
       haptic();
       openTalk();
-      talkSubmit(btn.dataset.talkChip, false);
+      talkSubmit(btn.dataset.talkChip, true);
       return;
     } else if (btn.dataset.quick) {
       haptic(8);
@@ -813,13 +813,41 @@ const App = (() => {
     });
   }
 
-  function openTalk() {
+  function openTalk(autoListen) {
     const el = document.getElementById('talk');
     if (!el) return;
     el.classList.remove('hidden');
     renderTalkBubbles();
     const hint = document.getElementById('talk-hint');
     if (hint) hint.textContent = 'לחץ על המיקרופון ודבר — או הקש על הצעה';
+    if (autoListen) setTimeout(startTalkListening, 280);
+  }
+
+  // Start listening through the talk orb: shows the listening state, captures
+  // speech, runs it through the NLU, then shows AND speaks the reply. Works the
+  // same whether triggered from the home mic or inside the overlay.
+  function startTalkListening() {
+    const mic = document.getElementById('talk-mic');
+    const hint = document.getElementById('talk-hint');
+    const input = document.getElementById('talk-input');
+    if (!mic) return;
+    if (!QuickAdd.voiceSupported()) {
+      if (input) input.focus();
+      if (hint) hint.textContent = 'הקש על אייקון המיקרופון 🎤 במקלדת ודבר';
+      return;
+    }
+    haptic();
+    mic.classList.add('listening');
+    if (hint) hint.textContent = 'מקשיב… דבר עכשיו';
+    QuickAdd.startVoice(
+      (text) => { talkSubmit(text, true); },
+      (state) => {
+        if (state !== 'listening') {
+          mic.classList.remove('listening');
+          if (hint) hint.textContent = 'לחץ על המיקרופון ודבר — או הקש על הצעה';
+        }
+      }
+    );
   }
   function closeTalk() {
     const el = document.getElementById('talk');
@@ -873,6 +901,11 @@ const App = (() => {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'he-IL';
+      u.rate = 1.02; u.pitch = 1.0;
+      // Prefer a real Hebrew voice when the device offers one.
+      const voices = speechSynthesis.getVoices() || [];
+      const he = voices.find((v) => /he|iw/i.test(v.lang));
+      if (he) u.voice = he;
       speechSynthesis.speak(u);
     } catch (e) {}
   }
@@ -904,7 +937,7 @@ const App = (() => {
         e.preventDefault();
         e.stopImmediatePropagation();
         haptic();
-        openTalk();
+        openTalk(true);
       }, true);
     }
 
@@ -931,30 +964,15 @@ const App = (() => {
     // Voice input via the Web Speech API; on unsupported browsers (e.g. iOS
     // Safari) fall back to focusing the text field so the keyboard mic works.
     const mic = document.getElementById('talk-mic');
-    const hint = document.getElementById('talk-hint');
-    if (mic) {
-      if (!QuickAdd.voiceSupported()) {
-        mic.addEventListener('click', () => {
-          if (input) input.focus();
-          if (hint) hint.textContent = 'הקש על אייקון המיקרופון 🎤 במקלדת ודבר';
-        });
-      } else {
-        mic.addEventListener('click', () => {
-          haptic();
-          mic.classList.add('listening');
-          if (hint) hint.textContent = 'מקשיב… דבר עכשיו';
-          QuickAdd.startVoice(
-            (text) => { talkSubmit(text, true); },
-            (state) => {
-              if (state !== 'listening') {
-                mic.classList.remove('listening');
-                if (hint) hint.textContent = 'לחץ על המיקרופון ודבר — או כתוב למטה';
-              }
-            }
-          );
-        });
+    if (mic) mic.addEventListener('click', () => startTalkListening());
+
+    // Warm up the speech voices so a Hebrew voice is ready for the first reply.
+    try {
+      if (window.speechSynthesis) {
+        speechSynthesis.getVoices();
+        speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
       }
-    }
+    } catch (e) {}
   }
 
   // ----- Family activity banner -----
