@@ -25,22 +25,50 @@ const NLU = (() => {
 
   function fmtList(arr) { return arr.filter(Boolean).join(', '); }
 
-  // ---- Intent detection ----
-  // A numbered payment ("שילמתי 200", "הוצאתי 50") is an EXPENSE, not a task
-  // completion — must be checked before isComplete so it routes correctly.
-  function isExpense(t) {
-    return /(שילמתי|הוצאתי|עלה לי|עלתה|שילמנו)/.test(t) && /\d/.test(t);
-  }
-  function isComplete(t) {
-    // "קניתי חלב" / "קניתי" → mark bought (not only "קניתי את").
-    return /(סיימתי|סיימת|בוצע|עשיתי|גמרתי|תסמן|לסמן|סמן|כבר קניתי|קניתי)/.test(t);
-  }
-  function isDelete(t) {
-    return /(תמחק|למחוק|מחק|תוריד מהרשימה|הסר|תסיר|להסיר|תבטל|לבטל)/.test(t);
-  }
-  function isQuery(t) {
-    return /(מה יש|מה ברשימת|מה ברשימה|מה בקניות|מה צריך לקנות|כמה הוצאתי|כמה יצא|מה הלו|מה היום|מה יש לי|מה המשימות|מה נשאר|מה התקציב|כמה נשאר|מה מתוכנן|מה הסטטוס)/.test(t)
-      || /^מה\b/.test(t);
+  // ---- Intent detection (scoring engine) ----
+  // Instead of brittle first-match regexes, every intent collects a SCORE from
+  // many synonymous Hebrew markers + entity signals (numbers, currency, dates).
+  // The highest score wins, with sensible tie-breaks. This generalizes across
+  // thousands of phrasings rather than a handful of exact words.
+  const LEX = {
+    // interrogatives / question phrasings
+    qStart: /^(מה|כמה|מתי|איפה|האם|מי|איזה|איזו|כמה)\b/,
+    qWords: /(מה יש|יש לי|נשאר לי|מה נשאר|מתוכנן|הסטטוס|תראה לי|תגיד לי|תגידי לי|ספר לי|תספר לי|כמה עולה|מה קורה|מה חדש|מה המצב|כמה זמן|מה השעה|מה מתוכנן|מה אני|מה צריך|כמה נשאר|רשימת הקניות שלי)/,
+    // completion (NOT שילמתי — that's an expense)
+    complete: /(סיימתי|סיימנו|סיימת|גמרתי|גמרנו|עשיתי|עשינו|ביצעתי|בוצע|הושלם|הספקתי|טיפלתי|כבר עשיתי|כבר קניתי|קניתי|הבאתי|לקחתי כבר|תסמן|לסמן|סמן |סיים את)/,
+    del: /(תמחק|למחוק|מחק |מחקי|תבטל|לבטל|בטל את|הסר|להסיר|תסיר|תוריד מ|להוריד מ|תזרוק מ|לא צריך יותר|כבר לא צריך|אפשר להוריד|תוריד את ה)/,
+    reminder: /(תזכיר|תזכורת|להזכיר|לזכור|אל תשכח|אל תשכחי|תזכיר לי|נא ל|צריך ל|אני צריך|אנחנו צריכים|חייב |חייבת|קבע |תקבע|לקבוע|פגישה|תור |דדליין|דד.ליין|מטלה|משימה|להתקשר|לאסוף|לקחת את|ללכת ל|להגיע|לסדר|לשלם את|תכנן|לתאם)/,
+    shopVerb: /(תוסיף|תוסיפי|להוסיף|הוסף|צריך לקנות|צריכים לקנות|לקנות|תקנה|קנה לי|קני |תביא|להביא|נגמר|נגמרו|אזל|אזלו|חסר|חסרים|חסרה|לרשימה|לסל|לעגלה|תוסיף לרשימה)/,
+    mealVerb: /(ארוחה|ארוחת|נאכל|לאכול|לבשל|מבשל|אבשל|תכין|להכין|נכין|מבשלים|לארוחת|אוכלים)/,
+    pay: /(שילמתי|שילמנו|הוצאתי|הוצאנו|עלה לי|עלתה|עלה |עלות|מחיר|בזבזתי)/,
+    num: /\d/,
+    currency: /(שקל|שקלים|₪|ש"?ח|אגורות)/
+  };
+
+  function classifyIntent(t) {
+    const s = { question: 0, complete: 0, delete: 0, meal: 0, expense: 0, add: 0 };
+    if (LEX.qStart.test(t)) s.question += 3;
+    if (LEX.qWords.test(t)) s.question += 3;
+    if (LEX.complete.test(t)) s.complete += 3;
+    if (LEX.del.test(t)) s.delete += 4;
+    if (LEX.reminder.test(t)) s.add += 3;
+    if (LEX.shopVerb.test(t)) s.add += 3;
+    // expense: a payment verb, strongly so with an amount/currency
+    if (LEX.pay.test(t)) s.expense += 2;
+    if (LEX.num.test(t) && (LEX.currency.test(t) || LEX.pay.test(t))) s.expense += 3;
+    // meal: a day word + a meal verb / known dish (strong), or day + leftover
+    // dish with no competing intent (weak) so "ביום שישי פיצה" plans a meal.
+    const day = dayFromText(t);
+    if (day !== null) {
+      const knownDish = (typeof Meals !== 'undefined' && Meals.ingredientsFor && Meals.ingredientsFor(t).length);
+      if (LEX.mealVerb.test(t) || knownDish) s.meal += 4;
+      else if (!LEX.reminder.test(t) && !LEX.shopVerb.test(t) && !LEX.complete.test(t) && !LEX.del.test(t) && !LEX.qStart.test(t) && !LEX.pay.test(t)) s.meal += 2;
+    }
+    // Pick the winner; tie-break priority order.
+    const order = ['delete', 'question', 'expense', 'complete', 'meal', 'add'];
+    let best = 'add', bestScore = 0;
+    for (const k of order) { if (s[k] > bestScore) { best = k; bestScore = s[k]; } }
+    return bestScore === 0 ? 'add' : best;
   }
 
   // ---- Meal planning intent ----
@@ -196,10 +224,10 @@ const NLU = (() => {
   // These are pure questions (no side effects) — weather, today's meal, the
   // next event, medication status. Returns a {kind:'query'} or null.
   function smartQuestion(t) {
-    if (/(מזג ?האוו|מזג ?אוו|מה ללבוש|מה לובש|חם או קר|יורד גשם|טמפרטור|כמה מעלות)/.test(t)) {
+    if (/(מזג ?האוו|מזג ?אוו|מה ללבוש|מה לובש|איך להתלבש|חם או קר|חם בחוץ|קר בחוץ|יורד גשם|יהיה גשם|צריך מטריה|צריך מעיל|טמפרטור|כמה מעלות|איך מזג)/.test(t)) {
       return { kind: 'query', reply: window.Weather ? Weather.summary() : 'אין נתוני מזג אוויר' };
     }
-    if (/(מה אוכל|מה לאכול|ארוחה היום|אוכלים היום|מה בארוחה|מה התפריט|מה מכינים)/.test(t)) {
+    if (/(מה אוכל|מה לאכול|מה יש לאכול|ארוחה היום|אוכלים היום|מה בארוחה|מה לארוחת|מה התפריט|מה מכינים|מה מבשלים|מה אוכלים)/.test(t)) {
       const m = (window.Meals && Meals.todayMeal) ? Meals.todayMeal() : null;
       return { kind: 'query', reply: (m && m.dish) ? `🍽️ היום מתוכנן: ${m.dish}` : 'עוד לא תוכננה ארוחה להיום. אמור למשל "היום שקשוקה" ואסדר גם את הקניות' };
     }
@@ -219,27 +247,46 @@ const NLU = (() => {
     return null;
   }
 
+  // Does this read as a topic question (weather/meal/event/meds)? Mirrors the
+  // smartQuestion regexes WITHOUT side effects, for routing + testing.
+  function isTopicQuestion(t) {
+    return /(מזג ?האוו|מזג ?אוו|מה ללבוש|מה לובש|איך להתלבש|חם או קר|חם בחוץ|קר בחוץ|יורד גשם|יהיה גשם|צריך מטריה|צריך מעיל|טמפרטור|כמה מעלות|איך מזג)/.test(t)
+      || /(מה אוכל|מה לאכול|מה יש לאכול|ארוחה היום|אוכלים היום|מה בארוחה|מה לארוחת|מה התפריט|מה מכינים|מה מבשלים|מה אוכלים)/.test(t)
+      || ((/הולדת|אירוע/.test(t)) && (/(מתי|הבא|קרוב|מה|כמה|איזה)/.test(t)))
+      || /(אילו תרופ|איזה תרופ|מצב התרופ|תרופות.*נגמר|תרופות.*תוקף|תרופות.*מלאי|תרופות שעומדות|תרופות שנגמר)/.test(t);
+  }
+
+  // Side-effect-free top-level classifier → one of:
+  // question · complete · delete · meal · expense · task · shopping.
+  // Used for routing decisions and for the automated test corpus.
+  function classify(text) {
+    const t = norm(text);
+    if (!t) return 'none';
+    if (isTopicQuestion(t)) return 'question';
+    const intent = classifyIntent(t);
+    if (intent !== 'add') return intent;
+    // sub-classify the add family (expense / task / shopping)
+    if (window.QuickAdd && QuickAdd.classify) return QuickAdd.classify(text);
+    return 'shopping';
+  }
+
   // Main entry: classify and act. Always returns a Hebrew reply.
   function run(text) {
     const raw = String(text || '').trim();
     if (!raw) return { kind: 'none', reply: 'לא שמעתי כלום — נסה שוב' };
     const t = norm(raw);
 
-    // Smart instant-answer questions first (weather/meal/event/meds), then the
-    // generic query check. A numbered payment is an expense (before isComplete,
-    // since "שילמתי" also reads as completion). Then complete & delete, then add.
+    // Topic questions (weather/meal/event/meds) answer instantly, no matter how
+    // they're phrased; then the scoring classifier routes everything else.
     const sq = smartQuestion(t);
     if (sq) return sq;
-    if (isQuery(t)) return doQuery(t);
-    if (isExpense(t) && window.QuickAdd) {
-      const res = QuickAdd.handleSmart(raw);
-      if (res) return { kind: 'add', added: res.added, reply: res.msg };
-    }
-    if (isComplete(t)) return doComplete(t);
-    if (isDelete(t)) return doDelete(t);
-    if (isMeal(t)) return doMeal(t);
+    const intent = classifyIntent(t);
+    if (intent === 'question') return doQuery(t);
+    if (intent === 'delete') return doDelete(t);
+    if (intent === 'complete') return doComplete(t);
+    if (intent === 'meal') return doMeal(t);
 
-    // Add — delegate to the existing smart classifier.
+    // expense / reminder / shopping → the smart add classifier (QuickAdd).
     if (window.QuickAdd) {
       const res = QuickAdd.handleSmart(raw);
       if (res) return { kind: 'add', added: res.added, reply: res.msg };

@@ -444,6 +444,15 @@
         <p class="hint" id="notif-status"></p>
       </div>
       <div class="settings-section">
+        <h3>🧠 מוח AI חכם (אופציונלי)</h3>
+        <p class="hint">הדבק מפתח Anthropic API כדי שהעוזר הקולי יבין כל ניסוח בעזרת בינה אמיתית. המפתח נשמר רק במכשיר הזה. בלי מפתח / בלי אינטרנט — המערכת ממשיכה לעבוד עם המנוע המקומי.</p>
+        <div class="add-inline">
+          <input type="password" id="ai-key-input" placeholder="sk-ant-… (מפתח API)" autocomplete="off">
+          <button class="primary-btn" id="ai-key-save">שמור</button>
+        </div>
+        <p class="hint" id="ai-key-status"></p>
+      </div>
+      <div class="settings-section">
         <h3>גיבוי ושחזור</h3>
         <p class="hint">הנתונים נשמרים רק במכשיר. כדאי לעשות גיבוי מדי פעם.</p>
         <div class="settings-actions">
@@ -605,6 +614,7 @@
   <script src="js/savings.js"></script>
   <script src="js/quickadd.js"></script>
   <script src="js/nlu.js"></script>
+  <script src="js/ai.js"></script>
   <script src="js/focus.js"></script>
   <script src="js/ux.js"></script>
   <script src="js/notifications.js"></script>
