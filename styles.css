@@ -1642,3 +1642,131 @@ body::before { animation-duration: 42s; }
 .cal-wnum { font-size: 11px; font-weight: 700; color: var(--text-muted); }
 .cal-day-week.today .cal-wnum, .cal-day-week.today .cal-wday { color: #fff; }
 .cal-wday { font-size: 17px; font-weight: 800; }
+
+/* ============================================================
+   MINIMALIST THEME — Notion / Linear (from taste-skill)
+   Flat bone canvas · hairline borders · off-black text ·
+   one restrained accent · near-zero shadows · no gradients.
+   Appended last so it cleanly overrides the colorful layer.
+   ============================================================ */
+:root {
+  --bg: #FBFBFA;
+  --bg-grad: none;
+  --glass: #FFFFFF;
+  --glass-strong: #FFFFFF;
+  --bg-elev: #FFFFFF;
+  --bg-elev-2: rgba(0,0,0,0.035);
+  --text: #2F3437;
+  --text-muted: #787774;
+  --primary: #2F6FEB;
+  --primary-strong: #245CCB;
+  --primary-grad: #2F3437;
+  --border: #EAEAEA;
+  --border-strong: rgba(0,0,0,0.10);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --inset-hi: none;
+}
+:root[data-theme="dark"], :root[data-theme="dark"] body {
+  --bg: #191919;
+  --bg-grad: none;
+  --glass: #202020;
+  --glass-strong: #252525;
+  --bg-elev: #202020;
+  --bg-elev-2: rgba(255,255,255,0.05);
+  --text: #E9E9E7;
+  --text-muted: #9B9B9B;
+  --primary: #5E87E0;
+  --primary-strong: #6E94E6;
+  --primary-grad: #2C2C2C;
+  --border: rgba(255,255,255,0.09);
+  --border-strong: rgba(255,255,255,0.16);
+  --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --inset-hi: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --bg: #191919;
+    --bg-grad: none;
+    --glass: #202020;
+    --glass-strong: #252525;
+    --bg-elev: #202020;
+    --bg-elev-2: rgba(255,255,255,0.05);
+    --text: #E9E9E7;
+    --text-muted: #9B9B9B;
+    --primary: #5E87E0;
+    --primary-strong: #6E94E6;
+    --primary-grad: #2C2C2C;
+    --border: rgba(255,255,255,0.09);
+    --border-strong: rgba(255,255,255,0.16);
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --inset-hi: none;
+  }
+}
+
+/* Kill the animated aurora — minimalist canvas is flat */
+body::before { display: none; }
+/* Keep film-grain ultra-subtle (skill: 0.02–0.04) */
+body::after { opacity: 0.025; }
+
+/* Header: flat bar with a single hairline, off-black text */
+.app-header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+.app-header h1 { color: var(--text); letter-spacing: -0.02em; }
+.app-header h1::before { content: ""; }
+
+/* Headings: solid off-black, no gradient clip, tight tracking */
+.welcome h2, .view-toolbar h2 {
+  background: none;
+  -webkit-text-fill-color: var(--text);
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+
+/* Dashboard tiles: white cards, hairline border, pale-pastel icon tag */
+.stat-card::after, .dash-widget::after { display: none; }
+.stat-card[data-target] {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.stat-card[data-target] .stat-value { color: var(--text); }
+.stat-card[data-target] .stat-label { color: var(--text-muted); opacity: 1; }
+.stat-card[data-target="medications"] .stat-icon { background: #E1F3FE; color: #1F6C9F; }
+.stat-card[data-target="shopping"]    .stat-icon { background: #EDF3EC; color: #346538; }
+.stat-card[data-target="tasks"]       .stat-icon { background: #FBF3DB; color: #956400; }
+.stat-card[data-target="budget"]      .stat-icon { background: #FDEBEC; color: #9F2F2D; }
+.stat-card[data-target] .stat-icon { box-shadow: none; }
+
+/* Hero / monthly-goal: flat surface instead of vivid gradient */
+.monthly-goal {
+  background: var(--glass);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* Primary button: solid near-black, no colored glow (Notion/Linear) */
+.primary-btn { box-shadow: none; }
+
+/* Bottom nav: neutral active pill instead of colored */
+.nav-btn.active .nav-icon { background: var(--bg-elev-2); }
+
+/* Quick-tiles & info cards: flatten gradients → white hairline cards */
+.qtile,
+.qtile.focus, .qtile.task, .qtile.shop, .qtile.money,
+.weather-card, .jewish-card, .beitar-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.qt-label, .weather-card, .weather-temp, .jewish-card, .beitar-card { color: var(--text); }
+.weather-error .ghost-btn { background: var(--bg-elev-2); color: var(--text); border-color: var(--border); }

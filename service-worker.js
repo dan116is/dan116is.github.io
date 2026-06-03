@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habait-v44';
+const CACHE_NAME = 'habait-v45';
 const ASSETS = [
   './',
   './index.html',
