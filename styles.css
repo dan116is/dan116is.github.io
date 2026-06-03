@@ -1960,3 +1960,7 @@ body::after { opacity: 0.02; }
   .brief-greet { font-size: 24px; }
   .dash-widget { padding: 14px; margin-bottom: 12px; }
 }
+
+.dash-widget.auto-revealed {
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
+}

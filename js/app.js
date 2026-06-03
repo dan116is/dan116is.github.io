@@ -668,28 +668,12 @@ const App = (() => {
   }
 
   // ----- Smart command bar -----
-  function runLocalCommand(text) {
-    const t = String(text || '').trim();
-    if (!t) return null;
-    try {
-      // Questions / complete / delete / meal-planning must go through NLU so a
-      // sentence like "מה ברשימת הקניות" answers the list instead of adding the
-      // words as a product.
-      if (window.NLU && NLU.classify) {
-        const kind = NLU.classify(t);
-        if (kind === 'question' || kind === 'complete' || kind === 'delete' || kind === 'meal') return NLU.run(t);
-      }
-      const add = window.QuickAdd ? QuickAdd.handleSmart(t) : null;
-      if (add) return { kind: 'add', reply: add.msg, added: add.added };
-      return window.NLU ? NLU.run(t) : null;
-    } catch (e) { return null; }
-  }
 
   function runSmartAdd() {
     const input = document.getElementById('smart-input');
     const text = input.value.trim();
     if (!text) return;
-    const res = runLocalCommand(text);
+    const res = window.Command ? Command.runLocal(text) : null;
     if (res) {
       input.value = '';
       haptic();
@@ -712,7 +696,7 @@ const App = (() => {
   function commitVoiceTasks(text) {
     const t = (text || '').trim();
     if (!t) return;
-    const res = runLocalCommand(t);
+    const res = window.Command ? Command.runLocal(t) : null;
     haptic();
     renderAll();
     if (res) toast((res.reply || res.msg) + (res.kind === 'query' ? '' : ' ✓'), res.kind === 'query' ? '' : 'success');
@@ -732,7 +716,7 @@ const App = (() => {
     const input = document.getElementById('capture-input');
     const text = (input.value || '').trim();
     if (!text) return;
-    const res = runLocalCommand(text);
+    const res = window.Command ? Command.runLocal(text) : null;
     haptic();
     closeCapture();
     renderAll();
@@ -1032,12 +1016,7 @@ const App = (() => {
     talkAppend('user', t);
     let res = null;
     try {
-      const localKind = (window.NLU && NLU.classify) ? NLU.classify(t) : '';
-      if (localKind === 'question' || localKind === 'meal') res = NLU.run(t);
-      if (!res && window.AI && AI.enabled()) {
-        const action = await AI.understand(t);
-        if (action) res = AI.execute(action, t);
-      }
+      res = window.Command ? await Command.run(t, { useAI: true }) : null;
     } catch (e) { res = null; }
     if (!res) { try { res = window.NLU ? NLU.run(t) : null; } catch (e) { res = null; } }
     const reply = (res && res.reply) ? res.reply : 'לא הצלחתי להבין — אפשר לנסות אחרת?';
