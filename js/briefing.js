@@ -28,8 +28,10 @@ const Briefing = (() => {
     const overdue = window.Tasks ? Tasks.overdueCount() : 0;
     const sched = window.Schedule ? Schedule.todayItems().length : 0;
     const shop = window.Shopping ? Shopping.activeCount() : 0;
+    const medAlerts = window.Medications ? Medications.alertCount() : 0;
     const bits = [];
     if (overdue) bits.push(`${overdue} באיחור`);
+    if (medAlerts) bits.push(`${medAlerts} תרופות לתשומת לב`);
     if (tasksToday) bits.push(`${tasksToday} משימות היום`);
     if (sched) bits.push(`${sched} בלו״ז`);
     if (shop) bits.push(`${shop} בקניות`);
@@ -58,6 +60,12 @@ const Briefing = (() => {
     // Overdue tasks — always top.
     const overdue = (window.Tasks ? Tasks.list() : []).filter((t) => !t.done && t.dueDate && t.dueDate < today);
     if (overdue.length) cards.push({ rank: 0, icon: '⏰', kind: 'view', view: 'tasks', title: `${overdue.length} משימות באיחור`, sub: overdue.slice(0, 2).map((t) => t.title).join(' · ') });
+
+    // Medication alerts — visible even before the user scrolls to the meds widget.
+    const medAlerts = (window.Medications ? Medications.list() : [])
+      .map((m) => ({ m, s: Medications.statusOf(m) }))
+      .filter((x) => x.s.level === 'warning' || x.s.level === 'danger');
+    if (medAlerts.length) cards.push({ rank: 1, icon: '💊', kind: 'view', view: 'medications', title: `${medAlerts.length} תרופות לתשומת לב`, sub: medAlerts.slice(0, 3).map(({ m, s }) => `${m.name}: ${s.text}`).join(' · ') });
 
     // Today's tasks.
     const todayTasks = (window.Tasks ? Tasks.list() : []).filter((t) => !t.done && t.dueDate === today);

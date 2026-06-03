@@ -565,7 +565,7 @@ const App = (() => {
     } else if (btn.dataset.ano) {
       haptic(); if (window.Assistant) Assistant.dismiss(btn.dataset.ano); renderAssistant(); return;
     } else if (btn.id === 'dash-talk-mic') {
-      haptic(); primeTTS(); openTalk(true); return;
+      haptic(); primeTTS(); openTalkWithMic(); return;
     } else if (btn.dataset.talkChip != null) {
       haptic(); primeTTS();
       openTalk();
@@ -667,17 +667,18 @@ const App = (() => {
     }
   }
 
-  // ----- Smart quick-add -----
+  // ----- Smart command bar -----
+
   function runSmartAdd() {
     const input = document.getElementById('smart-input');
     const text = input.value.trim();
     if (!text) return;
-    const res = QuickAdd.handleSmart(text);
+    const res = window.Command ? Command.runLocal(text) : null;
     if (res) {
       input.value = '';
       haptic();
       renderAll();
-      toast(res.msg, 'success');
+      toast(res.reply || res.msg, res.kind === 'query' ? '' : 'success');
     } else {
       toast('לא הצלחתי להבין — נסה שוב', 'error');
     }
@@ -695,10 +696,10 @@ const App = (() => {
   function commitVoiceTasks(text) {
     const t = (text || '').trim();
     if (!t) return;
-    const res = QuickAdd.handleSmart(t);
+    const res = window.Command ? Command.runLocal(t) : null;
     haptic();
     renderAll();
-    if (res) toast(res.msg + ' ✓', 'success');
+    if (res) toast((res.reply || res.msg) + (res.kind === 'query' ? '' : ' ✓'), res.kind === 'query' ? '' : 'success');
     else toast('לא הצלחתי להבין — נסה שוב', 'error');
   }
 
@@ -715,11 +716,11 @@ const App = (() => {
     const input = document.getElementById('capture-input');
     const text = (input.value || '').trim();
     if (!text) return;
-    const res = QuickAdd.handleSmart(text);
+    const res = window.Command ? Command.runLocal(text) : null;
     haptic();
     closeCapture();
     renderAll();
-    toast(res ? res.msg + ' ✓' : 'לא הצלחתי להבין — נסה שוב', res ? 'success' : 'error');
+    toast(res ? (res.reply || res.msg) + (res.kind === 'query' ? '' : ' ✓') : 'לא הצלחתי להבין — נסה שוב', res ? (res.kind === 'query' ? '' : 'success') : 'error');
   }
   function setupCapture() {
     const fab = document.getElementById('fab');
@@ -869,6 +870,30 @@ const App = (() => {
     if (autoListen) openTalk._t = setTimeout(startTalkListening, 300);
   }
 
+  async function canAutoListen() {
+    if (!QuickAdd.voiceSupported()) return false;
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        const p = await navigator.permissions.query({ name: 'microphone' });
+        return p && p.state === 'granted';
+      }
+    } catch (e) {}
+    try { return localStorage.getItem('habait:mic-ok') === '1'; } catch (e) { return false; }
+  }
+
+  async function openTalkWithMic() {
+    const auto = await canAutoListen();
+    openTalk(auto);
+    if (!auto) {
+      const input = document.getElementById('talk-input');
+      if (input) setTimeout(() => input.focus(), 120);
+      const hint = document.getElementById('talk-hint');
+      if (hint) hint.textContent = QuickAdd.voiceSupported()
+        ? 'אפשר לכתוב מיד — או ללחוץ על העיגול כדי לאשר מיקרופון פעם אחת'
+        : 'כתוב כאן, או השתמש במיקרופון של המקלדת';
+    }
+  }
+
   // The single smart entry point for tapping the orb.
   function talkMicTap() {
     if (talkState === 'speaking') { stopSpeaking(); return; }       // barge-in
@@ -991,10 +1016,7 @@ const App = (() => {
     talkAppend('user', t);
     let res = null;
     try {
-      if (window.AI && AI.enabled()) {
-        const action = await AI.understand(t);
-        if (action) res = AI.execute(action, t);
-      }
+      res = window.Command ? await Command.run(t, { useAI: true }) : null;
     } catch (e) { res = null; }
     if (!res) { try { res = window.NLU ? NLU.run(t) : null; } catch (e) { res = null; } }
     const reply = (res && res.reply) ? res.reply : 'לא הצלחתי להבין — אפשר לנסות אחרת?';
@@ -1016,7 +1038,7 @@ const App = (() => {
         e.preventDefault();
         e.stopImmediatePropagation();
         haptic();
-        openTalk(true);
+        openTalkWithMic();
       }, true);
     }
 
@@ -1979,8 +2001,12 @@ const App = (() => {
     const overdue = Tasks.overdueCount();
     const shop = Shopping.activeCount();
     const ev = window.Events ? Events.upcoming(7)[0] : null;
+    const medAlerts = window.Medications ? Medications.alertCount() : 0;
+    const medTotal = window.Medications ? Medications.activeCount() : 0;
     const parts = [];
     if (overdue > 0) parts.push(`<span class="g-pill danger">⏰ ${overdue} באיחור</span>`);
+    if (medAlerts > 0) parts.push(`<span class="g-pill danger">💊 ${medAlerts} תרופות לתשומת לב</span>`);
+    else if (medTotal > 0) parts.push(`<span class="g-pill">💊 ${medTotal} תרופות תקינות</span>`);
     parts.push(`<span class="g-pill">📋 ${tasksToday} משימות היום</span>`);
     if (shop > 0) parts.push(`<span class="g-pill">🛒 ${shop} בקניות</span>`);
     if (ev) parts.push(`<span class="g-pill accent">${Events.icon(ev.ev)} ${esc(ev.ev.title)} · ${Events.countdownText(ev.d)}</span>`);
@@ -2060,18 +2086,28 @@ const App = (() => {
     const el = document.getElementById('dash-meds');
     const meds = Medications.list()
       .map((m) => ({ m, s: Medications.statusOf(m) }))
-      .filter((x) => x.s.level === 'warning' || x.s.level === 'danger');
+      .sort((a, b) => {
+        const weight = { danger: 0, warning: 1, success: 2 };
+        const aw = weight[a.s.level] ?? 3;
+        const bw = weight[b.s.level] ?? 3;
+        if (aw !== bw) return aw - bw;
+        return String(a.m.name || '').localeCompare(String(b.m.name || ''), 'he');
+      });
+    widget.hidden = false;
     if (!meds.length) {
-      widget.hidden = true;
+      el.innerHTML = `<div class="dash-empty">אין תרופות פעילות כרגע. הוסף תרופה ממסך התרופות 💊</div>`;
       return;
     }
-    widget.hidden = false;
-    el.innerHTML = meds.slice(0, 4).map(({ m, s }) => `
+    const shown = meds.slice(0, 4);
+    const more = meds.length - shown.length;
+    el.innerHTML = shown.map(({ m, s }) => `
       <div class="dash-item ${s.level}">
         <span class="dash-item-title">${esc(m.name)} ${m.dose ? `<span class="muted">${esc(m.dose)}</span>` : ''}</span>
+        ${m.forWhom ? `<span class="tag">${esc(m.forWhom)}</span>` : ''}
         <span class="tag ${s.level}">${s.text}</span>
         <button class="icon-btn" data-med-take="${m.id}" title="לקחתי מנה">✓</button>
-      </div>`).join('');
+      </div>`).join('') +
+      (more > 0 ? `<div class="dash-empty">ועוד ${more} תרופות…</div>` : '');
   }
 
   function renderDashBudget() {

@@ -32,8 +32,8 @@ const NLU = (() => {
   // thousands of phrasings rather than a handful of exact words.
   const LEX = {
     // interrogatives / question phrasings
-    qStart: /^(מה|כמה|מתי|איפה|האם|מי|איזה|איזו|כמה)\b/,
-    qWords: /(מה יש|יש לי|נשאר לי|מה נשאר|מתוכנן|הסטטוס|תראה לי|תגיד לי|תגידי לי|ספר לי|תספר לי|כמה עולה|מה קורה|מה חדש|מה המצב|כמה זמן|מה השעה|מה מתוכנן|מה אני|מה צריך|כמה נשאר|רשימת הקניות שלי)/,
+    qStart: /^(מה|כמה|מתי|איפה|האם|מי|איזה|איזו|אילו)\b/,
+    qWords: /(מה יש|יש לי|נשאר לי|מה נשאר|מתוכנן|הסטטוס|תראה לי|תגיד לי|תגידי לי|ספר לי|תספר לי|כמה עולה|מה קורה|מה חדש|מה המצב|כמה זמן|מה השעה|מה מתוכנן|מה אני|מה צריך|כמה נשאר|רשימת הקניות שלי|מה ברשימת|מה יש ברשימת|מה יש בקניות)/,
     // completion (NOT שילמתי — that's an expense)
     complete: /(סיימתי|סיימנו|סיימת|גמרתי|גמרנו|עשיתי|עשינו|ביצעתי|בוצע|הושלם|הספקתי|טיפלתי|כבר עשיתי|כבר קניתי|קניתי|הבאתי|לקחתי כבר|תסמן|לסמן|סמן |סיים את)/,
     del: /(תמחק|למחוק|מחק |מחקי|תבטל|לבטל|בטל את|הסר|להסיר|תסיר|תוריד מ|להוריד מ|תזרוק מ|לא צריך יותר|כבר לא צריך|אפשר להוריד|תוריד את ה)/,
@@ -181,13 +181,24 @@ const NLU = (() => {
     return { kind: 'delete', reply: `לא מצאתי "${target}" למחיקה` };
   }
 
+  function shoppingQuestion(t) {
+    const hasShoppingTopic = /(קניות|לקנות|רשימת|הרשימה|בסל|בעגלה)/.test(t);
+    const asksForContents = /(מה|אילו|איזה|תראה|תראי|תגיד|תגידי|ספר|ספרי|יש|מכילה|ברשימה|ברשימת|רשימה)/.test(t);
+    const isAddRequest = /(תוסיף|תוסיפי|הוסף|להוסיף|צריך לקנות|צריכים לקנות|חסר|נגמר|אזל)/.test(t) || /(?:^|\s)(תקנה|קנה|קני)(?:\s|$)/.test(t);
+    return hasShoppingTopic && asksForContents && !isAddRequest;
+  }
+
+  function shoppingReply() {
+    const items = (window.Shopping ? Shopping.list() : []).filter((i) => !i.bought);
+    if (!items.length) return { kind: 'query', reply: 'רשימת הקניות ריקה ✨' };
+    return { kind: 'query', reply: `ברשימת הקניות (${items.length}): ${fmtList(items.map((i) => i.name))}` };
+  }
+
   function doQuery(text) {
     const t = norm(text);
-    // Shopping list.
-    if (/(קניות|לקנות|רשימת)/.test(t)) {
-      const items = (window.Shopping ? Shopping.list() : []).filter((i) => !i.bought);
-      if (!items.length) return { kind: 'query', reply: 'רשימת הקניות ריקה ✨' };
-      return { kind: 'query', reply: `ברשימת הקניות (${items.length}): ${fmtList(items.map((i) => i.name))}` };
+    // Shopping list — pure question, never add the phrase itself as a product.
+    if (shoppingQuestion(t) || (/(קניות|לקנות|רשימת)/.test(t) && LEX.qStart.test(t))) {
+      return shoppingReply();
     }
     // Budget / spending this month (require explicit budget words so "מה נשאר
     // לי לעשות" stays a tasks question, not a spending answer).
@@ -224,6 +235,7 @@ const NLU = (() => {
   // These are pure questions (no side effects) — weather, today's meal, the
   // next event, medication status. Returns a {kind:'query'} or null.
   function smartQuestion(t) {
+    if (shoppingQuestion(t)) return shoppingReply();
     if (/(מזג ?האוו|מזג ?אוו|מה ללבוש|מה לובש|איך להתלבש|חם או קר|חם בחוץ|קר בחוץ|יורד גשם|יהיה גשם|צריך מטריה|צריך מעיל|טמפרטור|כמה מעלות|איך מזג)/.test(t)) {
       return { kind: 'query', reply: window.Weather ? Weather.summary() : 'אין נתוני מזג אוויר' };
     }
@@ -250,7 +262,8 @@ const NLU = (() => {
   // Does this read as a topic question (weather/meal/event/meds)? Mirrors the
   // smartQuestion regexes WITHOUT side effects, for routing + testing.
   function isTopicQuestion(t) {
-    return /(מזג ?האוו|מזג ?אוו|מה ללבוש|מה לובש|איך להתלבש|חם או קר|חם בחוץ|קר בחוץ|יורד גשם|יהיה גשם|צריך מטריה|צריך מעיל|טמפרטור|כמה מעלות|איך מזג)/.test(t)
+    return shoppingQuestion(t)
+      || /(מזג ?האוו|מזג ?אוו|מה ללבוש|מה לובש|איך להתלבש|חם או קר|חם בחוץ|קר בחוץ|יורד גשם|יהיה גשם|צריך מטריה|צריך מעיל|טמפרטור|כמה מעלות|איך מזג)/.test(t)
       || /(מה אוכל|מה לאכול|מה יש לאכול|ארוחה היום|אוכלים היום|מה בארוחה|מה לארוחת|מה התפריט|מה מכינים|מה מבשלים|מה אוכלים)/.test(t)
       || ((/הולדת|אירוע/.test(t)) && (/(מתי|הבא|קרוב|מה|כמה|איזה)/.test(t)))
       || /(אילו תרופ|איזה תרופ|מצב התרופ|תרופות.*נגמר|תרופות.*תוקף|תרופות.*מלאי|תרופות שעומדות|תרופות שנגמר)/.test(t);
@@ -294,6 +307,6 @@ const NLU = (() => {
     return { kind: 'none', reply: 'לא הצלחתי להבין — אפשר לנסות אחרת?' };
   }
 
-  return { run, matches };
+  return { run, classify, matches };
 })();
 if (typeof window !== "undefined") window.NLU = NLU;

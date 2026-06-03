@@ -15,7 +15,7 @@ const DashLayout = (() => {
     { id: 'tasks', label: 'משימות היום', emoji: '📋' },
     { id: 'shopping', label: 'רשימת קניות', emoji: '🛒' },
     { id: 'schedule', label: 'הלו״ז של היום', emoji: '🗓️' },
-    { id: 'meds', label: 'תרופות לתשומת לב', emoji: '💊' },
+    { id: 'meds', label: 'תרופות פעילות', emoji: '💊' },
     { id: 'meal', label: 'ארוחת הערב', emoji: '🍽️' },
     { id: 'maint', label: 'תחזוקה מתקרבת', emoji: '🔧' },
     { id: 'habits', label: 'הרגלים יומיים', emoji: '🔥' },
@@ -28,23 +28,26 @@ const DashLayout = (() => {
 
   function defaultOrder() { return WIDGETS.map((w) => w.id); }
 
-  // Clean-by-default: a calm home shows the assistant essentials only. Heavier
-  // widgets/tiles start hidden (re-enable any of them via edit mode ✏️).
+  // Calm by default: the home screen starts with a small set of always-useful
+  // widgets. Data-heavy sections auto-reveal on a first-run layout only when
+  // they actually contain user data, so new information is visible without
+  // making an empty dashboard feel noisy.
   function defaultHidden() {
     return {
-      stats: true, tasks: true, shopping: true, schedule: true, meds: true,
-      meal: true, maint: true, habits: true, goals: true, events: true,
-      budget: true, beitar: true, jewish: true, actions: true
-      // visible by default: assistant, week, glance, monthly, weather
+      schedule: true, meal: true, maint: true, habits: true, goals: true,
+      events: true, beitar: true, jewish: true, actions: true
+      // visible by default: assistant, week, glance, monthly, weather, stats,
+      // tasks, shopping, meds, budget
     };
   }
 
   function cfg() {
     const c = DB.getSettings().dashLayout || {};
-    // First run (no saved layout): apply the clean default. Once the user edits,
-    // their saved `hidden` map is respected as-is.
+    // First run (no saved layout): apply the calm default and allow data-based
+    // auto-reveal. Once the user edits, their saved `hidden` map is respected.
+    const isDefault = !c.hidden;
     const hidden = c.hidden || defaultHidden();
-    return { order: c.order || defaultOrder(), hidden, sizes: c.sizes || {} };
+    return { order: c.order || defaultOrder(), hidden, sizes: c.sizes || {}, isDefault };
   }
   function save(c) { DB.setSetting('dashLayout', c); }
 
@@ -89,6 +92,19 @@ const DashLayout = (() => {
     return out;
   }
 
+  function hasDashboardData(id) {
+    try {
+      if (id === 'schedule') return !!(window.Schedule && Schedule.todayItems && Schedule.todayItems().length);
+      if (id === 'meal') {
+        const m = window.Meals && Meals.todayMeal ? Meals.todayMeal() : null;
+        return !!(m && (m.title || m.dish));
+      }
+      if (id === 'maint') return !!(window.Maintenance && Maintenance.dueSoon && Maintenance.dueSoon().length);
+      if (id === 'events') return !!(window.Events && Events.upcoming && Events.upcoming(45).length);
+    } catch (e) {}
+    return false;
+  }
+
   function apply() {
     const view = document.getElementById('view-dashboard');
     if (!view) return;
@@ -100,7 +116,9 @@ const DashLayout = (() => {
     for (const w of WIDGETS) {
       const el = map[w.id];
       if (!el) continue;
-      el.classList.toggle('user-hidden', !!c.hidden[w.id]);
+      const autoReveal = c.isDefault && !!c.hidden[w.id] && hasDashboardData(w.id);
+      el.classList.toggle('user-hidden', !!c.hidden[w.id] && !autoReveal);
+      el.classList.toggle('auto-revealed', autoReveal);
       el.classList.toggle('size-half', (c.sizes[w.id] || 'full') === 'half');
       el.classList.toggle('size-full', (c.sizes[w.id] || 'full') === 'full');
     }
@@ -108,6 +126,6 @@ const DashLayout = (() => {
 
   function meta() { return WIDGETS; }
 
-  return { WIDGETS, meta, cfg, isHidden, toggle, sizeOf, cycleSize, setSize, move, setOrder, orderedIds, apply, defaultOrder };
+  return { WIDGETS, meta, cfg, isHidden, toggle, sizeOf, cycleSize, setSize, move, setOrder, orderedIds, apply, defaultOrder, hasDashboardData };
 })();
 if (typeof window !== "undefined") window.DashLayout = DashLayout;
