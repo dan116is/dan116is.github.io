@@ -472,20 +472,27 @@ const App = (() => {
       renderAiKeyStatus();
       toast('נשמר', 'success');
     });
+    const aiToggle = document.getElementById('ai-toggle');
+    if (aiToggle) aiToggle.addEventListener('click', () => {
+      if (window.AI) AI.setOff(!AI.isOff());
+      renderAiKeyStatus();
+    });
   }
 
   function renderAiKeyStatus() {
     const el = document.getElementById('ai-key-status');
-    if (!el || !window.AI) return;
-    el.textContent = AI.getKey()
-      ? '✓ מוח AI חינמי פעיל (Gemini) — העוזר מבין כל ניסוח'
-      : 'לא מוגדר מפתח — פעיל המנוע המקומי החכם';
+    const btn = document.getElementById('ai-toggle');
+    if (!window.AI) return;
+    if (btn) btn.textContent = AI.isOff() ? 'הפעל מוח AI' : 'השבת מוח AI';
+    if (el) el.textContent = AI.isOff()
+      ? '⚪ מוח AI כבוי — פעיל המנוע המקומי בלבד (פרטיות מלאה)'
+      : `✓ מוח AI פעיל (${AI.mode()}) — מבין כל ניסוח`;
   }
 
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v53 · 3 ביוני 2026';
+  const APP_BUILD = 'v54 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
