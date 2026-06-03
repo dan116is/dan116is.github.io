@@ -1,28 +1,29 @@
 :root {
   /* iCloud-style light theme (default) */
-  --bg: #eef1f8;
+  --bg: #eaf0fb;
   --bg-grad:
-    radial-gradient(900px 520px at 100% -8%, rgba(94,92,230,0.22), transparent 60%),
-    radial-gradient(820px 480px at -8% 4%, rgba(10,132,255,0.20), transparent 55%),
-    radial-gradient(700px 600px at 50% 110%, rgba(255,55,95,0.14), transparent 60%);
-  --glass: rgba(255,255,255,0.62);
-  --glass-strong: rgba(255,255,255,0.78);
-  --bg-elev: rgba(255,255,255,0.72);
+    radial-gradient(980px 560px at 100% -8%, rgba(108,76,240,0.30), transparent 60%),
+    radial-gradient(880px 520px at -8% 2%, rgba(10,132,255,0.26), transparent 55%),
+    radial-gradient(640px 560px at 6% 108%, rgba(20,200,180,0.20), transparent 60%),
+    radial-gradient(760px 620px at 92% 112%, rgba(255,82,140,0.18), transparent 60%);
+  --glass: rgba(255,255,255,0.70);
+  --glass-strong: rgba(255,255,255,0.85);
+  --bg-elev: rgba(255,255,255,0.78);
   --bg-elev-2: rgba(120,130,160,0.10);
-  --text: #1d1d1f;
-  --text-muted: #6e6e73;
-  --primary: #007aff;
-  --primary-strong: #0066d6;
-  --primary-grad: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
+  --text: #16161a;
+  --text-muted: #61636c;
+  --primary: #5a4ff0;
+  --primary-strong: #4a3fe0;
+  --primary-grad: linear-gradient(135deg, #0a84ff 0%, #6c4cf0 52%, #b44cf0 100%);
   --success: #34c759;
   --warning: #ff9f0a;
   --danger: #ff3b30;
-  --border: rgba(255,255,255,0.55);
+  --border: rgba(255,255,255,0.65);
   --border-strong: rgba(0,0,0,0.10);
   --radius: 24px;
   --radius-sm: 15px;
-  --shadow: 0 16px 40px rgba(40,50,90,0.14);
-  --shadow-sm: 0 8px 24px rgba(40,50,90,0.10);
+  --shadow: 0 18px 44px rgba(48,40,110,0.18);
+  --shadow-sm: 0 10px 26px rgba(48,40,110,0.13);
   /* section accents (Apple palette) */
   --c-meds: #5e5ce6;
   --c-shopping: #34c759;
@@ -40,9 +41,10 @@
 :root[data-theme="dark"] body {
   --bg: #07080d;
   --bg-grad:
-    radial-gradient(900px 520px at 100% -8%, rgba(94,92,230,0.38), transparent 60%),
-    radial-gradient(820px 480px at -8% 4%, rgba(10,132,255,0.30), transparent 55%),
-    radial-gradient(700px 600px at 50% 110%, rgba(255,55,95,0.22), transparent 60%);
+    radial-gradient(960px 540px at 100% -8%, rgba(124,86,255,0.42), transparent 60%),
+    radial-gradient(860px 500px at -8% 2%, rgba(10,132,255,0.34), transparent 55%),
+    radial-gradient(620px 540px at 6% 108%, rgba(20,200,180,0.24), transparent 60%),
+    radial-gradient(720px 600px at 92% 112%, rgba(255,55,120,0.22), transparent 60%);
   --glass: rgba(28,30,42,0.55);
   --glass-strong: rgba(28,30,42,0.74);
   --bg-elev: rgba(30,33,48,0.58);
@@ -59,9 +61,10 @@
   :root:not([data-theme="light"]):not([data-theme="dark"]) {
     --bg: #07080d;
     --bg-grad:
-      radial-gradient(900px 520px at 100% -8%, rgba(94,92,230,0.38), transparent 60%),
-      radial-gradient(820px 480px at -8% 4%, rgba(10,132,255,0.30), transparent 55%),
-      radial-gradient(700px 600px at 50% 110%, rgba(255,55,95,0.22), transparent 60%);
+      radial-gradient(960px 540px at 100% -8%, rgba(124,86,255,0.42), transparent 60%),
+      radial-gradient(860px 500px at -8% 2%, rgba(10,132,255,0.34), transparent 55%),
+      radial-gradient(620px 540px at 6% 108%, rgba(20,200,180,0.24), transparent 60%),
+      radial-gradient(720px 600px at 92% 112%, rgba(255,55,120,0.22), transparent 60%);
     --glass: rgba(28,30,42,0.55);
     --glass-strong: rgba(28,30,42,0.74);
     --bg-elev: rgba(30,33,48,0.58);
@@ -175,7 +178,13 @@ body::before {
 
 /* ---------- Welcome / greeting ---------- */
 .welcome { margin-bottom: 20px; padding: 0 4px; }
-.welcome h2 { margin: 0 0 4px; font-size: 30px; font-weight: 800; letter-spacing: -0.6px; }
+.welcome h2 {
+  margin: 0 0 4px; font-size: 31px; font-weight: 800; letter-spacing: -0.6px;
+  background: var(--primary-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  width: max-content; max-width: 100%;
+}
 .welcome-sub { margin: 0; color: var(--text-muted); font-size: 14px; font-weight: 500; }
 
 /* ---------- Stats grid (iCloud tiles) ---------- */
@@ -241,7 +250,12 @@ body::before {
 
 /* ---------- Toolbar ---------- */
 .view-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 8px; padding: 0 4px; }
-.view-toolbar h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+.view-toolbar h2 {
+  margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+  background: var(--primary-grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
 .toolbar-actions { display: flex; gap: 8px; }
 
 /* ---------- Buttons ---------- */
@@ -492,8 +506,15 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .nav-btn:active { transform: scale(0.92); }
 .nav-btn.active { color: var(--primary); }
-.nav-icon { font-size: 21px; transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1); }
-.nav-btn.active .nav-icon { transform: translateY(-2px) scale(1.12); }
+.nav-icon {
+  font-size: 21px; transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 38px; height: 30px; display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+}
+.nav-btn.active .nav-icon {
+  transform: translateY(-2px) scale(1.1);
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+}
 .nav-label { font-size: 10px; font-weight: 600; }
 
 /* ---------- Modal ---------- */
@@ -816,7 +837,10 @@ body.has-photo #view-dashboard .welcome {
   margin-bottom: 18px;
 }
 body.has-photo #view-dashboard .welcome .welcome-sub { color: rgba(255,255,255,0.92); }
-body.has-photo #view-dashboard .welcome h2 { text-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+body.has-photo #view-dashboard .welcome h2 {
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  background: none; -webkit-text-fill-color: #fff; color: #fff;
+}
 
 /* ---------- Monthly goal hero ---------- */
 .monthly-goal {
