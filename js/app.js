@@ -465,12 +465,27 @@ const App = (() => {
     });
     const fu = document.getElementById('force-update-btn');
     if (fu) fu.addEventListener('click', forceUpdate);
+    const aiSave = document.getElementById('ai-key-save');
+    if (aiSave) aiSave.addEventListener('click', () => {
+      const inp = document.getElementById('ai-key-input');
+      if (window.AI && inp) { AI.setKey(inp.value); inp.value = ''; }
+      renderAiKeyStatus();
+      toast('נשמר', 'success');
+    });
+  }
+
+  function renderAiKeyStatus() {
+    const el = document.getElementById('ai-key-status');
+    if (!el || !window.AI) return;
+    el.textContent = AI.getKey()
+      ? `✓ מוח AI פעיל (${AI.MODEL}) — העוזר מבין כל ניסוח`
+      : 'לא מוגדר מפתח — פעיל המנוע המקומי החכם';
   }
 
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v51 · 3 ביוני 2026';
+  const APP_BUILD = 'v52 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -958,14 +973,23 @@ const App = (() => {
     } catch (e) {}
   }
 
-  // Run one utterance through the NLU and show + (optionally) speak the reply.
-  function talkSubmit(text, fromVoice) {
+  // Understand one utterance and show + (optionally) speak the reply. Uses the
+  // LLM brain (AI) when available for robust understanding of any phrasing, and
+  // always falls back to the local rules engine (NLU) — offline / no key / error
+  // / or for questions & meal-planning, which the local engine answers from live
+  // device data.
+  async function talkSubmit(text, fromVoice) {
     const t = (text || '').trim();
     if (!t) return;
     talkAppend('user', t);
     let res = null;
-    try { res = window.NLU ? NLU.run(t) : null; }
-    catch (e) { res = null; }
+    try {
+      if (window.AI && AI.enabled()) {
+        const action = await AI.understand(t);
+        if (action) res = AI.execute(action, t);
+      }
+    } catch (e) { res = null; }
+    if (!res) { try { res = window.NLU ? NLU.run(t) : null; } catch (e) { res = null; } }
     const reply = (res && res.reply) ? res.reply : 'לא הצלחתי להבין — אפשר לנסות אחרת?';
     talkAppend('bot', reply);
     if (fromVoice) talkSpeak(reply);
@@ -2082,6 +2106,7 @@ const App = (() => {
       Settings.renderNotifStatus();
       renderPersonalization();
       showVersion();
+      renderAiKeyStatus();
     }
   }
 

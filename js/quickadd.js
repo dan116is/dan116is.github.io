@@ -31,8 +31,8 @@ const QuickAdd = (() => {
   }
 
   function classify(text) {
-    if (/(שקל|₪|ש"ח|שח|הוצאה|שילמתי|הוצאתי|עלה לי)/.test(text)) return 'expense';
-    if (/(תזכיר|תזכורת|משימה|לקבוע|תור|פגישה|לזכור|דדליין| דד-ליין)/.test(text)) return 'task';
+    if (/(שקל|שקלים|₪|ש"?ח|שח|הוצאה|שילמתי|שילמנו|הוצאתי|הוצאנו|עלה לי|עלתה|בזבזתי|מחיר|עלות)/.test(text)) return 'expense';
+    if (/(תזכיר|תזכורת|להזכיר|לזכור|אל תשכח|משימה|מטלה|לקבוע|קבע |תקבע|תור |פגישה|דדליין|דד.ליין|צריך ל|אני צריך|חייב |להתקשר|לאסוף|ללכת ל|להגיע|לשלם את|לסדר|לתאם|דחוף)/.test(text)) return 'task';
     if (parseDate(text)) return 'task';
     return 'shopping';
   }
@@ -226,6 +226,6 @@ const QuickAdd = (() => {
   }
   function isListening() { return !!_rec; }
 
-  return { handle, handleSmart, segment, parseDate, voiceSupported, startVoice, stopVoice, isListening, addTasksFromText };
+  return { handle, handleSmart, classify, segment, parseDate, voiceSupported, startVoice, stopVoice, isListening, addTasksFromText };
 })();
 if (typeof window !== "undefined") window.QuickAdd = QuickAdd;
