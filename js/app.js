@@ -565,7 +565,7 @@ const App = (() => {
     } else if (btn.dataset.ano) {
       haptic(); if (window.Assistant) Assistant.dismiss(btn.dataset.ano); renderAssistant(); return;
     } else if (btn.id === 'dash-talk-mic') {
-      haptic(); primeTTS(); openTalk(true); return;
+      haptic(); primeTTS(); openTalkWithMic(); return;
     } else if (btn.dataset.talkChip != null) {
       haptic(); primeTTS();
       openTalk();
@@ -667,17 +667,34 @@ const App = (() => {
     }
   }
 
-  // ----- Smart quick-add -----
+  // ----- Smart command bar -----
+  function runLocalCommand(text) {
+    const t = String(text || '').trim();
+    if (!t) return null;
+    try {
+      // Questions / complete / delete / meal-planning must go through NLU so a
+      // sentence like "מה ברשימת הקניות" answers the list instead of adding the
+      // words as a product.
+      if (window.NLU && NLU.classify) {
+        const kind = NLU.classify(t);
+        if (kind === 'question' || kind === 'complete' || kind === 'delete' || kind === 'meal') return NLU.run(t);
+      }
+      const add = window.QuickAdd ? QuickAdd.handleSmart(t) : null;
+      if (add) return { kind: 'add', reply: add.msg, added: add.added };
+      return window.NLU ? NLU.run(t) : null;
+    } catch (e) { return null; }
+  }
+
   function runSmartAdd() {
     const input = document.getElementById('smart-input');
     const text = input.value.trim();
     if (!text) return;
-    const res = QuickAdd.handleSmart(text);
+    const res = runLocalCommand(text);
     if (res) {
       input.value = '';
       haptic();
       renderAll();
-      toast(res.msg, 'success');
+      toast(res.reply || res.msg, res.kind === 'query' ? '' : 'success');
     } else {
       toast('לא הצלחתי להבין — נסה שוב', 'error');
     }
@@ -695,10 +712,10 @@ const App = (() => {
   function commitVoiceTasks(text) {
     const t = (text || '').trim();
     if (!t) return;
-    const res = QuickAdd.handleSmart(t);
+    const res = runLocalCommand(t);
     haptic();
     renderAll();
-    if (res) toast(res.msg + ' ✓', 'success');
+    if (res) toast((res.reply || res.msg) + (res.kind === 'query' ? '' : ' ✓'), res.kind === 'query' ? '' : 'success');
     else toast('לא הצלחתי להבין — נסה שוב', 'error');
   }
 
@@ -715,11 +732,11 @@ const App = (() => {
     const input = document.getElementById('capture-input');
     const text = (input.value || '').trim();
     if (!text) return;
-    const res = QuickAdd.handleSmart(text);
+    const res = runLocalCommand(text);
     haptic();
     closeCapture();
     renderAll();
-    toast(res ? res.msg + ' ✓' : 'לא הצלחתי להבין — נסה שוב', res ? 'success' : 'error');
+    toast(res ? (res.reply || res.msg) + (res.kind === 'query' ? '' : ' ✓') : 'לא הצלחתי להבין — נסה שוב', res ? (res.kind === 'query' ? '' : 'success') : 'error');
   }
   function setupCapture() {
     const fab = document.getElementById('fab');
@@ -869,6 +886,30 @@ const App = (() => {
     if (autoListen) openTalk._t = setTimeout(startTalkListening, 300);
   }
 
+  async function canAutoListen() {
+    if (!QuickAdd.voiceSupported()) return false;
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        const p = await navigator.permissions.query({ name: 'microphone' });
+        return p && p.state === 'granted';
+      }
+    } catch (e) {}
+    try { return localStorage.getItem('habait:mic-ok') === '1'; } catch (e) { return false; }
+  }
+
+  async function openTalkWithMic() {
+    const auto = await canAutoListen();
+    openTalk(auto);
+    if (!auto) {
+      const input = document.getElementById('talk-input');
+      if (input) setTimeout(() => input.focus(), 120);
+      const hint = document.getElementById('talk-hint');
+      if (hint) hint.textContent = QuickAdd.voiceSupported()
+        ? 'אפשר לכתוב מיד — או ללחוץ על העיגול כדי לאשר מיקרופון פעם אחת'
+        : 'כתוב כאן, או השתמש במיקרופון של המקלדת';
+    }
+  }
+
   // The single smart entry point for tapping the orb.
   function talkMicTap() {
     if (talkState === 'speaking') { stopSpeaking(); return; }       // barge-in
@@ -991,7 +1032,9 @@ const App = (() => {
     talkAppend('user', t);
     let res = null;
     try {
-      if (window.AI && AI.enabled()) {
+      const localKind = (window.NLU && NLU.classify) ? NLU.classify(t) : '';
+      if (localKind === 'question' || localKind === 'meal') res = NLU.run(t);
+      if (!res && window.AI && AI.enabled()) {
         const action = await AI.understand(t);
         if (action) res = AI.execute(action, t);
       }
@@ -1016,7 +1059,7 @@ const App = (() => {
         e.preventDefault();
         e.stopImmediatePropagation();
         haptic();
-        openTalk(true);
+        openTalkWithMic();
       }, true);
     }
 

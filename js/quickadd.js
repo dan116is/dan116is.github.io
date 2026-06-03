@@ -37,6 +37,13 @@ const QuickAdd = (() => {
     return 'shopping';
   }
 
+  function looksLikeQuestion(text) {
+    const t = String(text || '').trim();
+    if (!t) return false;
+    if (/^(מה|כמה|מתי|איפה|האם|מי|איזה|איזו|אילו)\b/.test(t)) return true;
+    return /(מה יש|מה ברשימת|ברשימת הקניות|רשימת הקניות.*מה|תראה לי.*רשימ|תגיד לי.*רשימ|מה נשאר|כמה נשאר|מה היום|מה מתוכנן|מה אוכלים|מה ללבוש)/.test(t);
+  }
+
   function parseExpense(text) {
     let amount = 0;
     let m = text.match(/(\d+(?:\.\d+)?)\s*(?:שקל|₪|ש"ח|שח)/);
@@ -96,7 +103,7 @@ const QuickAdd = (() => {
   // Returns { kind, msg } or null.
   function handle(text) {
     text = (text || '').trim();
-    if (!text) return null;
+    if (!text || looksLikeQuestion(text)) return null;
     const intent = classify(text);
     if (intent === 'expense') {
       const e = parseExpense(text);
@@ -137,6 +144,7 @@ const QuickAdd = (() => {
   // Smart one-button handler: figures out task vs shopping vs expense per
   // segment and routes each. Returns { added:{task,shopping,expense}, parts:[], msg }.
   function handleSmart(text) {
+    if (looksLikeQuestion(text)) return null;
     const segs = segment(text);
     const added = { task: 0, shopping: 0, expense: 0 };
     const parts = [];
@@ -196,7 +204,7 @@ const QuickAdd = (() => {
       const r = new SR();
       _rec = r;
       r.lang = 'he-IL'; r.interimResults = true; r.maxAlternatives = 1; r.continuous = false;
-      r.onstart = () => onState && onState('listening');
+      r.onstart = () => { try { localStorage.setItem('habait:mic-ok', '1'); } catch (e) {} onState && onState('listening'); };
       r.onresult = (e) => {
         let finalT = '', interim = '';
         for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -226,6 +234,6 @@ const QuickAdd = (() => {
   }
   function isListening() { return !!_rec; }
 
-  return { handle, handleSmart, classify, segment, parseDate, voiceSupported, startVoice, stopVoice, isListening, addTasksFromText };
+  return { handle, handleSmart, classify, segment, parseDate, looksLikeQuestion, voiceSupported, startVoice, stopVoice, isListening, addTasksFromText };
 })();
 if (typeof window !== "undefined") window.QuickAdd = QuickAdd;

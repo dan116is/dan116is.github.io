@@ -1908,3 +1908,55 @@ body::after { opacity: 0.02; }
   box-shadow: 0 0 46px rgba(22,200,160,0.6), inset 0 0 22px rgba(201,255,240,0.5);
 }
 .talk-mic.speaking .talk-mic-glow { background: radial-gradient(circle, rgba(22,200,160,0.55), transparent 70%); animation-duration: 1.2s; }
+
+/* ---------- Next-gen command flow polish ---------- */
+.smart-bar {
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: 58px; padding: 7px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--glass-strong) 92%, transparent), color-mix(in srgb, var(--primary) 8%, var(--glass))),
+    var(--bg-elev);
+  border-color: color-mix(in srgb, var(--primary) 20%, var(--border));
+  box-shadow: 0 18px 42px rgba(48,40,110,0.13), var(--inset-hi);
+}
+.smart-bar::before {
+  content: ""; position: absolute; inset: -2px; z-index: -1; opacity: 0.62;
+  background:
+    radial-gradient(220px 70px at 18% 0%, color-mix(in srgb, var(--primary) 28%, transparent), transparent 70%),
+    radial-gradient(180px 60px at 92% 100%, rgba(22,200,160,0.20), transparent 70%);
+}
+.smart-bar:focus-within {
+  border-color: color-mix(in srgb, var(--primary) 46%, var(--border));
+  box-shadow: 0 20px 46px rgba(90,79,240,0.18), 0 0 0 4px color-mix(in srgb, var(--primary) 10%, transparent);
+}
+.smart-bar input { font-weight: 650; letter-spacing: -0.15px; }
+.smart-mic, .smart-go { box-shadow: 0 10px 22px rgba(90,79,240,0.26), var(--inset-hi); }
+.smart-go { background: color-mix(in srgb, var(--primary) 11%, var(--bg-elev)); }
+.glance { gap: 8px; }
+.g-pill {
+  backdrop-filter: saturate(160%) blur(18px); -webkit-backdrop-filter: saturate(160%) blur(18px);
+  border-color: color-mix(in srgb, var(--primary) 12%, var(--border));
+}
+.dash-widget {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--glass-strong) 88%, transparent), color-mix(in srgb, var(--primary) 5%, var(--glass))),
+    var(--bg-elev);
+  backdrop-filter: saturate(170%) blur(24px); -webkit-backdrop-filter: saturate(170%) blur(24px);
+  box-shadow: 0 16px 38px rgba(48,40,110,0.10), var(--inset-hi);
+}
+.dash-widget-head h3 { font-size: 15.5px; }
+.dash-item { padding: 9px 0; }
+.brief-card {
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--glass-strong) 86%, transparent), color-mix(in srgb, var(--primary) 6%, var(--glass))),
+    var(--glass);
+}
+.brief-ico, .widget-ico { box-shadow: inset 0 1px 1px rgba(255,255,255,0.35), 0 8px 18px rgba(48,40,110,0.12); }
+.talk-hint { font-weight: 700; }
+.talk-input:focus, #talk-input:focus { outline: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 13%, transparent); }
+@media (max-width: 420px) {
+  .smart-bar { min-height: 54px; margin-bottom: 14px; }
+  .brief-greet { font-size: 24px; }
+  .dash-widget { padding: 14px; margin-bottom: 12px; }
+}
