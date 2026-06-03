@@ -20,10 +20,13 @@
   --danger: #ff3b30;
   --border: rgba(255,255,255,0.65);
   --border-strong: rgba(0,0,0,0.10);
-  --radius: 24px;
-  --radius-sm: 15px;
-  --shadow: 0 18px 44px rgba(48,40,110,0.18);
-  --shadow-sm: 0 10px 26px rgba(48,40,110,0.13);
+  --radius: 28px;
+  --radius-sm: 17px;
+  --shadow: 0 22px 50px rgba(48,40,110,0.16);
+  --shadow-sm: 0 12px 30px rgba(48,40,110,0.11);
+  /* premium physics-based easing + inset top highlight (soft-skill) */
+  --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
+  --inset-hi: inset 0 1px 1px rgba(255,255,255,0.55);
   /* section accents (Apple palette) */
   --c-meds: #5e5ce6;
   --c-shopping: #34c759;
@@ -84,7 +87,7 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Heebo", "Assistant", "Segoe UI", Arial, sans-serif;
+  font-family: "Rubik", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Heebo", "Assistant", "Segoe UI", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 16px;
@@ -112,6 +115,23 @@ body::before {
 }
 ::selection { background: rgba(10,132,255,0.22); }
 
+/* Fine film-grain overlay for a premium, non-flat texture (soft-skill) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"] body::after { opacity: 0.05; }
+:root[data-theme="dark"] { --inset-hi: inset 0 1px 1px rgba(255,255,255,0.10); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) { --inset-hi: inset 0 1px 1px rgba(255,255,255,0.10); }
+  :root:not([data-theme="light"]):not([data-theme="dark"]) body::after { opacity: 0.05; }
+}
+
 /* Glass treatment for all elevated surfaces */
 .stat-card, .dash-widget, .smart-bar, .add-inline, .item-card, .budget-summary,
 .budget-trend, .cat-row, .settings-section, .cal-grid, .glance .g-pill, .toast,
@@ -124,6 +144,7 @@ body::before {
 .smart-bar, .add-inline, .item-card, .week-strip .wk-day {
   background: var(--glass);
   border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm), var(--inset-hi);
 }
 .stat-card::after, .dash-widget::after {
   content: "";
@@ -173,8 +194,19 @@ body::before {
   position: relative;
 }
 .view { display: none; }
-.view.active { display: block; animation: viewIn 0.34s cubic-bezier(0.22, 1, 0.36, 1); }
-@keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.view.active { display: block; animation: viewIn 0.6s var(--ease-soft) both; }
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(16px); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+/* Staggered fade-up for the dashboard's top blocks on entry (soft-skill) */
+#view-dashboard.active > * { animation: viewIn 0.6s var(--ease-soft) both; }
+#view-dashboard.active > *:nth-child(1) { animation-delay: 0.04s; }
+#view-dashboard.active > *:nth-child(2) { animation-delay: 0.09s; }
+#view-dashboard.active > *:nth-child(3) { animation-delay: 0.14s; }
+#view-dashboard.active > *:nth-child(4) { animation-delay: 0.19s; }
+#view-dashboard.active > *:nth-child(5) { animation-delay: 0.24s; }
+#view-dashboard.active > *:nth-child(n+6) { animation-delay: 0.28s; }
 
 /* ---------- Welcome / greeting ---------- */
 .welcome { margin-bottom: 20px; padding: 0 4px; }
