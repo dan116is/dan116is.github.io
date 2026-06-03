@@ -217,6 +217,7 @@ const App = (() => {
     setupVoiceTasks();
     setupCapture();
     setupTalk();
+    startDashTalkRotation();
 
     // Theme toggle
     document.getElementById('theme-btn').addEventListener('click', cycleTheme);
@@ -469,7 +470,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v45 · 3 ביוני 2026';
+  const APP_BUILD = 'v46 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -541,6 +542,13 @@ const App = (() => {
       return;
     } else if (btn.dataset.ano) {
       haptic(); if (window.Assistant) Assistant.dismiss(btn.dataset.ano); renderAssistant(); return;
+    } else if (btn.id === 'dash-talk-mic') {
+      haptic(); openTalk(); return;
+    } else if (btn.dataset.talkChip != null) {
+      haptic();
+      openTalk();
+      talkSubmit(btn.dataset.talkChip, false);
+      return;
     } else if (btn.dataset.quick) {
       haptic(8);
       const q = btn.dataset.quick;
@@ -733,16 +741,42 @@ const App = (() => {
   // Beginner-friendly Hebrew suggestions. We show a rotating subset of ~6 each
   // time the screen opens, orbiting the central mic, to teach what can be said.
   const TALK_SUGGESTIONS = [
+    // יומן וסקירה
     'מה יש לי היום?',
-    'מחר שקשוקה',
-    'תזכיר לי מחר רופא',
-    'תוסיף חלב וביצים',
-    'כמה הוצאתי החודש?',
-    'מה ברשימת הקניות?',
-    'סיימתי את הכביסה',
-    'שילמתי 50 בסופר',
     'מה הלו״ז של היום?',
-    'ביום שישי פסטה'
+    'מה יש לי השבוע?',
+    'תן לי סיכום של היום',
+    'מה מזג האוויר היום?',
+    // קניות
+    'תוסיף חלב וביצים',
+    'תוסיף קפה לרשימה',
+    'מה ברשימת הקניות?',
+    'תמחק לחם מהרשימה',
+    'תוסיף סוללות וקרם הגנה',
+    // משימות ותזכורות
+    'תזכיר לי מחר רופא',
+    'תזכיר לי להתקשר לאמא',
+    'תוסיף משימה לסדר את החדר',
+    'מה המשימות שלי להיום?',
+    'סיימתי את הכביסה',
+    // תקציב והוצאות
+    'כמה הוצאתי החודש?',
+    'שילמתי 50 בסופר',
+    'הוצאתי 200 על דלק',
+    'כמה נשאר לי בתקציב?',
+    // אוכל וארוחות
+    'מחר שקשוקה',
+    'מה אוכלים היום?',
+    'ביום שישי פסטה',
+    'תכין לי תפריט לשבוע',
+    // אירועים וילדים
+    'מתי יום ההולדת הבא?',
+    'קבע פגישה ביום שלישי ב-10',
+    'תעדכן את הגובה של הילד',
+    // בית ובריאות
+    'אילו תרופות עומדות להיגמר?',
+    'מתי הטיפול הבא לרכב?',
+    'כמה כסף חסכתי?'
   ];
   let talkPoolStart = 0; // rotates the visible subset on each open
 
@@ -798,6 +832,32 @@ const App = (() => {
     const mic = document.getElementById('talk-mic');
     if (mic) mic.classList.remove('listening');
     try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+  }
+
+  // ----- Dashboard talk hero: rotating "what you can say" chips under the
+  // greeting. Cycles through the full suggestion pool so the screen keeps
+  // teaching new commands without taking up much space. -----
+  let dashTalkPtr = 0;
+  function renderDashTalkChips() {
+    const wrap = document.getElementById('dash-talk-chips');
+    if (!wrap) return;
+    const count = 3;
+    const picks = [];
+    for (let i = 0; i < count; i++) picks.push(TALK_SUGGESTIONS[(dashTalkPtr + i) % TALK_SUGGESTIONS.length]);
+    wrap.innerHTML = picks.map((t) =>
+      `<button class="dash-talk-chip" data-talk-chip="${escapeAttr(t)}">${esc(t)}</button>`).join('');
+    wrap.classList.remove('swap');
+    void wrap.offsetWidth; // restart the fade animation
+    wrap.classList.add('swap');
+  }
+  function startDashTalkRotation() {
+    if (startDashTalkRotation._t) return;
+    renderDashTalkChips();
+    startDashTalkRotation._t = setInterval(() => {
+      if (document.hidden || currentView !== 'dashboard') return;
+      dashTalkPtr = (dashTalkPtr + 3) % TALK_SUGGESTIONS.length;
+      renderDashTalkChips();
+    }, 3500);
   }
 
   function talkAppend(role, text) {
@@ -1590,6 +1650,7 @@ const App = (() => {
     renderDashMeds();
     renderDashEvents();
     renderDashBudget();
+    renderDashTalkChips();
   }
 
   function renderSetupCard() {
