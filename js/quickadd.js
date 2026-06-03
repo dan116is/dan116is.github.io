@@ -49,9 +49,32 @@ const QuickAdd = (() => {
     return { amount, title: title || 'הוצאה' };
   }
 
+  // A reminder with no explicit time still gets a sensible one from context
+  // ("בבוקר"→08:00, "בערב"→19:00…) so it actually fires instead of sitting idle.
+  function defaultReminderTime(text) {
+    if (/בבוקר|מוקדם/.test(text)) return '08:00';
+    if (/בצהרי|צהריים/.test(text)) return '13:00';
+    if (/אחר.?הצהר|אחהצ/.test(text)) return '16:00';
+    if (/בלילה/.test(text)) return '21:00';
+    if (/בערב|הערב/.test(text)) return '19:00';
+    return '19:00';
+  }
+
   function parseTask(text) {
-    const dueDate = parseDate(text);
-    const time = parseTime(text);
+    let dueDate = parseDate(text);
+    let time = parseTime(text);
+    const isReminder = /(תזכיר|תזכורת|לזכור)/.test(text);
+    // Smart defaults for reminders: pick an evening (or context) time, and if
+    // none of today is left, roll the reminder to tomorrow.
+    if (isReminder && !time) time = defaultReminderTime(text);
+    if (isReminder && !dueDate) {
+      const [hh, mm] = time.split(':').map(Number);
+      const now = new Date();
+      const passedToday = (now.getHours() * 60 + now.getMinutes()) > (hh * 60 + mm);
+      const d = new Date();
+      if (passedToday) d.setDate(d.getDate() + 1);
+      dueDate = ymd(d);
+    }
     let title = text
       .replace(/(תזכיר לי|תזכיר|תזכורת|משימה חדשה|משימה|לזכור|בבקשה)/g, '')
       .replace(/(מחרתיים|מחר|היום|שבוע הבא)/g, '')
