@@ -470,7 +470,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v46 · 3 ביוני 2026';
+  const APP_BUILD = 'v47 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -740,44 +740,40 @@ const App = (() => {
 
   // Beginner-friendly Hebrew suggestions. We show a rotating subset of ~6 each
   // time the screen opens, orbiting the central mic, to teach what can be said.
-  const TALK_SUGGESTIONS = [
-    // יומן וסקירה
+  // QUESTIONS — tapping one gives an instant answer (no recording needed). Only
+  // include phrasings the NLU truly answers, so a tap never misfires.
+  const TALK_QUESTIONS = [
     'מה יש לי היום?',
-    'מה הלו״ז של היום?',
-    'מה יש לי השבוע?',
-    'תן לי סיכום של היום',
-    'מה מזג האוויר היום?',
-    // קניות
-    'תוסיף חלב וביצים',
-    'תוסיף קפה לרשימה',
-    'מה ברשימת הקניות?',
-    'תמחק לחם מהרשימה',
-    'תוסיף סוללות וקרם הגנה',
-    // משימות ותזכורות
-    'תזכיר לי מחר רופא',
-    'תזכיר לי להתקשר לאמא',
-    'תוסיף משימה לסדר את החדר',
     'מה המשימות שלי להיום?',
-    'סיימתי את הכביסה',
-    // תקציב והוצאות
+    'מה הלו״ז של היום?',
+    'מה ברשימת הקניות?',
     'כמה הוצאתי החודש?',
+    'כמה נשאר לי בתקציב?',
+    'מה מזג האוויר היום?',
+    'מה ללבוש היום?',
+    'מה אוכלים היום?',
+    'מתי יום ההולדת הבא?',
+    'מה האירוע הקרוב?',
+    'אילו תרופות עומדות להיגמר?'
+  ];
+  // COMMANDS — tapping one performs a smart action (with sensible defaults).
+  const TALK_COMMANDS = [
+    'תזכיר לי לחייג לאמא',
+    'תזכיר לי מחר ללכת לרופא',
+    'תוסיף חלב וביצים לקניות',
+    'תוסיף קפה לרשימה',
+    'תמחק לחם מהרשימה',
     'שילמתי 50 בסופר',
     'הוצאתי 200 על דלק',
-    'כמה נשאר לי בתקציב?',
-    // אוכל וארוחות
+    'סיימתי את הכביסה',
     'מחר שקשוקה',
-    'מה אוכלים היום?',
     'ביום שישי פסטה',
-    'תכין לי תפריט לשבוע',
-    // אירועים וילדים
-    'מתי יום ההולדת הבא?',
-    'קבע פגישה ביום שלישי ב-10',
-    'תעדכן את הגובה של הילד',
-    // בית ובריאות
-    'אילו תרופות עומדות להיגמר?',
-    'מתי הטיפול הבא לרכב?',
-    'כמה כסף חסכתי?'
+    'תזכיר לי בערב לקחת תרופה',
+    'קבע פגישה ביום שלישי'
   ];
+  // The full-screen talk orbit teaches both kinds; the home hero shows mostly
+  // questions (instant answers that save the user from even speaking).
+  const TALK_SUGGESTIONS = [...TALK_QUESTIONS, ...TALK_COMMANDS];
   let talkPoolStart = 0; // rotates the visible subset on each open
 
   // Render ~6 suggestion bubbles on a ring around the central mic. Positions are
@@ -841,9 +837,10 @@ const App = (() => {
   function renderDashTalkChips() {
     const wrap = document.getElementById('dash-talk-chips');
     if (!wrap) return;
+    const pool = TALK_QUESTIONS;
     const count = 3;
     const picks = [];
-    for (let i = 0; i < count; i++) picks.push(TALK_SUGGESTIONS[(dashTalkPtr + i) % TALK_SUGGESTIONS.length]);
+    for (let i = 0; i < count; i++) picks.push(pool[(dashTalkPtr + i) % pool.length]);
     wrap.innerHTML = picks.map((t) =>
       `<button class="dash-talk-chip" data-talk-chip="${escapeAttr(t)}">${esc(t)}</button>`).join('');
     wrap.classList.remove('swap');
@@ -855,7 +852,7 @@ const App = (() => {
     renderDashTalkChips();
     startDashTalkRotation._t = setInterval(() => {
       if (document.hidden || currentView !== 'dashboard') return;
-      dashTalkPtr = (dashTalkPtr + 3) % TALK_SUGGESTIONS.length;
+      dashTalkPtr = (dashTalkPtr + 3) % TALK_QUESTIONS.length;
       renderDashTalkChips();
     }, 3500);
   }

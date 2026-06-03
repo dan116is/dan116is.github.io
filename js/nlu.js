@@ -185,14 +185,43 @@ const NLU = (() => {
     return { kind: 'query', reply: parts.join(' · ') };
   }
 
+  // ---- Smart questions: instant answers from live data, no recording needed.
+  // These are pure questions (no side effects) — weather, today's meal, the
+  // next event, medication status. Returns a {kind:'query'} or null.
+  function smartQuestion(t) {
+    if (/(מזג ?האוו|מזג ?אוו|מה ללבוש|מה לובש|חם או קר|יורד גשם|טמפרטור|כמה מעלות)/.test(t)) {
+      return { kind: 'query', reply: window.Weather ? Weather.summary() : 'אין נתוני מזג אוויר' };
+    }
+    if (/(מה אוכל|מה לאכול|ארוחה היום|אוכלים היום|מה בארוחה|מה התפריט|מה מכינים)/.test(t)) {
+      const m = (window.Meals && Meals.todayMeal) ? Meals.todayMeal() : null;
+      return { kind: 'query', reply: (m && m.dish) ? `🍽️ היום מתוכנן: ${m.dish}` : 'עוד לא תוכננה ארוחה להיום. אמור למשל "היום שקשוקה" ואסדר גם את הקניות' };
+    }
+    if ((/הולדת|אירוע/.test(t)) && (/(מתי|הבא|קרוב|מה|כמה|איזה)/.test(t))) {
+      const up = (window.Events && Events.upcoming) ? Events.upcoming(120) : [];
+      if (!up.length) return { kind: 'query', reply: 'אין אירועים קרובים בחודשים הקרובים' };
+      const e = up[0];
+      return { kind: 'query', reply: `${Events.icon(e.ev)} ${e.ev.title} — ${Events.countdownText(e.d)}` };
+    }
+    if (/(אילו תרופ|איזה תרופ|מצב התרופ|תרופות.*נגמר|תרופות.*תוקף|תרופות.*מלאי|תרופות שעומדות|תרופות שנגמר)/.test(t)) {
+      const meds = (window.Medications && Medications.list) ? Medications.list() : [];
+      const alerts = meds.map((m) => ({ m, s: Medications.statusOf(m) })).filter((x) => x.s && x.s.level !== 'success');
+      if (!meds.length) return { kind: 'query', reply: 'אין עדיין תרופות במערכת' };
+      if (!alerts.length) return { kind: 'query', reply: `כל התרופות תקינות (${meds.length}) ✓` };
+      return { kind: 'query', reply: `⚠️ ${alerts.map((a) => `${a.m.name}: ${a.s.text}`).join(' · ')}` };
+    }
+    return null;
+  }
+
   // Main entry: classify and act. Always returns a Hebrew reply.
   function run(text) {
     const raw = String(text || '').trim();
     if (!raw) return { kind: 'none', reply: 'לא שמעתי כלום — נסה שוב' };
     const t = norm(raw);
 
-    // Order matters: query checks first (so "מה יש לי" never looks like add),
-    // then complete & delete, then fall back to add.
+    // Smart instant-answer questions first (weather/meal/event/meds), then the
+    // generic query check, then complete & delete, then fall back to add.
+    const sq = smartQuestion(t);
+    if (sq) return sq;
     if (isQuery(t)) return doQuery(t);
     if (isComplete(t)) return doComplete(t);
     if (isDelete(t)) return doDelete(t);

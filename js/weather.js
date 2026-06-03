@@ -139,6 +139,18 @@ const Weather = (() => {
   }
 
   function start() { paint(); }
-  return { start, paint, refresh, cityList };
+
+  // A short spoken/typed answer for "what's the weather / what to wear" — built
+  // from the cached forecast so it's instant, no network needed.
+  function summary() {
+    const cached = load();
+    if (!cached || !cached.data) { refresh(false); return `עוד רגע טוען מזג אוויר ל${loc().name} — שאל שוב בעוד כמה שניות`; }
+    const d = cached.data;
+    const c = desc(d.code);
+    const tips = (d.advice && d.advice.tips && d.advice.tips.length) ? ` · ${d.advice.emoji} ${d.advice.head}: ${d.advice.tips[0]}` : '';
+    return `${c.e} ${loc().name}: ${Math.round(d.temp)}°, ${c.t}. ↑${Math.round(d.max)}° ↓${Math.round(d.min)}° · מרגישים ${Math.round(d.feels)}°${tips}`;
+  }
+
+  return { start, paint, refresh, cityList, summary };
 })();
 if (typeof window !== "undefined") window.Weather = Weather;
