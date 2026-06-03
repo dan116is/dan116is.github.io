@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habait-v54';
+const CACHE_NAME = 'habait-v55';
 const ASSETS = [
   './',
   './index.html',
@@ -46,7 +46,7 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS).catch(() => {}))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
   self.skipWaiting();
 });
@@ -57,33 +57,49 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
+const PRECACHED_URLS = new Set(ASSETS.map((asset) => new URL(asset, self.location.href).href));
+
+function acceptsHtml(req) {
+  return req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+}
+
+function cacheKeyFor(req) {
+  const url = new URL(req.url);
+  if (acceptsHtml(req)) return './index.html';
+  url.search = '';
+  url.hash = '';
+  return PRECACHED_URLS.has(url.href) ? url.href : null;
+}
+
 // Network-first for our own files so updates appear immediately when online;
-// falls back to cache when offline. Cross-origin requests (weather, football)
-// are left to the browser.
+// falls back to the right cached asset when offline. Cross-origin requests
+// (weather, football, fonts) are left to the browser.
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+
+  const key = cacheKeyFor(req);
   event.respondWith(
     fetch(req)
       .then((res) => {
-        if (res && res.status === 200) {
+        if (res && res.status === 200 && key) {
           const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+          event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(key, clone)));
         }
         return res;
       })
-      .catch(() =>
-        caches.match(req).then((cached) => cached || caches.match('./index.html'))
-      )
+      .catch(() => {
+        if (!key) return Response.error();
+        return caches.match(key).then((cached) => cached || (acceptsHtml(req) ? caches.match('./index.html') : Response.error()));
+      })
   );
 });
 
@@ -92,7 +108,7 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((list) => {
       for (const client of list) {
-        if (client.url.includes('index.html') && 'focus' in client) return client.focus();
+        if (new URL(client.url).origin === self.location.origin && 'focus' in client) return client.focus();
       }
       if (clients.openWindow) return clients.openWindow('./index.html');
     })

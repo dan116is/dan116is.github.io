@@ -492,7 +492,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v54 · 3 ביוני 2026';
+  const APP_BUILD = 'v55 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -1641,7 +1641,9 @@ const App = (() => {
     e.target.value = '';
   }
 
-  function escapeAttr(s) { return String(s || '').replace(/"/g, '&quot;'); }
+  function escapeAttr(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
 
   function renderBudget() {
     const mKey = document.getElementById('budget-month').value || Budget.monthKey();
