@@ -478,14 +478,14 @@ const App = (() => {
     const el = document.getElementById('ai-key-status');
     if (!el || !window.AI) return;
     el.textContent = AI.getKey()
-      ? `✓ מוח AI פעיל (${AI.MODEL}) — העוזר מבין כל ניסוח`
+      ? '✓ מוח AI חינמי פעיל (Gemini) — העוזר מבין כל ניסוח'
       : 'לא מוגדר מפתח — פעיל המנוע המקומי החכם';
   }
 
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v52 · 3 ביוני 2026';
+  const APP_BUILD = 'v53 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
