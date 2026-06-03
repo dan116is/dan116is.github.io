@@ -127,6 +127,7 @@ const Briefing = (() => {
     if (!container) return;
     const today = new Date();
     const dateStr = today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+    const timeStr = today.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
     const cards = stream();
     const sugCount = window.Assistant ? Assistant.suggestions().length : 0;
     const did = window.Autopilot ? Autopilot.recentLog(4) : [];
@@ -153,8 +154,16 @@ const Briefing = (() => {
       ${activityBannerHtml()}
       <div class="brief-hero">
         <div class="brief-greet">${esc(greeting(ownerName || 'דניאל'))}</div>
-        <div class="brief-date">${esc(dateStr)}</div>
+        <div class="brief-date">${esc(dateStr)} · ${esc(timeStr)}</div>
         <div class="brief-summary">${esc(summaryLine())}</div>
+      </div>
+      <div class="dash-talk" id="dash-talk">
+        <button class="dash-talk-mic" id="dash-talk-mic" aria-label="דבר איתי">
+          <span class="dash-talk-glow" aria-hidden="true"></span>
+          <span class="dash-talk-ico" aria-hidden="true">🎤</span>
+        </button>
+        <div class="dash-talk-chips" id="dash-talk-chips"></div>
+        <div class="dash-talk-hint">לחץ על המיקרופון ודבר — או הקש על הצעה</div>
       </div>
       <div class="quick-tiles">
         <button class="qtile focus" data-quick="focus"><span class="qt-ico">⏱️</span><span class="qt-label">פוקוס</span></button>

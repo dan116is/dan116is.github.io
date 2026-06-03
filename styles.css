@@ -1770,3 +1770,36 @@ body::after { opacity: 0.025; }
 }
 .qt-label, .weather-card, .weather-temp, .jewish-card, .beitar-card { color: var(--text); }
 .weather-error .ghost-btn { background: var(--bg-elev-2); color: var(--text); border-color: var(--border); }
+
+/* ---------- Dashboard talk hero (mic + rotating suggestion chips) ---------- */
+.dash-talk { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 6px 0 22px; }
+.dash-talk-mic {
+  position: relative; width: 84px; height: 84px; border-radius: 50%;
+  border: none; cursor: pointer; background: var(--primary-grad); color: #fff;
+  display: grid; place-items: center; box-shadow: var(--shadow);
+  transition: transform 0.15s var(--ease-soft, ease);
+}
+.dash-talk-mic:active { transform: scale(0.93); }
+.dash-talk-ico { font-size: 36px; line-height: 1; }
+.dash-talk-glow {
+  position: absolute; inset: -7px; border-radius: 50%; z-index: -1;
+  background: radial-gradient(circle, rgba(94,135,224,0.55), rgba(94,135,224,0) 70%);
+  filter: blur(9px); animation: talkPulse 2.6s ease-in-out infinite;
+}
+@keyframes talkPulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50%      { opacity: 0.9;  transform: scale(1.14); }
+}
+.dash-talk-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 34px; }
+.dash-talk-chip {
+  background: var(--glass); border: 1px solid var(--border); color: var(--text);
+  border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600;
+  font-family: inherit; cursor: pointer; box-shadow: var(--shadow-sm);
+  transition: transform 0.12s ease;
+}
+.dash-talk-chip:active { transform: scale(0.95); }
+.dash-talk-chips.swap .dash-talk-chip { animation: chipIn 0.5s var(--ease-soft, ease) both; }
+.dash-talk-chips.swap .dash-talk-chip:nth-child(2) { animation-delay: 0.07s; }
+.dash-talk-chips.swap .dash-talk-chip:nth-child(3) { animation-delay: 0.14s; }
+@keyframes chipIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+.dash-talk-hint { font-size: 12px; color: var(--text-muted); text-align: center; }
