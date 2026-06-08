@@ -1656,7 +1656,9 @@ const App = (() => {
     e.target.value = '';
   }
 
-  function escapeAttr(s) { return String(s || '').replace(/"/g, '&quot;'); }
+  function escapeAttr(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
 
   function renderBudget() {
     const mKey = document.getElementById('budget-month').value || Budget.monthKey();
