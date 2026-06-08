@@ -1918,3 +1918,19 @@ body::after { opacity: 0.02; }
   box-shadow: 0 0 46px rgba(22,200,160,0.6), inset 0 0 22px rgba(201,255,240,0.5);
 }
 .talk-mic.speaking .talk-mic-glow { background: radial-gradient(circle, rgba(22,200,160,0.55), transparent 70%); animation-duration: 1.2s; }
+
+/* ---------- Kids' activities (חוגים) widget ---------- */
+.widget-ico.activities { background: linear-gradient(135deg, #34c759, #0a9ed6); }
+#dash-activities .act-head { font-size: 12px; font-weight: 800; color: var(--text-muted); margin: 2px 2px 8px; }
+.act-row {
+  display: flex; align-items: center; gap: 11px; width: 100%; text-align: start;
+  background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 12px; margin-bottom: 8px; cursor: pointer; font-family: inherit; color: var(--text);
+  transition: transform 0.12s ease;
+}
+.act-row:active { transform: scale(0.98); }
+.act-ico { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.act-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.act-name { font-weight: 700; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.act-meta { font-size: 12px; color: var(--text-muted); }
+.act-x { color: var(--text-muted); font-size: 20px; line-height: 1; flex-shrink: 0; opacity: 0.6; }

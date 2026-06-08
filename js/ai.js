@@ -81,7 +81,7 @@ const AI = (() => {
       const txt = d && d.candidates && d.candidates[0] && d.candidates[0].content &&
         d.candidates[0].content.parts && d.candidates[0].content.parts[0] && d.candidates[0].content.parts[0].text;
       const a = parseJson(txt);
-      return (a && a.intent) ? a : null;
+      return (a && a.intent && INTENTS.indexOf(a.intent) >= 0) ? a : null;
     } catch (e) { return null; } finally { clearTimeout(to.done); }
   }
 
@@ -167,8 +167,9 @@ const AI = (() => {
         }
         case 'add_expense': {
           const amt = Number(a.amount) || 0;
+          if (amt <= 0) return { kind: 'none', reply: 'כמה זה עלה? נסה למשל "שילמתי 50 בסופר"' };
           const title = a.title || 'הוצאה';
-          Budget.add({ title, amount: amt, category: a.category || 'אחר', date: new Date().toISOString().slice(0, 10) });
+          Budget.add({ title, amount: Math.round(amt * 100) / 100, category: a.category || 'אחר', date: new Date().toISOString().slice(0, 10) });
           return { kind: 'add', reply: `💰 הוצאה נרשמה: ${fmtMoney(amt)}${title && title !== 'הוצאה' ? ' · ' + title : ''}` };
         }
         case 'complete_item': return completeByName(a.name || a.title);

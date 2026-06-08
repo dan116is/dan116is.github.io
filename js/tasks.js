@@ -15,8 +15,14 @@ const Tasks = (() => {
     const base = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
     if (repeat === 'daily') base.setDate(base.getDate() + 1);
     else if (repeat === 'weekly') base.setDate(base.getDate() + 7);
-    else if (repeat === 'monthly') base.setMonth(base.getMonth() + 1);
-    else return null;
+    else if (repeat === 'monthly') {
+      // Clamp to the target month's last day so Jan 31 → Feb 28/29, not Mar 3.
+      const day = base.getDate();
+      base.setDate(1);
+      base.setMonth(base.getMonth() + 1);
+      const last = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
+      base.setDate(Math.min(day, last));
+    } else return null;
     const p = (n) => String(n).padStart(2, '0');
     return `${base.getFullYear()}-${p(base.getMonth() + 1)}-${p(base.getDate())}`;
   }
@@ -28,8 +34,8 @@ const Tasks = (() => {
   }
 
   function overdueCount() {
-    const now = startOfDay();
-    return list().filter((t) => !t.done && t.dueDate && new Date(t.dueDate) < now).length;
+    const today = todayKey();
+    return list().filter((t) => !t.done && t.dueDate && t.dueDate < today).length;
   }
 
   function startOfDay(date = new Date()) {
@@ -38,9 +44,11 @@ const Tasks = (() => {
     return d;
   }
 
+  // Local calendar date (not UTC) so "today" is correct in the evening/early AM.
   function todayKey() {
     const d = new Date();
-    return d.toISOString().slice(0, 10);
+    const p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
   }
 
   function add(data) {

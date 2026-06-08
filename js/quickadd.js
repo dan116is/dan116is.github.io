@@ -25,8 +25,12 @@ const QuickAdd = (() => {
   }
 
   function parseTime(text) {
-    const m = text.match(/(?:בשעה\s*|ב-?)([0-2]?\d)(?::(\d{2}))?\b/);
-    if (m && m[1] !== undefined) { return `${pad(parseInt(m[1], 10))}:${m[2] || '00'}`; }
+    // Explicit HH:MM first.
+    let m = text.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+    if (m) return `${pad(parseInt(m[1], 10))}:${m[2]}`;
+    // "בשעה N" / "ב-N" hour-only, hour bounded to 0–23 and not an amount/unit.
+    m = text.match(/(?:בשעה\s*|ב-?)([01]?\d|2[0-3])\b(?!\s*(?:שקל|שקלים|₪|ש"?ח|אחוז|%|ימים|דקות|שעות|חודשים|מעלות|ק"?מ))/);
+    if (m) return `${pad(parseInt(m[1], 10))}:00`;
     return null;
   }
 
