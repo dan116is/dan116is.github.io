@@ -7,7 +7,18 @@ const App = (() => {
   let taskTag = '';
   let installPromptEvent = null;
 
+  // Production resilience: never let a stray error white-screen the app.
+  function installErrorGuards() {
+    window.addEventListener('error', (e) => {
+      try { console.warn('caught error', e && e.message); } catch (_) {}
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      try { console.warn('caught rejection', e && e.reason); } catch (_) {}
+    });
+  }
+
   function init() {
+    installErrorGuards();
     applyTheme(DB.getSettings().theme || 'auto');
     Settings.seedDefaultFamily();
     if (window.Habits) Habits.ensureSeed();
@@ -492,7 +503,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v54 · 3 ביוני 2026';
+  const APP_BUILD = 'v55 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -985,17 +996,21 @@ const App = (() => {
   // always falls back to the local rules engine (NLU) — offline / no key / error
   // / or for questions & meal-planning, which the local engine answers from live
   // device data.
+  let talkSeq = 0;
   async function talkSubmit(text, fromVoice) {
     const t = (text || '').trim();
     if (!t) return;
+    const myId = ++talkSeq; // ignore stale async replies if a newer request started
     talkAppend('user', t);
     let res = null;
     try {
       if (window.AI && AI.enabled()) {
         const action = await AI.understand(t);
-        if (action) res = AI.execute(action, t);
+        if (myId !== talkSeq) return; // superseded
+        if (action) res = AI.execute(action);
       }
     } catch (e) { res = null; }
+    if (myId !== talkSeq) return;
     if (!res) { try { res = window.NLU ? NLU.run(t) : null; } catch (e) { res = null; } }
     const reply = (res && res.reply) ? res.reply : 'לא הצלחתי להבין — אפשר לנסות אחרת?';
     talkAppend('bot', reply);

@@ -1,37 +1,40 @@
 {
-  "name": "משפחת ישראלי",
+  "id": "/",
+  "name": "משפחת ישראלי — מרכז הבית החכם",
   "short_name": "משפחת ישראלי",
-  "description": "דשבורד משפחתי: מזג אוויר והלבשה, תרופות, קניות, משימות, תקציב",
+  "description": "מרכז הבית החכם: עוזר קולי שמבין כל בקשה, קניות, תזכורות ומשימות, תקציב, מזג אוויר והלבשה, תרופות, ארוחות ועוד. עובד גם ללא אינטרנט.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#0f172a",
-  "theme_color": "#0ea5e9",
+  "background_color": "#E9EBF1",
+  "theme_color": "#4659E8",
   "lang": "he",
   "dir": "rtl",
+  "categories": ["productivity", "lifestyle", "utilities"],
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
     {
-      "name": "הוסף לרשימת קניות",
+      "name": "דבר עם העוזר",
+      "short_name": "דבר",
+      "url": "./index.html#dashboard",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "רשימת קניות",
+      "short_name": "קניות",
       "url": "./index.html#shopping",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "הוסף הוצאה",
+      "short_name": "הוצאה",
       "url": "./index.html#budget",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     }
