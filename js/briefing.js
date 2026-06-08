@@ -87,8 +87,9 @@ const Briefing = (() => {
 
     // Beitar next match if cached.
     const bj = (() => { try { return JSON.parse(localStorage.getItem('habait:beitar')); } catch (e) { return null; } })();
-    if (bj && bj.html && /vs|תוצאה|הבא/.test(bj.html)) {
-      cards.push({ rank: 7, icon: '⚽', kind: 'view', view: 'dashboard', title: 'ביתר ירושלים', sub: 'יש עדכון משחק' });
+    if (bj && bj.next && bj.next[0] && bj.next[0].strHomeTeam) {
+      const ev = bj.next[0];
+      cards.push({ rank: 7, icon: '⚽', kind: 'view', view: 'dashboard', title: 'המשחק הבא של ביתר', sub: `${ev.strHomeTeam} נגד ${ev.strAwayTeam}` });
     }
 
     return cards.sort((a, b) => a.rank - b.rank).slice(0, 6);

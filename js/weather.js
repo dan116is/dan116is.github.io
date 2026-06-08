@@ -94,11 +94,11 @@ const Weather = (() => {
         <button class="weather-refresh" id="weather-refresh" aria-label="רענן">↻</button>
       </div>
       ${(d.sunrise || d.sunset) ? `<div class="weather-sun"><span>🌅 ${d.sunrise}</span><span>🌇 ${d.sunset}</span></div>` : ''}
-      <div class="weather-advice">
-        <div class="advice-head">${d.advice.emoji} ${d.advice.head} — מה ללבוש היום</div>
-        <ul>${d.advice.tips.map((t) => `<li>${t}</li>`).join('')}</ul>
-        <div class="advice-kids">👦🧒 ${d.advice.kids}</div>
-      </div>
+      ${d.advice ? `<div class="weather-advice">
+        <div class="advice-head">${d.advice.emoji || ''} ${d.advice.head || ''} — מה ללבוש היום</div>
+        <ul>${(d.advice.tips || []).map((t) => `<li>${t}</li>`).join('')}</ul>
+        ${d.advice.kids ? `<div class="advice-kids">👦🧒 ${d.advice.kids}</div>` : ''}
+      </div>` : ''}
       ${fc ? `<div class="weather-forecast">${fc}</div>` : ''}`;
   }
 

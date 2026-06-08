@@ -229,7 +229,8 @@ const NLU = (() => {
     }
     if (/(מה אוכל|מה לאכול|מה יש לאכול|ארוחה היום|אוכלים היום|מה בארוחה|מה לארוחת|מה התפריט|מה מכינים|מה מבשלים|מה אוכלים)/.test(t)) {
       const m = (window.Meals && Meals.todayMeal) ? Meals.todayMeal() : null;
-      return { kind: 'query', reply: (m && m.dish) ? `🍽️ היום מתוכנן: ${m.dish}` : 'עוד לא תוכננה ארוחה להיום. אמור למשל "היום שקשוקה" ואסדר גם את הקניות' };
+      const dish = m && (m.dish || m.title);
+      return { kind: 'query', reply: dish ? `🍽️ היום מתוכנן: ${dish}` : 'עוד לא תוכננה ארוחה להיום. אמור למשל "היום שקשוקה" ואסדר גם את הקניות' };
     }
     if ((/הולדת|אירוע/.test(t)) && (/(מתי|הבא|קרוב|מה|כמה|איזה)/.test(t))) {
       const up = (window.Events && Events.upcoming) ? Events.upcoming(120) : [];
