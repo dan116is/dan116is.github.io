@@ -49,7 +49,8 @@ const Budget = (() => {
     const created = DB.add(KEY, {
       date: data.date || new Date().toISOString().slice(0, 10),
       category: data.category || 'אחר',
-      ...data
+      ...data,
+      amount: Math.round((Number(data.amount) || 0) * 100) / 100 // store clean agorot
     });
     if (typeof Activity !== 'undefined' && created) {
       const label = (created.title && created.title !== 'הוצאה') ? ' ' + created.title : (created.category ? ' ' + created.category : '');

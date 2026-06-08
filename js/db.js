@@ -50,9 +50,13 @@ const DB = (() => {
     return write(key, items);
   }
 
+  function uid() {
+    try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) {}
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
   function add(key, item) {
     const items = list(key);
-    item.id = item.id || (Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+    item.id = item.id || uid();
     item.createdAt = item.createdAt || Date.now();
     items.push(item);
     save(key, items);

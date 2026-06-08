@@ -18,15 +18,27 @@ const Medications = (() => {
     return Math.floor(stock / perDay);
   }
 
+  // Evaluate BOTH expiry and stock, then surface the most severe issue (so an
+  // expiring med that is also out of stock doesn't hide the stock problem).
   function statusOf(med) {
     const dExp = daysUntil(med.expiryDate);
     const dStock = daysOfStockLeft(med);
-    if (dExp < 0) return { level: 'danger', text: 'תוקף פג!' };
-    if (dExp <= 3) return { level: 'danger', text: `תוקף בעוד ${dExp} ימים` };
-    if (dExp <= DAYS_WARN_EXPIRY) return { level: 'warning', text: `תוקף בעוד ${dExp} ימים` };
-    if (dStock <= 0) return { level: 'danger', text: 'אזל המלאי' };
-    if (dStock <= STOCK_WARN_DAYS) return { level: 'warning', text: `מלאי ל-${dStock} ימים` };
-    return { level: 'success', text: 'תקין' };
+    const cands = [];
+    if (med.expiryDate) {
+      if (dExp < 0) cands.push({ rank: 0, level: 'danger', text: 'תוקף פג!' });
+      else if (dExp <= 3) cands.push({ rank: 1, level: 'danger', text: `תוקף בעוד ${dExp} ימים` });
+      else if (dExp <= DAYS_WARN_EXPIRY) cands.push({ rank: 3, level: 'warning', text: `תוקף בעוד ${dExp} ימים` });
+    }
+    if (dStock !== Infinity) {
+      if (dStock <= 0) cands.push({ rank: 2, level: 'danger', text: 'אזל המלאי' });
+      else if (dStock <= STOCK_WARN_DAYS) cands.push({ rank: 4, level: 'warning', text: `מלאי ל-${dStock} ימים` });
+    }
+    if (!cands.length) return { level: 'success', text: 'תקין' };
+    cands.sort((a, b) => a.rank - b.rank);
+    const top = cands[0];
+    // If there's a second, distinct issue, mention it briefly.
+    const extra = cands[1] && cands[1].level === 'danger' ? ` · ${cands[1].text}` : '';
+    return { level: top.level, text: top.text + extra };
   }
 
   function add(data) { return DB.add(KEY, data); }

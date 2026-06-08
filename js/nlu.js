@@ -81,9 +81,13 @@ const NLU = (() => {
     if (/היום|הערב|לארוחת ערב/.test(t)) return new Date().getDay();
     // Hebrew \b is unreliable; match day words by plain inclusion, longest first
     // ('ראשון'/'שלישי'/'רביעי' before 'שני'/'שבת' to avoid partial hits).
+    // Only match ANCHORED day forms ("יום שני", "ביום שני", "בשבת") — never a
+    // bare substring, which would mis-fire on words that merely contain the
+    // letters (e.g. "שני" inside another word).
     const order = ['ראשון', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שני', 'שבת'];
     for (const name of order) {
-      if (t.includes('יום ' + name) || t.includes('ביום ' + name) || t.includes('ב' + name) || t.includes(name)) return DOW[name];
+      if (t.includes('יום ' + name) || t.includes('ביום ' + name) ||
+          new RegExp('(^|\\s)ב?' + name + '($|\\s)').test(t)) return DOW[name];
     }
     return null;
   }

@@ -503,7 +503,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v55 · 3 ביוני 2026';
+  const APP_BUILD = 'v56 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -560,6 +560,14 @@ const App = (() => {
   function onDashClick(e) {
     const btn = e.target.closest('button');
     if (!btn) return;
+    if (btn.id === 'activities-add') { haptic(); showActivityForm(); return; }
+    if (btn.dataset.actDel != null) {
+      haptic();
+      confirmDialog({ title: 'מחיקת חוג', message: 'למחוק את החוג הזה?', okText: 'מחק', icon: '🎽' }).then((ok) => {
+        if (ok && window.Activities) { Activities.remove(btn.dataset.actDel); renderDashActivities(); toast('נמחק', 'success'); }
+      });
+      return;
+    }
     if (btn.dataset.actSeen != null) {
       haptic();
       if (typeof Activity !== 'undefined') Activity.markAllSeen();
@@ -1770,7 +1778,61 @@ const App = (() => {
     renderDashMeds();
     renderDashEvents();
     renderDashBudget();
+    renderDashActivities();
     renderDashTalkChips();
+  }
+
+  // ----- Kids' activities (חוגים) -----
+  function renderDashActivities() {
+    const el = document.getElementById('dash-activities');
+    if (!el || !window.Activities) return;
+    const today = Activities.today();
+    let items = today, head = 'היום';
+    if (!items.length) {
+      const nx = Activities.next();
+      if (!nx) { el.innerHTML = '<div class="dash-empty">אין עדיין חוגים — הוסיפו את הראשון 🎽</div>'; return; }
+      items = nx.items;
+      head = nx.inDays === 1 ? 'מחר' : (Activities.DAYS[nx.dow] ? 'יום ' + Activities.DAYS[nx.dow] : '');
+    }
+    el.innerHTML = `<div class="act-head">${esc(head)}</div>` + items.map((a) => `
+      <button class="act-row" data-act-del="${escapeAttr(a.id)}">
+        <span class="act-ico">${Activities.iconFor(a.name)}</span>
+        <span class="act-body">
+          <span class="act-name">${esc(a.name)}${a.child ? ` · ${esc(a.child)}` : ''}</span>
+          <span class="act-meta">${a.time ? esc(a.time) + ' · ' : ''}${a.place ? esc(a.place) : ''}</span>
+        </span>
+        <span class="act-x" aria-hidden="true">×</span>
+      </button>`).join('');
+  }
+
+  function showActivityForm() {
+    const days = Activities.DAYS.map((d, i) => `<option value="${i}">${d}</option>`).join('');
+    openModal('הוספת חוג', `
+      <form id="activity-form">
+        <div class="form-group"><label>שם החוג</label><input name="name" placeholder="לדוגמה: שחייה" required></div>
+        <div class="form-group"><label>שם הילד/ה</label><input name="child" placeholder="לדוגמה: דני"></div>
+        <div class="form-row">
+          <div class="form-group"><label>יום</label><select name="day">${days}</select></div>
+          <div class="form-group"><label>שעה</label><input name="time" type="time"></div>
+        </div>
+        <div class="form-group"><label>מיקום</label><input name="place" placeholder="לדוגמה: בריכה עירונית"></div>
+        <div class="form-actions">
+          <button type="button" class="ghost-btn" data-close>ביטול</button>
+          <button type="submit" class="primary-btn">הוסף</button>
+        </div>
+      </form>`);
+    const form = document.getElementById('activity-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const name = (fd.get('name') || '').toString().trim();
+      if (!name) { form.reportValidity(); return; }
+      Activities.add({ name, child: fd.get('child'), day: fd.get('day'), time: fd.get('time'), place: fd.get('place') });
+      closeModal();
+      renderDashActivities();
+      toast('החוג נוסף 🎽', 'success');
+    });
   }
 
   function renderSetupCard() {
