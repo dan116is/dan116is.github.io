@@ -22,12 +22,28 @@ const Notifier = (() => {
     }
   }
 
+  // Persistent per-day dedupe so reopening the PWA doesn't re-fire the same
+  // reminder. Keyed by content + today's date; yesterday's keys are pruned.
+  const DKEY = 'habait:notified';
+  function loadShown() {
+    try {
+      const o = JSON.parse(localStorage.getItem(DKEY) || '{}');
+      const today = new Date().toISOString().slice(0, 10);
+      if (o.date !== today) return { date: today, keys: {} };
+      return { date: today, keys: o.keys || {} };
+    } catch (e) { return { date: new Date().toISOString().slice(0, 10), keys: {} }; }
+  }
+  function saveShown(s) { try { localStorage.setItem(DKEY, JSON.stringify(s)); } catch (e) {} }
+
   function notify(title, options = {}) {
     if (!isSupported() || Notification.permission !== 'granted') return;
     const key = title + '|' + (options.body || '');
-    if (shown.has(key)) return;
+    const s = loadShown();
+    if (s.keys[key]) return;        // already shown today (survives reloads)
+    if (shown.has(key)) return;     // in-session guard
     shown.add(key);
-    setTimeout(() => shown.delete(key), 6 * 60 * 60 * 1000); // dedupe 6h
+    s.keys[key] = 1; saveShown(s);
+    setTimeout(() => shown.delete(key), 6 * 60 * 60 * 1000);
     try {
       const reg = navigator.serviceWorker && navigator.serviceWorker.controller
         ? navigator.serviceWorker.ready
