@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habait-v56';
+const CACHE_NAME = 'habait-v57';
 const ASSETS = [
   './',
   './index.html',
@@ -46,8 +46,11 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+  // Cache each asset individually so one bad URL never aborts the whole precache.
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS).catch(() => {}))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.allSettled(ASSETS.map((a) => cache.add(a)))
+    )
   );
   self.skipWaiting();
 });
@@ -83,7 +86,9 @@ self.addEventListener('fetch', (event) => {
         return res;
       })
       .catch(() =>
-        caches.match(req).then((cached) => cached || caches.match('./index.html'))
+        caches.match(req).then((cached) =>
+          cached || (req.mode === 'navigate' ? caches.match('./index.html') : caches.match('./index.html'))
+        )
       )
   );
 });

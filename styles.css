@@ -1934,3 +1934,12 @@ body::after { opacity: 0.02; }
 .act-name { font-weight: 700; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .act-meta { font-size: 12px; color: var(--text-muted); }
 .act-x { color: var(--text-muted); font-size: 20px; line-height: 1; flex-shrink: 0; opacity: 0.6; }
+
+/* ---------- Accessibility: visible focus + minimum tap targets ---------- */
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible,
+[role="button"]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.theme-btn, .close-btn, .smart-go, .smart-mic, .cal-nav-btn, .nav-more-btn, .talk-go, .capture-mic, .capture-go {
+  min-width: 44px; min-height: 44px;
+}
+.nav-btn { min-height: 48px; }

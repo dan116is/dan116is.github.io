@@ -17,8 +17,23 @@ const App = (() => {
     });
   }
 
+  // Esc closes the topmost open overlay (a11y: keyboard users can dismiss).
+  function installEscapeHandler() {
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const open = (id) => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); };
+      if (open('talk')) { closeTalk(); return; }
+      if (open('confirm')) { const c = document.getElementById('confirm-cancel'); if (c) c.click(); return; }
+      if (open('modal')) { closeModal(); return; }
+      if (open('capture')) { try { closeCapture(); } catch (_) {} return; }
+      const more = document.getElementById('more-sheet');
+      if (more && !more.classList.contains('hidden')) more.classList.add('hidden');
+    });
+  }
+
   function init() {
     installErrorGuards();
+    installEscapeHandler();
     applyTheme(DB.getSettings().theme || 'auto');
     Settings.seedDefaultFamily();
     if (window.Habits) Habits.ensureSeed();
@@ -87,7 +102,9 @@ const App = (() => {
     document.getElementById('view-' + name).classList.add('active');
     const inBar = ['dashboard', 'calendar', 'shopping', 'budget'];
     document.querySelectorAll('.nav-btn[data-view]').forEach((b) => {
-      b.classList.toggle('active', b.dataset.view === name);
+      const on = b.dataset.view === name;
+      b.classList.toggle('active', on);
+      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     const moreBtn = document.getElementById('nav-more-btn');
     if (moreBtn) moreBtn.classList.toggle('active', !inBar.includes(name));
@@ -503,7 +520,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v56 · 3 ביוני 2026';
+  const APP_BUILD = 'v57 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
