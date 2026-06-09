@@ -85,6 +85,12 @@ const Briefing = (() => {
       if (undone.length && (p === 'evening' || p === 'night')) cards.push({ rank: 3, icon: '🔥', kind: 'view', view: 'dashboard', title: 'הרגלים שנותרו להיום', sub: undone.map((h) => h.emoji + ' ' + h.name).join(' · ') });
     }
 
+    // Today's kids' activities (חוגים).
+    if (window.Activities) {
+      const acts = Activities.today();
+      if (acts.length) cards.push({ rank: 2, icon: '🎽', kind: 'view', view: 'dashboard', title: 'חוגים היום', sub: acts.map((a) => `${Activities.iconFor(a.name)} ${a.name}${a.time ? ' ' + a.time : ''}`).join(' · ') });
+    }
+
     // Beitar next match if cached.
     const bj = (() => { try { return JSON.parse(localStorage.getItem('habait:beitar')); } catch (e) { return null; } })();
     if (bj && bj.next && bj.next[0] && bj.next[0].strHomeTeam) {

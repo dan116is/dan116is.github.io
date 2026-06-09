@@ -58,6 +58,7 @@ const Events = (() => {
   function countdownText(d) {
     if (d === 0) return 'היום! 🎉';
     if (d === 1) return 'מחר';
+    if (d < 0) return d === -1 ? 'אתמול' : `לפני ${Math.abs(d)} ימים`;
     return `בעוד ${d} ימים`;
   }
 

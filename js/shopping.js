@@ -12,6 +12,11 @@ const Shopping = (() => {
     const trimmed = name.trim();
     if (!trimmed) return null;
     if (typeof Assistant !== 'undefined' && Assistant.learnShopping) Assistant.learnShopping(trimmed, category);
+    // De-dup: if the same item is already on the list (not yet bought), resurface
+    // it instead of creating a second identical row.
+    const norm = trimmed.toLowerCase();
+    const dup = DB.list(KEY).find((i) => !i.bought && String(i.name).trim().toLowerCase() === norm);
+    if (dup) { if (qty) DB.update(KEY, dup.id, { qty }); return dup; }
     const created = DB.add(KEY, {
       name: trimmed,
       category: category || 'אחר',

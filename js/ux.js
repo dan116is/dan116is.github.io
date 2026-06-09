@@ -117,7 +117,7 @@ const UX = (() => {
         setTimeout(() => { ind.classList.remove('spin'); reset(); }, 700);
       } else reset();
       pulling = false;
-      function reset() { ind.style.transform = 'transl(-50%, 0)'; ind.style.opacity = '0'; setTimeout(() => { ind.style.transition = ''; }, 260); }
+      function reset() { ind.style.transform = 'translate(-50%, 0)'; ind.style.opacity = '0'; setTimeout(() => { ind.style.transition = ''; }, 260); }
     });
   }
 
