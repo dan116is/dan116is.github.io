@@ -1943,3 +1943,30 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   min-width: 44px; min-height: 44px;
 }
 .nav-btn { min-height: 48px; }
+
+/* ---------- Family notes (sticky board) ---------- */
+.widget-ico.notes { background: linear-gradient(135deg, #f5b14b, #f0883a); }
+.notes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.note-card {
+  position: relative; background: var(--note, #FFE08A);
+  color: #2a2a25; border-radius: 14px; padding: 12px 30px 12px 12px;
+  font-size: 14px; font-weight: 600; line-height: 1.35; min-height: 56px;
+  box-shadow: 0 6px 16px rgba(120,100,20,0.18); word-break: break-word;
+  transform: rotate(-0.6deg); transition: transform 0.15s var(--ease-soft, ease);
+}
+.note-card:nth-child(even) { transform: rotate(0.7deg); }
+.note-card:active { transform: rotate(0) scale(0.98); }
+.note-card.pinned { outline: 2px solid rgba(0,0,0,0.12); }
+.note-text { display: block; }
+.note-x {
+  position: absolute; top: 4px; inset-inline-start: 4px; width: 24px; height: 24px;
+  border: none; background: rgba(0,0,0,0.10); color: #2a2a25; border-radius: 50%;
+  font-size: 16px; line-height: 1; cursor: pointer; display: grid; place-items: center;
+}
+.note-x:active { transform: scale(0.9); }
+
+/* ---------- Polish: unified press feedback ---------- */
+:root { --press: scale(0.97); }
+.quick-btn:active, .setup-step:active, .link-btn:active, .filter-btn:active { transform: var(--press); }
+/* Empty states a touch friendlier */
+.dash-empty { color: var(--text-muted); font-size: 13px; text-align: center; padding: 14px 8px; line-height: 1.5; }

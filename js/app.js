@@ -263,6 +263,10 @@ const App = (() => {
     document.getElementById('dash-shop-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addDashShopping();
     });
+    const noteAdd = document.getElementById('dash-note-add');
+    if (noteAdd) noteAdd.addEventListener('click', addDashNote);
+    const noteInput = document.getElementById('dash-note-input');
+    if (noteInput) noteInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addDashNote(); });
 
     // Calendar view
     document.getElementById('cal-prev').addEventListener('click', () => { haptic(8); Calendar.prev(); });
@@ -520,7 +524,7 @@ const App = (() => {
   // Build stamp — bump on every deploy so it's visible on screen. If the user
   // sees this exact string, the newest app.js loaded; if not, it's a stale
   // cache and "עדכן עכשיו" will clear it.
-  const APP_BUILD = 'v58 · 3 ביוני 2026';
+  const APP_BUILD = 'v59 · 3 ביוני 2026';
 
   // Show which version is actually running, and the real cached SW version.
   function showVersion() {
@@ -577,6 +581,10 @@ const App = (() => {
   function onDashClick(e) {
     const btn = e.target.closest('button');
     if (!btn) return;
+    if (btn.dataset.noteDel != null) {
+      haptic(); if (window.Notes) { Notes.remove(btn.dataset.noteDel); renderDashNotes(); }
+      return;
+    }
     if (btn.id === 'activities-add') { haptic(); showActivityForm(); return; }
     if (btn.dataset.actDel != null) {
       haptic();
@@ -1796,7 +1804,31 @@ const App = (() => {
     renderDashEvents();
     renderDashBudget();
     renderDashActivities();
+    renderDashNotes();
     renderDashTalkChips();
+  }
+
+  // ----- Family notes (sticky board) -----
+  function renderDashNotes() {
+    const el = document.getElementById('dash-notes');
+    if (!el || !window.Notes) return;
+    const notes = Notes.list();
+    if (!notes.length) { el.innerHTML = '<div class="dash-empty">אין פתקים — כתבו משהו לכל המשפחה 📌</div>'; return; }
+    el.innerHTML = notes.map((n) => `
+      <div class="note-card${n.pinned ? ' pinned' : ''}" style="--note:${n.color || '#FFE08A'}">
+        <span class="note-text">${esc(n.text)}</span>
+        <button class="note-x" data-note-del="${escapeAttr(n.id)}" aria-label="מחק פתק">×</button>
+      </div>`).join('');
+  }
+  function addDashNote() {
+    const inp = document.getElementById('dash-note-input');
+    if (!inp || !window.Notes) return;
+    const v = inp.value.trim();
+    if (!v) return;
+    Notes.add(v);
+    inp.value = '';
+    renderDashNotes();
+    haptic(8);
   }
 
   // ----- Kids' activities (חוגים) -----
