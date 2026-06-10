@@ -66,6 +66,17 @@ const Notifier = (() => {
     Tasks.checkAlerts(notify);
     if (typeof Events !== 'undefined') checkEvents();
     if (typeof Maintenance !== 'undefined') Maintenance.checkAlerts(notify);
+    if (typeof Activities !== 'undefined') checkActivities();
+  }
+
+  // Morning heads-up about the kids' activities scheduled for today.
+  function checkActivities() {
+    const hour = new Date().getHours();
+    if (hour < 7 || hour > 10) return; // morning window only
+    const today = Activities.today();
+    if (!today.length) return;
+    const body = today.map((a) => `${Activities.iconFor(a.name)} ${a.name}${a.time ? ' ' + a.time : ''}${a.child ? ' · ' + a.child : ''}`).join('\n');
+    notify('🎽 חוגים היום', { body, tag: 'acts-' + new Date().toISOString().slice(0, 10) });
   }
 
   function checkEvents() {
