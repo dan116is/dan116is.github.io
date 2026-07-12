@@ -1,0 +1,75 @@
+name: CI
+
+# Lightweight checks for a no-build vanilla-JS PWA. Runs on every PR and on
+# pushes to development branches (main deploys via pages-build-deployment).
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  checks:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: JS syntax check (node --check)
+        run: |
+          set -e
+          fail=0
+          for f in js/*.js service-worker.js; do
+            if node --check "$f"; then
+              echo "ok   $f"
+            else
+              echo "FAIL $f"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Validate JSON files
+        run: |
+          set -e
+          for f in manifest.json; do
+            node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" \
+              && echo "ok   $f" \
+              || { echo "FAIL $f (invalid JSON)"; exit 1; }
+          done
+
+      - name: Consistency — scripts in index.html exist on disk
+        run: |
+          node -e '
+            const fs = require("fs");
+            const html = fs.readFileSync("index.html", "utf8");
+            const srcs = [...html.matchAll(/<script\s+src="([^"]+)"/g)].map(m => m[1]);
+            let fail = 0;
+            for (const s of srcs) {
+              if (s.startsWith("http")) continue;
+              if (!fs.existsSync(s)) { console.log("MISSING " + s + " (referenced in index.html)"); fail = 1; }
+            }
+            if (!fail) console.log("ok   all " + srcs.length + " local script tags resolve");
+            process.exit(fail);
+          '
+
+      - name: Consistency — every JS module is precached by the service worker
+        run: |
+          node -e '
+            const fs = require("fs");
+            const sw = fs.readFileSync("service-worker.js", "utf8");
+            const cached = new Set([...sw.matchAll(/[\x27"]\.\/(js\/[^\x27"]+)[\x27"]/g)].map(m => m[1]));
+            const files = fs.readdirSync("js").filter(f => f.endsWith(".js")).map(f => "js/" + f);
+            let fail = 0;
+            for (const f of files) {
+              if (!cached.has(f)) { console.log("NOT CACHED " + f + " (add to service-worker.js ASSETS)"); fail = 1; }
+            }
+            if (!fail) console.log("ok   all " + files.length + " JS modules are in the SW precache list");
+            process.exit(fail);
+          '

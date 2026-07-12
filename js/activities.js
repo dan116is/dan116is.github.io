@@ -1,7 +1,7 @@
 // Kids' activities / clubs (חוגים): a weekly recurring schedule per child —
 // swimming, soccer, music, etc. Surfaces "today's activities" on the dashboard.
 const Activities = (() => {
-  const KEY = 'activities';
+  const KEY = DB.KEYS.activities;
   const DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
   const ICONS = [
     [/שחי|בריכ/, '🏊'], [/כדורגל|פוטבול/, '⚽'], [/כדורסל/, '🏀'],

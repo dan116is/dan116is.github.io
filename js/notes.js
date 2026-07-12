@@ -1,7 +1,7 @@
 // Family notes — a quick shared sticky-notes board. Add a short note, it sticks
 // on the dashboard for the whole family; tap × to remove.
 const Notes = (() => {
-  const KEY = 'notes';
+  const KEY = DB.KEYS.notes;
   const COLORS = ['#FFE08A', '#B6E3A7', '#A7D8F0', '#F5B7C7', '#D7C3F2', '#FFC9A3'];
 
   function list() { return DB.list(KEY).slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (b.createdAt || 0) - (a.createdAt || 0)); }
