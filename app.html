@@ -1,0 +1,2216 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="הבית שלי">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEp0lEQVR4nO3dS3bTWBSGUTmr2lSPzI2MD+ZG9cgEoFOGAHasx726j3/vJo1Ykc6nIydZ+LJ05sPnr99bHwN1vb48X1ofw1XTAzHsXLWK4vQXNfQ8cmYMp72QwWerM0Ko/gIGn6NqhlDtCxt8SqsRQvEvaPCprWQIT6W+0LIYfs5Rcs6KlGTwaeXoNji8AQw/LR2dv0MBGH56cGQOdwdg+OnJ3nncFYDhp0d75nJzAIafnm2dz00BGH5GsGVOVwdg+BnJ2nldFYDhZ0Rr5vZhAIafkT2a36J/CgGjeTcAd39m8N4c3w3A8DOTe/PsEYhoNwNw92dGt+baBiDaXwG4+zOzP+fbBiDabwG4+5Pg7ZzbAET7GYC7P0mu824DEE0ARLssi8cfctkARBMA0QRANAEQ7ckbYJLZAEQTANEEQDQBEE0ARBMA0QTQ2LdPH1sfQjQBNHQdfhG080/rA0h0a+Cv//bvl//OPpxoNsDJHt3tbYNzCeBEa4dbBOfxCHSCPQPtkegcNkBlR+/mtkFdAqjk26ePxYZXBPUIoIIaA1syKH4RQGG1h1QEZQmgkDPv0CIoRwAFtBhIj0RlCOCg1kPY+vVHJ4CderoD93IcIxLADj0OXE9BjkQAG/U+ZL0fX28EsNJId9hRjrMHAlhhxIEaKdiWBPDA6EM0+vHXJoA7ZrqDzvJ91CCAG2YcmJmCLkkAbyQMyezf31YC+F/SYCR9r48IYMkciIRtt0Z0AIYgM/63YgNIv/BvJZ+LyACSL/g9qdswKoDUi7xF2vmJCSDtwh6RdK4iAki6oKWkbMupA0i5iDXNfv6mDWD2C3emmc/llAHMfMFamXWbThXArBepJ7Od32kCmO3C9Gymcz38/w4908UYySz/e/XQG8Dwtzf6NRg2gNFP/ExGvhbDPQKNfLJnNuoj0VAbwPD3b7RrNNQGWHt3Ge0ijGK0u/saQ20AKE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBtqE+IGUnpT1PxqTd12ABEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQLTLh89fv7c+CGjFBiCaAIgmAKIJgGgCIJoAiCYAoj29vjxfWh8EtGIDEE0ARBMA0QRAtKdlWRZvhEn0+vJ8sQGIJgCi/QzAYxBJrvNuAxDttwBsARK8nXMbgGh/BWALMLM/59sGINrNAGwBZnRrrm0Aot0NwBZgJvfm+d0NIAJm8N4cewQi2sMAbAFG9mh+V20AETCiNXO7+hFIBIxk7bxueg8gAkawZU43vwkWAT3bOp+7fgokAnq0Zy53/xhUBPRk7zwe+j2ACOjBkTk8/IswEdDS0fkrOrw+b4yzlLrxFv1TCNuAM5Scs2oDaxtQWo0bbPU7thA4quaTxWmPLEJgqzMeqU9/ZhcCj5z5XrLpm1YxcNXqByg/AGicWskAVJbhAAAAAElFTkSuQmCC">
+  <style>
+:root {
+  --bg: #0f172a;
+  --bg-elev: #1e293b;
+  --bg-elev-2: #334155;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --primary: #0ea5e9;
+  --primary-hover: #0284c7;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --border: #334155;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.25);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f8fafc;
+    --bg-elev: #ffffff;
+    --bg-elev-2: #f1f5f9;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Heebo", "Assistant", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(12px + var(--safe-top)) 16px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+#app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px calc(96px + var(--safe-bot));
+}
+
+.view {
+  display: none;
+  animation: fadeIn 0.2s ease-out;
+}
+.view.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome {
+  margin-bottom: 20px;
+}
+.welcome h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+.welcome-sub {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Stats grid */
+.quick-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  position: relative;
+}
+.stat-card:active { transform: scale(0.98); }
+.stat-icon { font-size: 28px; margin-bottom: 6px; }
+.stat-value { font-size: 22px; font-weight: 700; }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.stat-alert:not(:empty) {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--danger);
+  color: white;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Dashboard alerts */
+.dashboard-alerts {
+  margin-bottom: 20px;
+}
+.alert-item {
+  background: var(--bg-elev);
+  border-right: 3px solid var(--warning);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.alert-item.danger { border-right-color: var(--danger); }
+.alert-item.success { border-right-color: var(--success); }
+.alert-item-title { font-weight: 600; margin-bottom: 2px; }
+.alert-item-sub { color: var(--text-muted); font-size: 13px; }
+
+/* Quick actions */
+.quick-actions h3, .section-h {
+  font-size: 15px;
+  margin: 20px 0 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.quick-btn {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.quick-btn:active { background: var(--bg-elev-2); }
+
+/* Toolbar */
+.view-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.view-toolbar h2 { margin: 0; font-size: 22px; }
+.toolbar-actions { display: flex; gap: 8px; }
+
+/* Buttons */
+.primary-btn, .ghost-btn, .danger-btn, .install-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s, background 0.15s;
+}
+.primary-btn { background: var(--primary); color: white; }
+.primary-btn:active { background: var(--primary-hover); }
+.ghost-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.danger-btn { background: var(--danger); color: white; }
+.install-btn { background: var(--primary); color: white; padding: 6px 12px; font-size: 13px; }
+.install-btn.hidden { display: none; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Filters */
+.filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
+}
+.filters::-webkit-scrollbar { display: none; }
+.filter-btn {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  font-family: inherit;
+}
+.filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Inline add */
+.add-inline {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: var(--bg-elev);
+  padding: 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.add-inline input, .add-inline select {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  padding: 8px;
+  font-family: inherit;
+}
+.add-inline select { flex: 0 0 110px; background: var(--bg-elev-2); border-radius: 8px; }
+.add-inline input:focus, .add-inline select:focus { outline: none; }
+
+/* Card list */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.card-list.grouped {
+  gap: 16px;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.group-title {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 4px 0;
+  font-weight: 500;
+}
+
+.item-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+.item-card.done { opacity: 0.55; }
+.item-card.done .item-title { text-decoration: line-through; }
+.item-card.warning { border-right: 3px solid var(--warning); }
+.item-card.danger { border-right: 3px solid var(--danger); }
+
+.item-check {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  background: transparent;
+}
+.item-check.checked {
+  background: var(--success);
+  border-color: var(--success);
+}
+.item-check.checked::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.item-main { flex: 1; min-width: 0; }
+.item-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+.item-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.item-sub .tag {
+  background: var(--bg-elev-2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.item-sub .tag.warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+.item-sub .tag.danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+.item-sub .tag.success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+
+.item-value {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.item-actions {
+  display: flex;
+  gap: 4px;
+}
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-family: inherit;
+}
+.icon-btn:active { background: var(--bg-elev-2); }
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 10px; }
+
+/* Budget */
+.budget-summary {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.budget-month {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.budget-month label { color: var(--text-muted); font-size: 14px; }
+.budget-month input {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+}
+.budget-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.budget-card {
+  background: var(--bg-elev-2);
+  padding: 12px;
+  border-radius: 10px;
+}
+.budget-card:last-child { grid-column: 1 / -1; }
+.budget-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.budget-value {
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.budget-value input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 0;
+  text-align: right;
+}
+.budget-value input:focus { outline: none; }
+.budget-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.budget-bar-fill {
+  height: 100%;
+  background: var(--success);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.budget-bar-fill.warning { background: var(--warning); }
+.budget-bar-fill.danger { background: var(--danger); }
+
+.budget-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.cat-row {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.cat-row-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.cat-name { font-weight: 500; }
+.cat-amount { color: var(--text-muted); }
+.cat-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--bg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.cat-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-elev);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 4px calc(6px + var(--safe-bot));
+  z-index: 9;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+}
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  cursor: pointer;
+  flex: 1;
+  border-radius: 8px;
+  font-family: inherit;
+  min-width: 0;
+}
+.nav-btn.active { color: var(--primary); }
+.nav-icon { font-size: 22px; }
+.nav-label { font-size: 11px; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal.hidden { display: none; }
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  animation: fadeIn 0.2s;
+}
+.modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  background: var(--bg-elev);
+  border-radius: 16px 16px 0 0;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.25s ease-out;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-header h3 { margin: 0; font-size: 18px; }
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 28px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: inherit;
+  padding: 0;
+  line-height: 1;
+}
+.modal-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  padding-bottom: calc(16px + var(--safe-bot));
+}
+.modal-body .form-group {
+  margin-bottom: 14px;
+}
+.modal-body label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.modal-body input, .modal-body select, .modal-body textarea {
+  width: 100%;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: inherit;
+}
+.modal-body input:focus, .modal-body select:focus, .modal-body textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.modal-body .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.modal-body .form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.modal-body .form-actions button { flex: 1; padding: 14px; }
+
+/* Settings */
+.settings-section {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.settings-section h3 { margin: 0 0 8px; font-size: 16px; }
+.hint {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 4px 0 12px;
+  line-height: 1.5;
+}
+.settings-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.danger-zone { border-color: rgba(239, 68, 68, 0.3); }
+.app-version {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 20px;
+  padding-bottom: 20px;
+}
+
+.family-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elev-2);
+  padding: 6px 12px;
+  border-radius: 16px;
+  margin: 4px 0 4px 4px;
+  font-size: 14px;
+}
+.family-chip button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-family: inherit;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: calc(80px + var(--safe-bot));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  padding: 12px 20px;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  z-index: 200;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  animation: slideUp 0.25s;
+}
+.toast.hidden { display: none; }
+.toast.success { border-color: var(--success); }
+.toast.error { border-color: var(--danger); }
+
+</style>
+  <title>הבית שלי - ניהול משפחה</title>
+</head>
+<body>
+  <header class="app-header">
+    <h1 id="page-title">הבית שלי</h1>
+    <button id="install-btn" class="install-btn hidden" aria-label="התקן">התקן</button>
+  </header>
+
+  <main id="app-content">
+    <!-- Dashboard -->
+    <section id="view-dashboard" class="view active">
+      <div class="welcome">
+        <h2>שלום!</h2>
+        <p class="welcome-sub" id="today-date"></p>
+      </div>
+
+      <div class="quick-stats">
+        <div class="stat-card" data-target="medications">
+          <div class="stat-icon">💊</div>
+          <div class="stat-value" id="stat-meds">0</div>
+          <div class="stat-label">תרופות פעילות</div>
+          <div class="stat-alert" id="alert-meds"></div>
+        </div>
+        <div class="stat-card" data-target="shopping">
+          <div class="stat-icon">🛒</div>
+          <div class="stat-value" id="stat-shopping">0</div>
+          <div class="stat-label">פריטים לקנייה</div>
+        </div>
+        <div class="stat-card" data-target="tasks">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value" id="stat-tasks">0</div>
+          <div class="stat-label">משימות פתוחות</div>
+          <div class="stat-alert" id="alert-tasks"></div>
+        </div>
+        <div class="stat-card" data-target="budget">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="stat-budget">₪0</div>
+          <div class="stat-label">הוצאות החודש</div>
+        </div>
+      </div>
+
+      <div class="dashboard-alerts" id="dashboard-alerts"></div>
+
+      <div class="quick-actions">
+        <h3>פעולות מהירות</h3>
+        <div class="quick-actions-grid">
+          <button class="quick-btn" data-action="add-shopping">+ פריט לקנייה</button>
+          <button class="quick-btn" data-action="add-expense">+ הוצאה</button>
+          <button class="quick-btn" data-action="add-task">+ משימה</button>
+          <button class="quick-btn" data-action="add-med">+ תרופה</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Medications -->
+    <section id="view-medications" class="view">
+      <div class="view-toolbar">
+        <h2>תרופות</h2>
+        <button class="primary-btn" id="add-med-btn">+ הוסף תרופה</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">הכל</button>
+        <button class="filter-btn" data-filter="expiring">תוקף קרוב</button>
+        <button class="filter-btn" data-filter="low">מלאי נמוך</button>
+      </div>
+      <div id="med-list" class="card-list"></div>
+    </section>
+
+    <!-- Shopping -->
+    <section id="view-shopping" class="view">
+      <div class="view-toolbar">
+        <h2>רשימת קניות</h2>
+        <div class="toolbar-actions">
+          <button class="ghost-btn" id="clear-bought-btn">נקה שנקנו</button>
+        </div>
+      </div>
+      <div class="add-inline">
+        <input type="text" id="shop-input" placeholder="הוסף פריט (למשל: חלב 2 ליטר)" autocomplete="off">
+        <select id="shop-category">
+          <option value="מזון">מזון</option>
+          <option value="ירקות ופירות">ירקות ופירות</option>
+          <option value="ניקיון">ניקיון</option>
+          <option value="טיפוח">טיפוח</option>
+          <option value="תרופות">תרופות</option>
+          <option value="אחר">אחר</option>
+        </select>
+        <button class="primary-btn" id="shop-add-btn">הוסף</button>
+      </div>
+      <div id="shop-list" class="card-list grouped"></div>
+    </section>
+
+    <!-- Tasks -->
+    <section id="view-tasks" class="view">
+      <div class="view-toolbar">
+        <h2>משימות ולוח שנה</h2>
+        <button class="primary-btn" id="add-task-btn">+ הוסף משימה</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-task-filter="all">הכל</button>
+        <button class="filter-btn" data-task-filter="today">היום</button>
+        <button class="filter-btn" data-task-filter="week">השבוע</button>
+        <button class="filter-btn" data-task-filter="overdue">באיחור</button>
+        <button class="filter-btn" data-task-filter="done">הושלמו</button>
+      </div>
+      <div id="task-list" class="card-list"></div>
+    </section>
+
+    <!-- Budget -->
+    <section id="view-budget" class="view">
+      <div class="view-toolbar">
+        <h2>תקציב והוצאות</h2>
+        <button class="primary-btn" id="add-expense-btn">+ הוסף הוצאה</button>
+      </div>
+      <div class="budget-summary">
+        <div class="budget-month">
+          <label>חודש:</label>
+          <input type="month" id="budget-month">
+        </div>
+        <div class="budget-cards">
+          <div class="budget-card">
+            <div class="budget-label">הוצאות החודש</div>
+            <div class="budget-value" id="budget-total">₪0</div>
+          </div>
+          <div class="budget-card">
+            <div class="budget-label">תקציב חודשי</div>
+            <div class="budget-value">
+              <input type="number" id="budget-limit" placeholder="0" inputmode="numeric">
+              <span>₪</span>
+            </div>
+          </div>
+          <div class="budget-card">
+            <div class="budget-label">נשאר</div>
+            <div class="budget-value" id="budget-left">₪0</div>
+            <div class="budget-bar"><div class="budget-bar-fill" id="budget-bar-fill"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="budget-categories" id="budget-categories"></div>
+      <h3 class="section-h">הוצאות אחרונות</h3>
+      <div id="expense-list" class="card-list"></div>
+    </section>
+
+    <!-- Settings -->
+    <section id="view-settings" class="view">
+      <div class="view-toolbar">
+        <h2>הגדרות</h2>
+      </div>
+      <div class="settings-section">
+        <h3>בני משפחה</h3>
+        <p class="hint">מי במשפחה שלך? משתמש במשימות וברשימות.</p>
+        <div id="family-list"></div>
+        <div class="add-inline">
+          <input type="text" id="family-input" placeholder="שם" autocomplete="off">
+          <button class="primary-btn" id="family-add-btn">הוסף</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>התראות</h3>
+        <button class="primary-btn" id="enable-notif-btn">הפעל התראות</button>
+        <p class="hint" id="notif-status"></p>
+      </div>
+      <div class="settings-section">
+        <h3>גיבוי ושחזור</h3>
+        <p class="hint">הנתונים נשמרים רק במכשיר. כדאי לעשות גיבוי מדי פעם.</p>
+        <div class="settings-actions">
+          <button class="primary-btn" id="export-btn">⬇ הורד גיבוי</button>
+          <button class="ghost-btn" id="import-btn">⬆ ייבא גיבוי</button>
+          <input type="file" id="import-file" accept=".json" hidden>
+        </div>
+      </div>
+      <div class="settings-section danger-zone">
+        <h3>אזור מסוכן</h3>
+        <button class="danger-btn" id="reset-btn">מחק את כל הנתונים</button>
+      </div>
+      <div class="app-version">גרסה 1.0.0 · נבנה במיוחד עבורך</div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="dashboard">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">בית</span>
+    </button>
+    <button class="nav-btn" data-view="shopping">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">קניות</span>
+    </button>
+    <button class="nav-btn" data-view="tasks">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">משימות</span>
+    </button>
+    <button class="nav-btn" data-view="budget">
+      <span class="nav-icon">💰</span>
+      <span class="nav-label">תקציב</span>
+    </button>
+    <button class="nav-btn" data-view="medications">
+      <span class="nav-icon">💊</span>
+      <span class="nav-label">תרופות</span>
+    </button>
+    <button class="nav-btn" data-view="settings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">הגדרות</span>
+    </button>
+  </nav>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">חדש</h3>
+        <button class="close-btn" id="modal-close" aria-label="סגור">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+// Lightweight localStorage-based DB with namespaced collections.
+// All data stays on this device only.
+const DB = (() => {
+  const PREFIX = 'habait:';
+  const KEYS = {
+    meds: 'meds',
+    shopping: 'shopping',
+    tasks: 'tasks',
+    expenses: 'expenses',
+    budgets: 'budgets',
+    family: 'family',
+    settings: 'settings'
+  };
+
+  function read(key) {
+    try {
+      const raw = localStorage.getItem(PREFIX + key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      console.error('DB read error', key, e);
+      return null;
+    }
+  }
+
+  function write(key, value) {
+    try {
+      localStorage.setItem(PREFIX + key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      console.error('DB write error', key, e);
+      return false;
+    }
+  }
+
+  function list(key) {
+    return read(key) || [];
+  }
+
+  function save(key, items) {
+    return write(key, items);
+  }
+
+  function add(key, item) {
+    const items = list(key);
+    item.id = item.id || (Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+    item.createdAt = item.createdAt || Date.now();
+    items.push(item);
+    save(key, items);
+    return item;
+  }
+
+  function update(key, id, patch) {
+    const items = list(key);
+    const idx = items.findIndex((i) => i.id === id);
+    if (idx === -1) return null;
+    items[idx] = { ...items[idx], ...patch, updatedAt: Date.now() };
+    save(key, items);
+    return items[idx];
+  }
+
+  function remove(key, id) {
+    const items = list(key).filter((i) => i.id !== id);
+    save(key, items);
+  }
+
+  function findById(key, id) {
+    return list(key).find((i) => i.id === id) || null;
+  }
+
+  function getSettings() {
+    return read(KEYS.settings) || {};
+  }
+
+  function setSetting(name, value) {
+    const s = getSettings();
+    s[name] = value;
+    write(KEYS.settings, s);
+  }
+
+  function exportAll() {
+    const out = {};
+    for (const k of Object.values(KEYS)) {
+      out[k] = read(k);
+    }
+    out._exportedAt = new Date().toISOString();
+    out._version = 1;
+    return out;
+  }
+
+  function importAll(data) {
+    if (!data || typeof data !== 'object') return false;
+    for (const k of Object.values(KEYS)) {
+      if (k in data) write(k, data[k]);
+    }
+    return true;
+  }
+
+  function reset() {
+    for (const k of Object.values(KEYS)) {
+      localStorage.removeItem(PREFIX + k);
+    }
+  }
+
+  return {
+    KEYS,
+    list, save, add, update, remove, findById,
+    getSettings, setSetting,
+    exportAll, importAll, reset
+  };
+})();
+
+// Notifications & daily reminders.
+// Uses Notification API; checks state on every app load and every 5 min while open.
+const Notifier = (() => {
+  let checkTimer = null;
+  let shown = new Set();
+
+  function isSupported() {
+    return 'Notification' in window;
+  }
+
+  function permission() {
+    return isSupported() ? Notification.permission : 'unsupported';
+  }
+
+  async function request() {
+    if (!isSupported()) return 'unsupported';
+    if (Notification.permission === 'granted') return 'granted';
+    try {
+      return await Notification.requestPermission();
+    } catch (e) {
+      return 'denied';
+    }
+  }
+
+  function notify(title, options = {}) {
+    if (!isSupported() || Notification.permission !== 'granted') return;
+    const key = title + '|' + (options.body || '');
+    if (shown.has(key)) return;
+    shown.add(key);
+    setTimeout(() => shown.delete(key), 6 * 60 * 60 * 1000); // dedupe 6h
+    try {
+      const reg = navigator.serviceWorker && navigator.serviceWorker.controller
+        ? navigator.serviceWorker.ready
+        : null;
+      if (reg) {
+        reg.then((r) =>
+          r.showNotification(title, { icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', ...options })
+        );
+      } else {
+        new Notification(title, { icon: 'icons/icon-192.png', ...options });
+      }
+    } catch (e) {
+      console.error('notify failed', e);
+    }
+  }
+
+  function checkAll() {
+    if (!isSupported() || Notification.permission !== 'granted') return;
+    Medications.checkAlerts(notify);
+    Tasks.checkAlerts(notify);
+  }
+
+  function start() {
+    checkAll();
+    if (checkTimer) clearInterval(checkTimer);
+    checkTimer = setInterval(checkAll, 5 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkAll();
+    });
+  }
+
+  return { isSupported, permission, request, notify, checkAll, start };
+})();
+
+const Medications = (() => {
+  const KEY = DB.KEYS.meds;
+  const DAYS_WARN_EXPIRY = 14;
+  const STOCK_WARN_DAYS = 7;
+
+  function list() { return DB.list(KEY); }
+
+  function daysUntil(dateStr) {
+    if (!dateStr) return Infinity;
+    const target = new Date(dateStr + 'T23:59:59');
+    return Math.ceil((target - new Date()) / 86400000);
+  }
+
+  function daysOfStockLeft(med) {
+    const perDay = parseFloat(med.dosesPerDay) || 0;
+    const stock = parseFloat(med.stock) || 0;
+    if (perDay <= 0) return Infinity;
+    return Math.floor(stock / perDay);
+  }
+
+  function statusOf(med) {
+    const dExp = daysUntil(med.expiryDate);
+    const dStock = daysOfStockLeft(med);
+    if (dExp < 0) return { level: 'danger', text: 'תוקף פג!' };
+    if (dExp <= 3) return { level: 'danger', text: `תוקף בעוד ${dExp} ימים` };
+    if (dExp <= DAYS_WARN_EXPIRY) return { level: 'warning', text: `תוקף בעוד ${dExp} ימים` };
+    if (dStock <= 0) return { level: 'danger', text: 'אזל המלאי' };
+    if (dStock <= STOCK_WARN_DAYS) return { level: 'warning', text: `מלאי ל-${dStock} ימים` };
+    return { level: 'success', text: 'תקין' };
+  }
+
+  function add(data) { return DB.add(KEY, data); }
+  function update(id, patch) { return DB.update(KEY, id, patch); }
+  function remove(id) { DB.remove(KEY, id); }
+
+  function takeDose(id) {
+    const med = DB.findById(KEY, id);
+    if (!med) return;
+    const stock = Math.max(0, (parseFloat(med.stock) || 0) - 1);
+    DB.update(KEY, id, { stock, lastTakenAt: Date.now() });
+  }
+
+  function activeCount() {
+    return list().length;
+  }
+
+  function alertCount() {
+    return list().filter((m) => {
+      const s = statusOf(m);
+      return s.level === 'warning' || s.level === 'danger';
+    }).length;
+  }
+
+  function checkAlerts(notify) {
+    for (const med of list()) {
+      const s = statusOf(med);
+      if (s.level === 'danger') {
+        notify('תרופה דורשת תשומת לב', { body: `${med.name}: ${s.text}`, tag: 'med-' + med.id });
+      } else if (s.level === 'warning' && (new Date().getHours() >= 9 && new Date().getHours() <= 21)) {
+        notify('תרופה - שים לב', { body: `${med.name}: ${s.text}`, tag: 'med-' + med.id });
+      }
+    }
+  }
+
+  function render(container, filter = 'all') {
+    const items = list().slice().sort((a, b) => daysUntil(a.expiryDate) - daysUntil(b.expiryDate));
+    let filtered = items;
+    if (filter === 'expiring') filtered = items.filter((m) => daysUntil(m.expiryDate) <= DAYS_WARN_EXPIRY);
+    if (filter === 'low') filtered = items.filter((m) => daysOfStockLeft(m) <= STOCK_WARN_DAYS);
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="icon">💊</div><p>${
+        items.length === 0 ? 'אין תרופות עדיין. הוסף את התרופה הראשונה!' : 'אין תרופות בקטגוריה הזו'
+      }</p></div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map((m) => {
+      const s = statusOf(m);
+      const dStock = daysOfStockLeft(m);
+      const stockText = isFinite(dStock) ? `${m.stock || 0} יחידות · ${dStock} ימים` : `${m.stock || 0} יחידות`;
+      return `
+        <div class="item-card ${s.level === 'danger' ? 'danger' : s.level === 'warning' ? 'warning' : ''}">
+          <div class="item-main">
+            <div class="item-title">${escape(m.name)} ${m.dose ? `<span style="color:var(--text-muted);font-weight:400;">${escape(m.dose)}</span>` : ''}</div>
+            <div class="item-sub">
+              <span class="tag ${s.level}">${s.text}</span>
+              <span>${stockText}</span>
+              ${m.forWhom ? `<span class="tag">${escape(m.forWhom)}</span>` : ''}
+              ${m.expiryDate ? `<span>פג: ${formatDate(m.expiryDate)}</span>` : ''}
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn" data-med-take="${m.id}" title="לקחתי מנה">✓</button>
+            <button class="icon-btn" data-med-edit="${m.id}" title="ערוך">✎</button>
+            <button class="icon-btn" data-med-del="${m.id}" title="מחק">🗑</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function formatDate(s) {
+    const d = new Date(s);
+    return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  function escape(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function openForm(existing) {
+    const family = DB.list(DB.KEYS.family);
+    const familyOpts = ['', ...family.map((f) => f.name)]
+      .map((n) => `<option value="${escape(n)}" ${existing && existing.forWhom === n ? 'selected' : ''}>${n ? escape(n) : '—'}</option>`)
+      .join('');
+    return `
+      <form id="med-form">
+        <div class="form-group">
+          <label>שם התרופה *</label>
+          <input name="name" required value="${escape(existing?.name || '')}" placeholder="לדוגמה: אקמול">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>מינון</label>
+            <input name="dose" value="${escape(existing?.dose || '')}" placeholder="500mg">
+          </div>
+          <div class="form-group">
+            <label>עבור</label>
+            <select name="forWhom">${familyOpts}</select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>מלאי (יחידות)</label>
+            <input name="stock" type="number" inputmode="numeric" min="0" value="${existing?.stock ?? ''}" placeholder="30">
+          </div>
+          <div class="form-group">
+            <label>מנות ביום</label>
+            <input name="dosesPerDay" type="number" inputmode="decimal" min="0" step="0.5" value="${existing?.dosesPerDay ?? ''}" placeholder="2">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>תאריך תפוגה</label>
+          <input name="expiryDate" type="date" value="${existing?.expiryDate || ''}">
+        </div>
+        <div class="form-group">
+          <label>הערות</label>
+          <textarea name="notes" rows="2">${escape(existing?.notes || '')}</textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="ghost-btn" data-close>ביטול</button>
+          <button type="submit" class="primary-btn">${existing ? 'עדכן' : 'הוסף'}</button>
+        </div>
+      </form>`;
+  }
+
+  return { list, add, update, remove, takeDose, statusOf, activeCount, alertCount, checkAlerts, render, openForm };
+})();
+
+const Shopping = (() => {
+  const KEY = DB.KEYS.shopping;
+  const CATEGORIES = ['מזון', 'ירקות ופירות', 'ניקיון', 'טיפוח', 'תרופות', 'אחר'];
+
+  function list() { return DB.list(KEY); }
+
+  function activeCount() {
+    return list().filter((i) => !i.bought).length;
+  }
+
+  function add(name, category = 'מזון', qty = '') {
+    const trimmed = name.trim();
+    if (!trimmed) return null;
+    return DB.add(KEY, {
+      name: trimmed,
+      category: category || 'אחר',
+      qty,
+      bought: false
+    });
+  }
+
+  function toggle(id) {
+    const it = DB.findById(KEY, id);
+    if (!it) return;
+    DB.update(KEY, id, { bought: !it.bought, boughtAt: !it.bought ? Date.now() : null });
+  }
+
+  function remove(id) { DB.remove(KEY, id); }
+
+  function clearBought() {
+    const remaining = list().filter((i) => !i.bought);
+    DB.save(KEY, remaining);
+  }
+
+  function render(container) {
+    const items = list();
+    if (items.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="icon">🛒</div><p>הרשימה ריקה. הוסף פריט ראשון!</p></div>`;
+      return;
+    }
+
+    const groups = {};
+    for (const it of items) {
+      const cat = it.category || 'אחר';
+      groups[cat] = groups[cat] || [];
+      groups[cat].push(it);
+    }
+
+    container.innerHTML = Object.keys(groups).sort((a, b) => CATEGORIES.indexOf(a) - CATEGORIES.indexOf(b)).map((cat) => {
+      const sorted = groups[cat].slice().sort((a, b) => Number(a.bought) - Number(b.bought));
+      return `
+        <div class="group">
+          <div class="group-title">${escape(cat)} (${groups[cat].filter((i) => !i.bought).length})</div>
+          ${sorted.map((it) => `
+            <div class="item-card ${it.bought ? 'done' : ''}">
+              <button class="item-check ${it.bought ? 'checked' : ''}" data-shop-toggle="${it.id}" aria-label="סמן"></button>
+              <div class="item-main">
+                <div class="item-title">${escape(it.name)} ${it.qty ? `<span style="color:var(--text-muted);font-weight:400;">· ${escape(it.qty)}</span>` : ''}</div>
+              </div>
+              <div class="item-actions">
+                <button class="icon-btn" data-shop-del="${it.id}" title="מחק">🗑</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+    }).join('');
+  }
+
+  function escape(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  return { CATEGORIES, list, activeCount, add, toggle, remove, clearBought, render };
+})();
+
+const Tasks = (() => {
+  const KEY = DB.KEYS.tasks;
+  const PRIORITIES = ['נמוכה', 'רגילה', 'גבוהה'];
+
+  function list() { return DB.list(KEY); }
+
+  function activeCount() {
+    return list().filter((t) => !t.done).length;
+  }
+
+  function overdueCount() {
+    const now = startOfDay();
+    return list().filter((t) => !t.done && t.dueDate && new Date(t.dueDate) < now).length;
+  }
+
+  function startOfDay(date = new Date()) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function todayKey() {
+    const d = new Date();
+    return d.toISOString().slice(0, 10);
+  }
+
+  function add(data) { return DB.add(KEY, { done: false, priority: 'רגילה', ...data }); }
+  function update(id, patch) { return DB.update(KEY, id, patch); }
+  function remove(id) { DB.remove(KEY, id); }
+  function toggle(id) {
+    const t = DB.findById(KEY, id);
+    if (!t) return;
+    DB.update(KEY, id, { done: !t.done, doneAt: !t.done ? Date.now() : null });
+  }
+
+  function checkAlerts(notify) {
+    const today = todayKey();
+    const hour = new Date().getHours();
+    if (hour < 8 || hour > 22) return;
+    for (const t of list()) {
+      if (t.done) continue;
+      if (t.dueDate === today) {
+        notify('משימה להיום', { body: t.title, tag: 'task-' + t.id });
+      } else if (t.dueDate && t.dueDate < today) {
+        notify('משימה באיחור', { body: t.title, tag: 'task-late-' + t.id });
+      }
+    }
+  }
+
+  function render(container, filter = 'all') {
+    const all = list();
+    const today = todayKey();
+    const weekEnd = new Date();
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    const weekEndKey = weekEnd.toISOString().slice(0, 10);
+
+    let filtered = all;
+    if (filter === 'today') filtered = all.filter((t) => !t.done && t.dueDate === today);
+    else if (filter === 'week') filtered = all.filter((t) => !t.done && t.dueDate && t.dueDate <= weekEndKey);
+    else if (filter === 'overdue') filtered = all.filter((t) => !t.done && t.dueDate && t.dueDate < today);
+    else if (filter === 'done') filtered = all.filter((t) => t.done);
+    else filtered = all.filter((t) => !t.done);
+
+    filtered = filtered.slice().sort((a, b) => {
+      if (a.done !== b.done) return Number(a.done) - Number(b.done);
+      const ad = a.dueDate || '9999-12-31';
+      const bd = b.dueDate || '9999-12-31';
+      if (ad !== bd) return ad < bd ? -1 : 1;
+      return PRIORITIES.indexOf(b.priority || 'רגילה') - PRIORITIES.indexOf(a.priority || 'רגילה');
+    });
+
+    if (filtered.length === 0) {
+      const messages = {
+        today: 'אין משימות להיום! 🎉',
+        week: 'אין משימות השבוע',
+        overdue: 'אין משימות באיחור 👍',
+        done: 'עדיין לא השלמת משימות',
+        all: 'אין משימות פתוחות. הוסף משימה ראשונה!'
+      };
+      container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>${messages[filter] || messages.all}</p></div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map((t) => {
+      const isOverdue = !t.done && t.dueDate && t.dueDate < today;
+      const isToday = !t.done && t.dueDate === today;
+      const dueText = t.dueDate
+        ? (isOverdue ? `באיחור · ${formatDate(t.dueDate)}` : isToday ? 'היום' : formatDate(t.dueDate))
+        : '';
+      const cardClass = isOverdue ? 'danger' : isToday ? 'warning' : '';
+      const tags = [];
+      if (dueText) tags.push(`<span class="tag ${isOverdue ? 'danger' : isToday ? 'warning' : ''}">${dueText}</span>`);
+      if (t.priority && t.priority !== 'רגילה') tags.push(`<span class="tag ${t.priority === 'גבוהה' ? 'danger' : ''}">${t.priority}</span>`);
+      if (t.forWhom) tags.push(`<span class="tag">${escape(t.forWhom)}</span>`);
+
+      return `
+        <div class="item-card ${t.done ? 'done' : ''} ${cardClass}">
+          <button class="item-check ${t.done ? 'checked' : ''}" data-task-toggle="${t.id}" aria-label="סמן"></button>
+          <div class="item-main">
+            <div class="item-title">${escape(t.title)}</div>
+            ${t.notes ? `<div class="item-sub" style="margin-top:4px;">${escape(t.notes)}</div>` : ''}
+            ${tags.length ? `<div class="item-sub">${tags.join('')}</div>` : ''}
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn" data-task-edit="${t.id}" title="ערוך">✎</button>
+            <button class="icon-btn" data-task-del="${t.id}" title="מחק">🗑</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function formatDate(s) {
+    const d = new Date(s);
+    return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+  }
+
+  function escape(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function openForm(existing) {
+    const family = DB.list(DB.KEYS.family);
+    const familyOpts = ['', ...family.map((f) => f.name)]
+      .map((n) => `<option value="${escape(n)}" ${existing && existing.forWhom === n ? 'selected' : ''}>${n ? escape(n) : '—'}</option>`)
+      .join('');
+    const priorityOpts = PRIORITIES
+      .map((p) => `<option value="${p}" ${(existing?.priority || 'רגילה') === p ? 'selected' : ''}>${p}</option>`)
+      .join('');
+    return `
+      <form id="task-form">
+        <div class="form-group">
+          <label>כותרת *</label>
+          <input name="title" required value="${escape(existing?.title || '')}" placeholder="מה צריך לעשות?">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>תאריך יעד</label>
+            <input name="dueDate" type="date" value="${existing?.dueDate || ''}">
+          </div>
+          <div class="form-group">
+            <label>עדיפות</label>
+            <select name="priority">${priorityOpts}</select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>עבור</label>
+          <select name="forWhom">${familyOpts}</select>
+        </div>
+        <div class="form-group">
+          <label>הערות</label>
+          <textarea name="notes" rows="2">${escape(existing?.notes || '')}</textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="ghost-btn" data-close>ביטול</button>
+          <button type="submit" class="primary-btn">${existing ? 'עדכן' : 'הוסף'}</button>
+        </div>
+      </form>`;
+  }
+
+  return { list, activeCount, overdueCount, add, update, remove, toggle, checkAlerts, render, openForm };
+})();
+
+const Budget = (() => {
+  const KEY = DB.KEYS.expenses;
+  const BKEY = DB.KEYS.budgets;
+  const CATEGORIES = ['מזון וקניות', 'דיור', 'תחבורה', 'חינוך', 'בריאות', 'בידור', 'ביגוד', 'חשבונות', 'אחר'];
+
+  function list() { return DB.list(KEY); }
+
+  function monthKey(d = new Date()) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function inMonth(exp, mKey) {
+    return exp.date && exp.date.startsWith(mKey);
+  }
+
+  function totalForMonth(mKey) {
+    return list().filter((e) => inMonth(e, mKey)).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  }
+
+  function byCategory(mKey) {
+    const items = list().filter((e) => inMonth(e, mKey));
+    const result = {};
+    for (const it of items) {
+      const cat = it.category || 'אחר';
+      result[cat] = (result[cat] || 0) + (Number(it.amount) || 0);
+    }
+    return result;
+  }
+
+  function getBudget(mKey) {
+    const budgets = DB.list(BKEY);
+    const found = budgets.find((b) => b.month === mKey);
+    return found ? Number(found.limit) || 0 : 0;
+  }
+
+  function setBudget(mKey, limit) {
+    const budgets = DB.list(BKEY);
+    const idx = budgets.findIndex((b) => b.month === mKey);
+    const value = Number(limit) || 0;
+    if (idx >= 0) {
+      budgets[idx].limit = value;
+    } else {
+      budgets.push({ id: mKey, month: mKey, limit: value });
+    }
+    DB.save(BKEY, budgets);
+  }
+
+  function add(data) {
+    return DB.add(KEY, {
+      date: data.date || new Date().toISOString().slice(0, 10),
+      category: data.category || 'אחר',
+      ...data
+    });
+  }
+
+  function update(id, patch) { return DB.update(KEY, id, patch); }
+  function remove(id) { DB.remove(KEY, id); }
+
+  function format(n) {
+    return '₪' + (Number(n) || 0).toLocaleString('he-IL', { maximumFractionDigits: 0 });
+  }
+
+  function renderSummary(mKey) {
+    const total = totalForMonth(mKey);
+    const limit = getBudget(mKey);
+    const left = limit - total;
+    const pct = limit > 0 ? Math.min(100, (total / limit) * 100) : 0;
+
+    document.getElementById('budget-total').textContent = format(total);
+    document.getElementById('budget-left').textContent = format(left);
+    document.getElementById('budget-left').style.color = left < 0 ? 'var(--danger)' : '';
+
+    const limitInput = document.getElementById('budget-limit');
+    if (document.activeElement !== limitInput) {
+      limitInput.value = limit || '';
+    }
+
+    const fill = document.getElementById('budget-bar-fill');
+    fill.style.width = pct + '%';
+    fill.className = 'budget-bar-fill' + (pct >= 100 ? ' danger' : pct >= 80 ? ' warning' : '');
+  }
+
+  function renderCategories(mKey) {
+    const container = document.getElementById('budget-categories');
+    const byCat = byCategory(mKey);
+    const entries = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+    if (entries.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+    const max = entries[0][1];
+    container.innerHTML = entries.map(([cat, amount]) => {
+      const pct = max > 0 ? (amount / max) * 100 : 0;
+      return `
+        <div class="cat-row">
+          <div class="cat-row-head">
+            <span class="cat-name">${escape(cat)}</span>
+            <span class="cat-amount">${format(amount)}</span>
+          </div>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderList(mKey) {
+    const container = document.getElementById('expense-list');
+    const items = list().filter((e) => inMonth(e, mKey)).sort((a, b) => (b.date > a.date ? 1 : -1)).slice(0, 50);
+    if (items.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="icon">💰</div><p>אין הוצאות לחודש הזה</p></div>`;
+      return;
+    }
+    container.innerHTML = items.map((e) => `
+      <div class="item-card">
+        <div class="item-main">
+          <div class="item-title">${escape(e.title || e.category)}</div>
+          <div class="item-sub">
+            <span class="tag">${escape(e.category)}</span>
+            <span>${formatDate(e.date)}</span>
+          </div>
+        </div>
+        <div class="item-value">${format(e.amount)}</div>
+        <div class="item-actions">
+          <button class="icon-btn" data-exp-edit="${e.id}" title="ערוך">✎</button>
+          <button class="icon-btn" data-exp-del="${e.id}" title="מחק">🗑</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function formatDate(s) {
+    return new Date(s).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+  }
+
+  function escape(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function openForm(existing) {
+    const catOpts = CATEGORIES
+      .map((c) => `<option value="${c}" ${(existing?.category || 'מזון וקניות') === c ? 'selected' : ''}>${c}</option>`)
+      .join('');
+    return `
+      <form id="expense-form">
+        <div class="form-group">
+          <label>תיאור</label>
+          <input name="title" value="${escape(existing?.title || '')}" placeholder="למשל: רמי לוי">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>סכום ₪ *</label>
+            <input name="amount" type="number" inputmode="decimal" required step="0.01" min="0" value="${existing?.amount ?? ''}" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>קטגוריה</label>
+            <select name="category">${catOpts}</select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>תאריך</label>
+          <input name="date" type="date" value="${existing?.date || new Date().toISOString().slice(0, 10)}" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="ghost-btn" data-close>ביטול</button>
+          <button type="submit" class="primary-btn">${existing ? 'עדכן' : 'הוסף'}</button>
+        </div>
+      </form>`;
+  }
+
+  return {
+    CATEGORIES, list, add, update, remove,
+    totalForMonth, byCategory, getBudget, setBudget, monthKey,
+    renderSummary, renderCategories, renderList, openForm, format
+  };
+})();
+
+const Settings = (() => {
+  const FAMILY_KEY = DB.KEYS.family;
+
+  function family() { return DB.list(FAMILY_KEY); }
+
+  function addMember(name) {
+    const trimmed = name.trim();
+    if (!trimmed) return null;
+    if (family().some((m) => m.name === trimmed)) return null;
+    return DB.add(FAMILY_KEY, { name: trimmed });
+  }
+
+  function removeMember(id) { DB.remove(FAMILY_KEY, id); }
+
+  function renderFamily() {
+    const container = document.getElementById('family-list');
+    const items = family();
+    if (items.length === 0) {
+      container.innerHTML = `<p class="hint" style="margin:0 0 8px;">עוד לא הוספת בני משפחה.</p>`;
+      return;
+    }
+    container.innerHTML = items.map((m) => `
+      <span class="family-chip">
+        ${escape(m.name)}
+        <button data-fam-del="${m.id}" aria-label="הסר">×</button>
+      </span>
+    `).join('');
+  }
+
+  function seedDefaultFamily() {
+    if (family().length > 0) return;
+    const defaults = ['הילה', 'גפן', 'אורי'];
+    for (const name of defaults) addMember(name);
+  }
+
+  function renderNotifStatus() {
+    const el = document.getElementById('notif-status');
+    if (!Notifier.isSupported()) {
+      el.textContent = 'הדפדפן הזה לא תומך בהתראות.';
+      return;
+    }
+    const p = Notifier.permission();
+    if (p === 'granted') el.textContent = '✓ התראות פעילות. תקבל תזכורות על תרופות ומשימות.';
+    else if (p === 'denied') el.textContent = 'התראות חסומות. שנה את ההגדרה בדפדפן.';
+    else el.textContent = 'התראות עוד לא הופעלו.';
+  }
+
+  function exportBackup() {
+    const data = DB.exportAll();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `habait-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importBackup(file, onDone) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (DB.importAll(parsed)) onDone(true);
+        else onDone(false);
+      } catch (e) {
+        onDone(false);
+      }
+    };
+    reader.onerror = () => onDone(false);
+    reader.readAsText(file);
+  }
+
+  function escape(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  return { family, addMember, removeMember, renderFamily, seedDefaultFamily, renderNotifStatus, exportBackup, importBackup };
+})();
+
+// Main app controller: routing, modals, event delegation, dashboard.
+const App = (() => {
+  const views = ['dashboard', 'medications', 'shopping', 'tasks', 'budget', 'settings'];
+  let currentView = 'dashboard';
+  let medFilter = 'all';
+  let taskFilter = 'all';
+  let installPromptEvent = null;
+
+  function init() {
+    Settings.seedDefaultFamily();
+    setupNav();
+    setupModal();
+    setupHandlers();
+    setupInstallPrompt();
+    registerServiceWorker();
+    setView(parseHashView() || 'dashboard');
+    renderAll();
+    Notifier.start();
+    setInterval(renderAll, 60 * 1000);
+  }
+
+  function parseHashView() {
+    const h = location.hash.replace('#', '');
+    return views.includes(h) ? h : null;
+  }
+
+  function setView(name) {
+    if (!views.includes(name)) name = 'dashboard';
+    currentView = name;
+    document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.view === name);
+    });
+    document.getElementById('app-content').scrollTop = 0;
+    history.replaceState(null, '', '#' + name);
+    renderCurrentView();
+  }
+
+  function setupNav() {
+    document.querySelectorAll('.nav-btn').forEach((btn) => {
+      btn.addEventListener('click', () => setView(btn.dataset.view));
+    });
+    window.addEventListener('hashchange', () => {
+      const v = parseHashView();
+      if (v && v !== currentView) setView(v);
+    });
+  }
+
+  function setupModal() {
+    const modal = document.getElementById('modal');
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    modal.querySelector('.modal-backdrop').addEventListener('click', closeModal);
+  }
+
+  function openModal(title, html) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = html;
+    document.getElementById('modal').classList.remove('hidden');
+    setTimeout(() => {
+      const first = document.querySelector('#modal-body input, #modal-body select, #modal-body textarea');
+      if (first) first.focus();
+    }, 100);
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+    document.getElementById('modal-body').innerHTML = '';
+  }
+
+  function toast(msg, kind = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + kind;
+    setTimeout(() => t.classList.add('hidden'), 2500);
+  }
+
+  function setupHandlers() {
+    // Dashboard stat cards
+    document.querySelectorAll('.stat-card').forEach((card) => {
+      card.addEventListener('click', () => setView(card.dataset.target));
+    });
+    document.querySelectorAll('.quick-btn').forEach((btn) => {
+      btn.addEventListener('click', () => handleQuickAction(btn.dataset.action));
+    });
+
+    // Medications view
+    document.getElementById('add-med-btn').addEventListener('click', () => showMedForm());
+    document.querySelectorAll('#view-medications .filter-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#view-medications .filter-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        medFilter = btn.dataset.filter;
+        Medications.render(document.getElementById('med-list'), medFilter);
+      });
+    });
+    document.getElementById('med-list').addEventListener('click', onMedListClick);
+
+    // Shopping view
+    document.getElementById('shop-add-btn').addEventListener('click', addShoppingFromInput);
+    document.getElementById('shop-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addShoppingFromInput();
+    });
+    document.getElementById('clear-bought-btn').addEventListener('click', () => {
+      if (!confirm('למחוק את כל מה שנקנה?')) return;
+      Shopping.clearBought();
+      renderAll();
+      toast('נוקה', 'success');
+    });
+    document.getElementById('shop-list').addEventListener('click', onShopListClick);
+
+    // Tasks view
+    document.getElementById('add-task-btn').addEventListener('click', () => showTaskForm());
+    document.querySelectorAll('#view-tasks .filter-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#view-tasks .filter-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        taskFilter = btn.dataset.taskFilter;
+        Tasks.render(document.getElementById('task-list'), taskFilter);
+      });
+    });
+    document.getElementById('task-list').addEventListener('click', onTaskListClick);
+
+    // Budget view
+    const monthInput = document.getElementById('budget-month');
+    monthInput.value = Budget.monthKey();
+    monthInput.addEventListener('change', () => renderBudget());
+    document.getElementById('budget-limit').addEventListener('input', (e) => {
+      Budget.setBudget(monthInput.value, e.target.value);
+      Budget.renderSummary(monthInput.value);
+    });
+    document.getElementById('add-expense-btn').addEventListener('click', () => showExpenseForm());
+    document.getElementById('expense-list').addEventListener('click', onExpenseListClick);
+
+    // Settings view
+    document.getElementById('family-add-btn').addEventListener('click', addFamilyFromInput);
+    document.getElementById('family-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addFamilyFromInput();
+    });
+    document.getElementById('family-list').addEventListener('click', onFamilyClick);
+    document.getElementById('enable-notif-btn').addEventListener('click', async () => {
+      const result = await Notifier.request();
+      Settings.renderNotifStatus();
+      if (result === 'granted') {
+        Notifier.notify('התראות פעילות', { body: 'מעכשיו תקבל תזכורות חשובות' });
+        toast('התראות הופעלו', 'success');
+      } else {
+        toast('לא הופעלו התראות', 'error');
+      }
+    });
+    document.getElementById('export-btn').addEventListener('click', () => {
+      Settings.exportBackup();
+      toast('הגיבוי הורד', 'success');
+    });
+    document.getElementById('import-btn').addEventListener('click', () => {
+      document.getElementById('import-file').click();
+    });
+    document.getElementById('import-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!confirm('הייבוא ידרוס את כל הנתונים הקיימים. להמשיך?')) return;
+      Settings.importBackup(file, (ok) => {
+        if (ok) {
+          renderAll();
+          toast('הגיבוי יובא בהצלחה', 'success');
+        } else {
+          toast('שגיאה בייבוא', 'error');
+        }
+      });
+      e.target.value = '';
+    });
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      const txt = prompt('זה ימחק את כל הנתונים. הקלד "מחק" כדי לאשר.');
+      if (txt === 'מחק') {
+        DB.reset();
+        Settings.seedDefaultFamily();
+        renderAll();
+        toast('הכל נמחק', 'success');
+      }
+    });
+  }
+
+  function handleQuickAction(action) {
+    if (action === 'add-shopping') {
+      setView('shopping');
+      setTimeout(() => document.getElementById('shop-input').focus(), 200);
+    } else if (action === 'add-expense') {
+      showExpenseForm();
+    } else if (action === 'add-task') {
+      showTaskForm();
+    } else if (action === 'add-med') {
+      showMedForm();
+    }
+  }
+
+  // ----- Medications handlers -----
+  function showMedForm(existing) {
+    openModal(existing ? 'ערוך תרופה' : 'תרופה חדשה', Medications.openForm(existing));
+    const form = document.getElementById('med-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      data.stock = data.stock === '' ? 0 : Number(data.stock);
+      data.dosesPerDay = data.dosesPerDay === '' ? 0 : Number(data.dosesPerDay);
+      if (existing) Medications.update(existing.id, data);
+      else Medications.add(data);
+      closeModal();
+      renderAll();
+      toast(existing ? 'עודכן' : 'נוסף', 'success');
+    });
+  }
+
+  function onMedListClick(e) {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.medTake) {
+      Medications.takeDose(t.dataset.medTake);
+      renderAll();
+      toast('סומן כנלקח', 'success');
+    } else if (t.dataset.medEdit) {
+      const med = DB.findById(DB.KEYS.meds, t.dataset.medEdit);
+      if (med) showMedForm(med);
+    } else if (t.dataset.medDel) {
+      if (!confirm('למחוק את התרופה?')) return;
+      Medications.remove(t.dataset.medDel);
+      renderAll();
+      toast('נמחק', 'success');
+    }
+  }
+
+  // ----- Shopping handlers -----
+  function addShoppingFromInput() {
+    const input = document.getElementById('shop-input');
+    const select = document.getElementById('shop-category');
+    const v = input.value.trim();
+    if (!v) return;
+    Shopping.add(v, select.value);
+    input.value = '';
+    input.focus();
+    renderAll();
+  }
+
+  function onShopListClick(e) {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.shopToggle) {
+      Shopping.toggle(t.dataset.shopToggle);
+      renderAll();
+    } else if (t.dataset.shopDel) {
+      Shopping.remove(t.dataset.shopDel);
+      renderAll();
+    }
+  }
+
+  // ----- Tasks handlers -----
+  function showTaskForm(existing) {
+    openModal(existing ? 'ערוך משימה' : 'משימה חדשה', Tasks.openForm(existing));
+    const form = document.getElementById('task-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      if (existing) Tasks.update(existing.id, data);
+      else Tasks.add(data);
+      closeModal();
+      renderAll();
+      toast(existing ? 'עודכן' : 'נוסף', 'success');
+    });
+  }
+
+  function onTaskListClick(e) {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.taskToggle) {
+      Tasks.toggle(t.dataset.taskToggle);
+      renderAll();
+    } else if (t.dataset.taskEdit) {
+      const task = DB.findById(DB.KEYS.tasks, t.dataset.taskEdit);
+      if (task) showTaskForm(task);
+    } else if (t.dataset.taskDel) {
+      if (!confirm('למחוק את המשימה?')) return;
+      Tasks.remove(t.dataset.taskDel);
+      renderAll();
+      toast('נמחק', 'success');
+    }
+  }
+
+  // ----- Budget handlers -----
+  function showExpenseForm(existing) {
+    openModal(existing ? 'ערוך הוצאה' : 'הוצאה חדשה', Budget.openForm(existing));
+    const form = document.getElementById('expense-form');
+    form.querySelector('[data-close]').addEventListener('click', closeModal);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      data.amount = Number(data.amount);
+      if (existing) Budget.update(existing.id, data);
+      else Budget.add(data);
+      closeModal();
+      renderAll();
+      toast(existing ? 'עודכן' : 'נוסף', 'success');
+    });
+  }
+
+  function onExpenseListClick(e) {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.expEdit) {
+      const exp = DB.findById(DB.KEYS.expenses, t.dataset.expEdit);
+      if (exp) showExpenseForm(exp);
+    } else if (t.dataset.expDel) {
+      if (!confirm('למחוק את ההוצאה?')) return;
+      Budget.remove(t.dataset.expDel);
+      renderAll();
+      toast('נמחק', 'success');
+    }
+  }
+
+  function renderBudget() {
+    const mKey = document.getElementById('budget-month').value || Budget.monthKey();
+    Budget.renderSummary(mKey);
+    Budget.renderCategories(mKey);
+    Budget.renderList(mKey);
+  }
+
+  // ----- Settings handlers -----
+  function addFamilyFromInput() {
+    const input = document.getElementById('family-input');
+    const v = input.value.trim();
+    if (!v) return;
+    if (!Settings.addMember(v)) {
+      toast('כבר קיים או ריק', 'error');
+      return;
+    }
+    input.value = '';
+    Settings.renderFamily();
+  }
+
+  function onFamilyClick(e) {
+    const t = e.target.closest('button');
+    if (!t || !t.dataset.famDel) return;
+    Settings.removeMember(t.dataset.famDel);
+    Settings.renderFamily();
+  }
+
+  // ----- Dashboard -----
+  function renderDashboard() {
+    const today = new Date();
+    document.getElementById('today-date').textContent =
+      today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    document.getElementById('stat-meds').textContent = Medications.activeCount();
+    const medAlerts = Medications.alertCount();
+    document.getElementById('alert-meds').textContent = medAlerts > 0 ? medAlerts : '';
+
+    document.getElementById('stat-shopping').textContent = Shopping.activeCount();
+
+    document.getElementById('stat-tasks').textContent = Tasks.activeCount();
+    const taskOverdue = Tasks.overdueCount();
+    document.getElementById('alert-tasks').textContent = taskOverdue > 0 ? taskOverdue : '';
+
+    document.getElementById('stat-budget').textContent = Budget.format(Budget.totalForMonth(Budget.monthKey()));
+
+    renderDashboardAlerts();
+  }
+
+  function renderDashboardAlerts() {
+    const alerts = [];
+    for (const med of Medications.list()) {
+      const s = Medications.statusOf(med);
+      if (s.level === 'danger' || s.level === 'warning') {
+        alerts.push({
+          level: s.level,
+          title: '💊 ' + med.name,
+          sub: s.text
+        });
+      }
+    }
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const overdueTasks = Tasks.list().filter((t) => !t.done && t.dueDate && t.dueDate < todayKey);
+    const todayTasks = Tasks.list().filter((t) => !t.done && t.dueDate === todayKey);
+    if (overdueTasks.length > 0) {
+      alerts.push({
+        level: 'danger',
+        title: `📋 ${overdueTasks.length} משימות באיחור`,
+        sub: overdueTasks.slice(0, 2).map((t) => t.title).join(', ')
+      });
+    }
+    if (todayTasks.length > 0) {
+      alerts.push({
+        level: 'warning',
+        title: `📋 ${todayTasks.length} משימות להיום`,
+        sub: todayTasks.slice(0, 2).map((t) => t.title).join(', ')
+      });
+    }
+
+    const mKey = Budget.monthKey();
+    const limit = Budget.getBudget(mKey);
+    const total = Budget.totalForMonth(mKey);
+    if (limit > 0 && total > limit) {
+      alerts.push({
+        level: 'danger',
+        title: '💰 חרגת מהתקציב',
+        sub: `הוצאת ${Budget.format(total)} מתוך ${Budget.format(limit)}`
+      });
+    } else if (limit > 0 && total > limit * 0.8) {
+      alerts.push({
+        level: 'warning',
+        title: '💰 קרוב לסוף התקציב',
+        sub: `הוצאת ${Budget.format(total)} מתוך ${Budget.format(limit)}`
+      });
+    }
+
+    const container = document.getElementById('dashboard-alerts');
+    if (alerts.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+    container.innerHTML = `<h3 class="section-h">דברים שדורשים תשומת לב</h3>` +
+      alerts.slice(0, 6).map((a) => `
+        <div class="alert-item ${a.level}">
+          <div class="alert-item-title">${a.title}</div>
+          <div class="alert-item-sub">${a.sub}</div>
+        </div>
+      `).join('');
+  }
+
+  function renderCurrentView() {
+    if (currentView === 'dashboard') renderDashboard();
+    else if (currentView === 'medications') Medications.render(document.getElementById('med-list'), medFilter);
+    else if (currentView === 'shopping') Shopping.render(document.getElementById('shop-list'));
+    else if (currentView === 'tasks') Tasks.render(document.getElementById('task-list'), taskFilter);
+    else if (currentView === 'budget') renderBudget();
+    else if (currentView === 'settings') {
+      Settings.renderFamily();
+      Settings.renderNotifStatus();
+    }
+  }
+
+  function renderAll() {
+    renderDashboard();
+    renderCurrentView();
+  }
+
+  // ----- PWA install prompt -----
+  function setupInstallPrompt() {
+    const btn = document.getElementById('install-btn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      installPromptEvent = e;
+      btn.classList.remove('hidden');
+    });
+    btn.addEventListener('click', async () => {
+      if (!installPromptEvent) return;
+      installPromptEvent.prompt();
+      const choice = await installPromptEvent.userChoice;
+      installPromptEvent = null;
+      btn.classList.add('hidden');
+      if (choice.outcome === 'accepted') toast('הותקן בהצלחה', 'success');
+    });
+    window.addEventListener('appinstalled', () => {
+      btn.classList.add('hidden');
+    });
+  }
+
+  function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        Promise.resolve().catch((err) => {
+          console.warn('SW register failed', err);
+        });
+      });
+    }
+  }
+
+  return { init, setView, toast };
+})();
+
+document.addEventListener('DOMContentLoaded', App.init);
+
+</script>
+</body>
+</html>
